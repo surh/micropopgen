@@ -1,7 +1,8 @@
 library(SRAdb)
 
 # Set up connection
-sqlfile <- "SRAmetadb.sqlite"
+sqlfile <-'SRAmetadb.sqlite'
+if(!file.exists('SRAmetadb.sqlite')) sqlfile <<- getSRAdbFile()
 dbcon <- dbConnect(SQLite(),sqlfile)
 
 # sraConvert(c('SRS049712','SRS049995'),'run',dbcon)
