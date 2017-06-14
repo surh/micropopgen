@@ -109,7 +109,7 @@ sub create_single_submission_file{
 
 	# Add lines for every run in sample
 	my $ascp_command = "ascp -i /opt/aspera/etc/asperaweb_id_dsa.openssh -k 1 -T -l200m";
-	my $sra_prefix = "anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/";
+	my $sra_prefix = "anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/";
 	
 	for (@$run_list_ref){
 		#print SUB "fastq-dump $outdir $_ --gzip\n";
@@ -140,7 +140,7 @@ sub run_command{
 
 	my $status = 0;
 	print "Executing:\n>$command\n";
-	my $status = system($command);
+	#my $status = system($command);
 	print "Status=$status\n\n";
 	sleep 1;
 
