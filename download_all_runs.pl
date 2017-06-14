@@ -16,7 +16,7 @@ my $opts = GetOptions('infile|i=s' => \$infile,
 
 $sample_col--;
 $run_col--;
-process_run_list($infile,$sample_col,$run_col);
+$runs_ref = process_run_list($infile,$sample_col,$run_col);
 
 ### Subroutines
 sub process_run_list{
@@ -42,5 +42,11 @@ sub process_run_list{
 	print "Processed $nruns runs in $nsamples samples.\n";
 	return(\%runs_per_sample);
 }
+
+
+sub create_qsub_submission{
+	my($runs_ref,$outdir) = @_A
+}
+
 
 
