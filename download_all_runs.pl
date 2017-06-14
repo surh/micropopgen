@@ -119,7 +119,7 @@ sub qsub_submissions{
 	my ($submission_list_ref) = @_;
 
 	my $file;
-	run_command($_) foreach @$submission_list_ref[1..10];
+	run_command("qsub $_") foreach @$submission_list_ref[0..9];
 
 	print "==========SUBMISSIONS DONE==========\n";
 }
