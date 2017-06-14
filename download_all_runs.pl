@@ -27,11 +27,18 @@ my $logdir = 'logs/';
 my $opts = GetOptions('infile|i=s' => \$infile,
 			'outdir|o=s' => \$outdir);
 
+
+# Main steps. Convert into function
 $sample_col--;
 $run_col--;
 $logdir =  "$outdir/$logdir/";
 my $runs_ref = process_run_list($infile,$sample_col,$run_col);
-create_qsub_submission($runs_ref,$outdir);
+my $submission_list_ref = create_qsub_submission($runs_ref,$outdir);
+if($method eq 'qsub'){
+	qsub_submissions($submission_list_ref);
+}else{
+	die "Only method qsub is allowed for the momment.\n";
+}
 
 ### Subroutines
 sub process_run_list{
@@ -69,16 +76,20 @@ sub create_qsub_submission{
 	print "Saving submission files to $submissions_dir\n";
 
 	# Extract list of samples and pass it to function that creates single submission file
+	my @submission_list;
 	if ($split_by eq 'sample'){
 		my $sample;
 		for $sample (keys %$runs_ref){
 			my $run_list_ref = $runs_ref->{$sample};
 			my $sample_file = create_single_submission_file($sample,$run_list_ref,
 									$submissions_dir);
+			push(@submission_list,$sample_file);
 		}
 	}else{
 		die "Only split by sample is allowed for now \n";
 	}
+
+	return(\@submission_list);
 }
 
 sub create_single_submission_file{
@@ -104,4 +115,22 @@ sub create_single_submission_file{
 	return($submission_file);
 }
 
+sub qsub_submissions{
+	my ($submission_list_ref) = @_;
 
+	my $file;
+	run_command($_) foreach @$submission_list_ref[1..10];
+
+	print "==========SUBMISSIONS DONE==========\n";
+}
+
+sub run_command{
+	my ($command) = @_;
+
+	my $status = 0;
+	print "Executing:\n>$command\n";
+	#my $status = system($command);
+	print "Status=$status\n\n";
+
+	return($status);
+}
