@@ -108,8 +108,13 @@ sub create_single_submission_file{
 	print SUB "module load sra-tools/2.8.0\n";
 
 	# Add lines for every run in sample
+	my $ascp_command = "ascp -i /opt/aspera/etc/asperaweb_id_dsa.openssh -k 1 -T -l200m";
+	my $sra_prefix = "anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/";
+	
 	for (@$run_list_ref){
-		print SUB "fastq-dump $outdir $_ --gzip\n";
+		#print SUB "fastq-dump $outdir $_ --gzip\n";
+		my $run_location = substr($_,0,6) . "/$_/$_.sra";
+		print SUB "$ascp_command $sra_prefix/$run_location\n";
 	}
 	close SUB;
 
