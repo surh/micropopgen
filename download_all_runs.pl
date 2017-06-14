@@ -35,7 +35,7 @@ $logdir =  "$outdir/$logdir/";
 my $runs_ref = process_run_list($infile,$sample_col,$run_col);
 my $submission_list_ref = create_qsub_submission($runs_ref,$outdir);
 if($method eq 'qsub'){
-	qsub_submissions($submission_list_ref);
+	qsub_submissions($submission_list_ref,$logdir);
 }else{
 	die "Only method qsub is allowed for the momment.\n";
 }
@@ -82,7 +82,8 @@ sub create_qsub_submission{
 		for $sample (keys %$runs_ref){
 			my $run_list_ref = $runs_ref->{$sample};
 			my $sample_file = create_single_submission_file($sample,$run_list_ref,
-									$submissions_dir);
+									$submissions_dir,
+									$logdir);
 			push(@submission_list,$sample_file);
 		}
 	}else{
@@ -93,7 +94,7 @@ sub create_qsub_submission{
 }
 
 sub create_single_submission_file{
-	my ($name,$run_list_ref,$submissions_dir) = @_;
+	my ($name,$run_list_ref,$submissions_dir,$logdir) = @_;
 
 	# Create new submission file
 	my $submission_file = "$submissions_dir/$name.submission.bash";
@@ -116,7 +117,9 @@ sub create_single_submission_file{
 }
 
 sub qsub_submissions{
-	my ($submission_list_ref) = @_;
+	my ($submission_list_refi,$logdir) = @_;
+
+	mkdir $logdir unless -d $logdir;
 
 	my $file;
 	run_command("qsub $_") foreach @$submission_list_ref[0..9];
