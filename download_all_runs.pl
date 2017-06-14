@@ -135,8 +135,9 @@ sub run_command{
 
 	my $status = 0;
 	print "Executing:\n>$command\n";
-	#my $status = system($command);
+	my $status = system($command);
 	print "Status=$status\n\n";
+	sleep 1;
 
 	return($status);
 }
