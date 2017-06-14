@@ -113,6 +113,9 @@ sub create_single_submission_file{
 	}
 	close SUB;
 
+	# Set to executable
+	chmod 0744, $submission_file;
+
 	return($submission_file);
 }
 
