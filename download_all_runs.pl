@@ -130,7 +130,7 @@ sub qsub_submissions{
 	mkdir $logdir unless -d $logdir;
 
 	my $file;
-	run_command("qsub $_") foreach @$submission_list_ref[0..4];
+	run_command("qsub $_") foreach @$submission_list_ref;
 
 	print "==========SUBMISSIONS DONE==========\n";
 }
