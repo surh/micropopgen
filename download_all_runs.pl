@@ -83,7 +83,7 @@ sub create_qsub_submission{
 			my $run_list_ref = $runs_ref->{$sample};
 			my $sample_file = create_single_submission_file($sample,$run_list_ref,
 									$submissions_dir,
-									$logdir);
+									$logdir,$outdir);
 			push(@submission_list,$sample_file);
 		}
 	}else{
@@ -94,7 +94,7 @@ sub create_qsub_submission{
 }
 
 sub create_single_submission_file{
-	my ($name,$run_list_ref,$submissions_dir,$logdir) = @_;
+	my ($name,$run_list_ref,$submissions_dir,$logdir,$outdir) = @_;
 
 	# Create new submission file
 	my $submission_file = "$submissions_dir/$name.submission.bash";
@@ -114,7 +114,7 @@ sub create_single_submission_file{
 	for (@$run_list_ref){
 		#print SUB "fastq-dump $outdir $_ --gzip\n";
 		my $run_location = substr($_,0,6) . "/$_/$_.sra";
-		print SUB "$ascp_command $sra_prefix/$run_location\n";
+		print SUB "$ascp_command $sra_prefix/$run_location $outdir\n";
 	}
 	close SUB;
 
@@ -130,7 +130,7 @@ sub qsub_submissions{
 	mkdir $logdir unless -d $logdir;
 
 	my $file;
-	run_command("qsub $_") foreach @$submission_list_ref[0..9];
+	run_command("qsub $_") foreach @$submission_list_ref;
 
 	print "==========SUBMISSIONS DONE==========\n";
 }
@@ -140,7 +140,7 @@ sub run_command{
 
 	my $status = 0;
 	print "Executing:\n>$command\n";
-	#my $status = system($command);
+	my $status = system($command);
 	print "Status=$status\n\n";
 	sleep 1;
 
