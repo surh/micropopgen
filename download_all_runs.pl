@@ -105,10 +105,10 @@ sub create_single_submission_file{
 	print SUB "#PBS -o $logdir/download.$name.log\n";
 	print SUB "#PBS -e $logdir/download.$name.err\n";
 	print SUB "#PBS -l mem=1000mb\n";
-	print SUB "module load sra-tools/2.8.0\n";
+	#print SUB "module load sra-tools/2.8.0\n";
 
 	# Add lines for every run in sample
-	my $ascp_command = "ascp -i /opt/aspera/etc/asperaweb_id_dsa.openssh -k 1 -T -l200m";
+	my $ascp_command = "ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m";
 	my $sra_prefix = "anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/";
 	
 	for (@$run_list_ref){
@@ -140,9 +140,9 @@ sub run_command{
 
 	my $status = 0;
 	print "Executing:\n>$command\n";
-	$status = system($command);
+	#$status = system($command);
 	print "Status=$status\n\n";
-	sleep 1;
+	#sleep 1;
 
 	return($status);
 }
