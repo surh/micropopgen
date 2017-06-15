@@ -130,7 +130,7 @@ sub qsub_submissions{
 	mkdir $logdir unless -d $logdir;
 
 	my $file;
-	run_command("qsub $_") foreach @$submission_list_ref;
+	run_command("qsub $_") foreach @$submission_list_ref[0..4];
 
 	print "==========SUBMISSIONS DONE==========\n";
 }
@@ -140,7 +140,7 @@ sub run_command{
 
 	my $status = 0;
 	print "Executing:\n>$command\n";
-	my $status = system($command);
+	$status = system($command);
 	print "Status=$status\n\n";
 	sleep 1;
 
