@@ -40,7 +40,7 @@ my $submission_list_ref = create_submission_sets($runs_ref,$outdir,$split_by,$ng
 if($method eq 'qsub'){
 	qsub_submissions($submission_list_ref,$logdir);
 }elsif($method eq 'bash'){
-	run_command($_) foreach @$submission_list_ref;
+	run_command("$_ &") foreach @$submission_list_ref;
 }else{
 	die "Method ($method) not recognized.\n";
 }
