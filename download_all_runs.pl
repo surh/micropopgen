@@ -140,9 +140,9 @@ sub run_command{
 
 	my $status = 0;
 	print "Executing:\n>$command\n";
-	#$status = system($command);
+	$status = system($command);
 	print "Status=$status\n\n";
-	#sleep 1;
+	sleep 1;
 
 	return($status);
 }
