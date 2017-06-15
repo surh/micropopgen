@@ -25,15 +25,16 @@ my $split_by = 'sample';
 my $logdir = 'logs/';
 
 my $opts = GetOptions('infile|i=s' => \$infile,
-			'outdir|o=s' => \$outdir);
-
+			'outdir|o=s' => \$outdir,
+			'method|m=s' => \$method,
+			'split|s=s' => \$split_by);
 
 # Main steps. Convert into function
 $sample_col--;
 $run_col--;
 $logdir =  "$outdir/$logdir/";
 my $runs_ref = process_run_list($infile,$sample_col,$run_col);
-my $submission_list_ref = create_qsub_submission($runs_ref,$outdir);
+my $submission_list_ref = create_submission_sets($runs_ref,$outdir,$split_by);
 if($method eq 'qsub'){
 	qsub_submissions($submission_list_ref,$logdir);
 }else{
@@ -66,8 +67,8 @@ sub process_run_list{
 }
 
 
-sub create_qsub_submission{
-	my($runs_ref,$outdir) = @_;
+sub create_submission_sets{
+	my($runs_ref,$outdir,$split_by) = @_;
 	
 	# Set working space
 	mkdir $outdir unless -d $outdir;
