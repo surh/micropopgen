@@ -27,11 +27,27 @@ my $sample_col = 1;
 my $skip = 1;
 #my $method = 'qsub';
 #my $split_by = 'sample';
-#my $logdir = 'logs/';
+my $logdir = 'logs/';
 #my $ngroups = 2;
 
 my $opts = GetOptions('map|m=s' => \$mapfile,
 			'indir|i=s' => \$indir,
 			'outdir|o=s' => \$outdir);
+
+# Read map file
+$sample_col--;
+$run_col--;
+$logdir =  "$outdir/$logdir/";
+my $runs_ref = process_run_list($mapfile,$sample_col,$run_col,$skip);
+my @samples = match_sra_files_in_dir($indir,$runs_ref);
+
+#### SUBROUTINES ####
+
+
+
+
+
+
+
 
 

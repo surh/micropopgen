@@ -7,9 +7,17 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 $VERSION     = '0.0-1';
 @ISA         = qw(Exporter);
 @EXPORT      = ();
-@EXPORT_OK   = qw(process_run_list);
-%EXPORT_TAGS = ( all => [qw(&process_run_list)]);
+@EXPORT_OK   = qw(process_run_list match_sra_files_in_dir);
+%EXPORT_TAGS = ( all => [qw(&process_run_list match_sra_files_in_dir)]);
 
+sub match_sra_files_in_dir{
+	my ($indir,$runs_ref) = @_;
+	
+	opendir(DIR, $indir) or die "Can't open $indir ($!)";
+	my @sra_files = grep{-f "$indir/$_" && /\.sra$/} readdir DIR;
+	close DIR;
+	
+}
 
 sub process_run_list{
 	my ($infile,$sample_col,$run_col,$skip) = @_;
