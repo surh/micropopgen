@@ -35,7 +35,7 @@ my $opts = GetOptions('infile|i=s' => \$infile,
 $sample_col--;
 $run_col--;
 $logdir =  "$outdir/$logdir/";
-my $runs_ref = process_run_list($infile,$sample_col,$run_col);
+my $runs_ref = process_run_list($infile,$sample_col,$run_col,$skip);
 my $submission_list_ref = create_submission_sets($runs_ref,$outdir,$split_by,$ngroups);
 if($method eq 'qsub'){
 	qsub_submissions($submission_list_ref,$logdir);
@@ -47,7 +47,7 @@ if($method eq 'qsub'){
 
 ### Subroutines
 sub process_run_list{
-	my ($infile,$sample_col,$run_col) = @_;
+	my ($infile,$sample_col,$run_col,$skip) = @_;
 	
 	open(my $in,$infile) or die "Can't open $infile ($!)";
 	my %runs_per_sample;
