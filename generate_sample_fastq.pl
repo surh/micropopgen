@@ -17,7 +17,7 @@ use File::Temp qw/ tempfile tempdir/;
 use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib dirname(abs_path $0) . '/lib';
-use sra qw(process_run_list match_sra_files_in_dir);
+use sra qw(:run2sample);
 
 my $mapfile = '';
 my $indir = '';
@@ -29,9 +29,11 @@ my $skip = 1;
 #my $split_by = 'sample';
 my $logdir = 'logs/';
 #my $ngroups = 2;
+my $samples_file = '';
 
 my $opts = GetOptions('map|m=s' => \$mapfile,
 			'indir|i=s' => \$indir,
+			'samples|s=s' => \$samples_file,
 			'outdir|o=s' => \$outdir);
 
 # Read map file
@@ -39,6 +41,8 @@ $sample_col--;
 $run_col--;
 $logdir =  "$outdir/$logdir/";
 my $runs_ref = process_run_list($mapfile,$sample_col,$run_col,$skip);
+my $sample_of_run_ref = sample_of_run($mapfile,$sample_col,$run_col,$skip);
+
 my @samples = match_sra_files_in_dir($indir,$runs_ref);
 
 #### SUBROUTINES ####
