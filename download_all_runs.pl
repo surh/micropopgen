@@ -16,6 +16,12 @@ use Getopt::Long;
 use File::Temp qw/ tempfile tempdir/;
 use POSIX qw/ ceil floor/;
 
+# Load local module
+use File::Basename qw(dirname);
+use Cwd  qw(abs_path);
+use lib dirname(abs_path $0) . '/lib';
+use sra qw(process_run_list);
+
 my $infile = '';
 my $outdir = '';
 my $method = 'qsub';
@@ -46,29 +52,29 @@ if($method eq 'qsub'){
 }
 
 ### Subroutines
-sub process_run_list{
-	my ($infile,$sample_col,$run_col,$skip) = @_;
-	
-	open(my $in,$infile) or die "Can't open $infile ($!)";
-	my %runs_per_sample;
-	my $i = 0;
-	while(<$in>){
-		next unless $i++ >= $skip;
-		chomp;
-		my @line = split(/\t/,$_);
-		my $sample = $line[$sample_col];
-		my $run = $line[$run_col];
-		if(exists($runs_per_sample{$sample})){
-			push(@{$runs_per_sample{$sample}}, $run);
-		}else{
-			$runs_per_sample{$sample} = [$run];
-		}
-	}
-	my $nruns = $i - $skip;
-	my $nsamples = scalar keys %runs_per_sample;
-	print "Processed $nruns runs in $nsamples samples.\n";
-	return(\%runs_per_sample);
-}
+#sub process_run_list{
+#	my ($infile,$sample_col,$run_col,$skip) = @_;
+#	
+#	open(my $in,$infile) or die "Can't open $infile ($!)";
+#	my %runs_per_sample;
+#	my $i = 0;
+#	while(<$in>){
+#		next unless $i++ >= $skip;
+#		chomp;
+#		my @line = split(/\t/,$_);
+#		my $sample = $line[$sample_col];
+#		my $run = $line[$run_col];
+#		if(exists($runs_per_sample{$sample})){
+#			push(@{$runs_per_sample{$sample}}, $run);
+#		}else{
+#			$runs_per_sample{$sample} = [$run];
+#		}
+#	}
+#	my $nruns = $i - $skip;
+#	my $nsamples = scalar keys %runs_per_sample;
+#	print "Processed $nruns runs in $nsamples samples.\n";
+#	return(\%runs_per_sample);
+#}
 
 
 sub create_submission_sets{

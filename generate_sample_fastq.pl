@@ -13,6 +13,12 @@ use Getopt::Long;
 use File::Temp qw/ tempfile tempdir/;
 #use POSIX qw/ ceil floor/;
 
+# Load local module
+use File::Basename qw(dirname);
+use Cwd  qw(abs_path);
+use lib dirname(abs_path $0) . '/lib';
+use sra qw(process_run_list);
+
 my $mapfile = '';
 my $indir = '';
 my $outdir = '';
