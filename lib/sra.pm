@@ -20,6 +20,7 @@ sub check_integrity{
 	# If passed, convert to fastq
 	my ($samples_ref,$indir,$runs_ref) = @_;
 	
+	print "> Validating integrity of .sra files.\n";
 	my $bin = 'vdb-validate';
 	$bin = which($bin);
 	# check if command exists
@@ -34,8 +35,9 @@ sub check_integrity{
 		for $run (@{$runs_ref->{$sample}}){
 			my $file = "$indir/" . $run . ".sra";
 			my $command = "vdb-validate $file";
-			print ">$command\n";
-			push(@runs,$$file);
+			#print ">$command\n";
+			my $out = run_command($command);
+			push(@runs,$file);
 			
 		}
 		
