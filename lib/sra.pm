@@ -21,7 +21,7 @@ sub check_integrity{
 	my ($samples_ref,$indir,$runs_ref) = @_;
 	
 	my $bin = 'vdb-validate';
-	print which($bin) . "\t" . $bin . "\n";
+	$binf = which($bin);
 	# check if command exists
 	die "Can't find $bin\n." unless -X $bin;
 	
