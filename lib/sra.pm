@@ -36,7 +36,6 @@ sub check_integrity{
 	}
 }
 
-
 sub match_sra_files_in_dir{
 	# Compare .sra files in directory with expected samples from
 	# required samples, and decide which samples to keep.
