@@ -72,13 +72,13 @@ sub read_vdb_validate{
 #	2017-07-03T21:25:25 vdb-validate.2.8.0 info: Column 'Y': checksums ok
 #	2017-07-03T21:25:26 vdb-validate.2.8.0 info: Table 'SRR059326.sra' is consistent
 	
-	return 1 if ($file[0] ~! /metadata: md5 ok$/);
-	return 1 if ($file[1] ~! /Column 'QUALITY': checksums ok$/);
-	return 1 if ($file[2] ~! /Column 'RD_FILTER': checksums ok$/);
-	return 1 if ($file[3] ~! /Column 'READ': checksums o$/);
-	return 1 if ($file[4] ~! /Column 'X': checksums ok$/);
-	return 1 if ($file[5] ~! /Column 'Y': checksums ok$/);
-	return 1 if ($file[6] ~! /is consistent$/);
+	return 1 if ($file[0] !~ /metadata: md5 ok$/);
+	return 1 if ($file[1] !~ /Column 'QUALITY': checksums ok$/);
+	return 1 if ($file[2] !~ /Column 'RD_FILTER': checksums ok$/);
+	return 1 if ($file[3] !~ /Column 'READ': checksums o$/);
+	return 1 if ($file[4] !~ /Column 'X': checksums ok$/);
+	return 1 if ($file[5] !~ /Column 'Y': checksums ok$/);
+	return 1 if ($file[6] !~ /is consistent$/);
 	
 	return 0;
 }
