@@ -60,9 +60,9 @@ sub check_integrity{
 
 sub read_vdb_validate{
 	my ($infile) = @_;
-	open(IN,$infile) or die "Can't open $infile ($!)";
+	open(my $in,$infile) or die "Can't open $infile ($!)";
 	my @file;
-	@file = while <IN>;
+	@file = while <$in>;
 	
 #	2017-07-03T21:25:19 vdb-validate.2.8.0 info: Table 'SRR059326.sra' metadata: md5 ok
 #	2017-07-03T21:25:23 vdb-validate.2.8.0 info: Column 'QUALITY': checksums ok
