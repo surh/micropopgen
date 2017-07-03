@@ -42,7 +42,7 @@ sub check_integrity{
 			
 			
 			# Create temporary file for validation results
-			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $outdir, SUFFIX => '.dat', CLEANUP => 1);
+			#my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $indir, SUFFIX => '.dat', CLEANUP => 1);
 			
 			my $command = "vdb-validate $file";
 			print ">$command\n";
