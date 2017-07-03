@@ -183,14 +183,4 @@ sub qsub_submissions{
 	print "==========SUBMISSIONS DONE==========\n";
 }
 
-sub run_command{
-	my ($command) = @_;
 
-	my $status = 0;
-	print "Executing:\n>$command\n";
-	$status = system($command);
-	print "Status=$status\n\n";
-	sleep 1;
-
-	return($status);
-}

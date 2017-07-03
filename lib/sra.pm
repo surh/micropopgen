@@ -7,10 +7,39 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 $VERSION     = '0.0-1';
 @ISA         = qw(Exporter);
 @EXPORT      = ();
-@EXPORT_OK   = qw(process_run_list match_sra_files_in_dir sample_of_run read_table);
-%EXPORT_TAGS = ( run2sample => [qw(&process_run_list match_sra_files_in_dir sample_of_run read_table)]);
+@EXPORT_OK   = qw(process_run_list match_sra_files_in_dir sample_of_run read_table run_command);
+%EXPORT_TAGS = ( run2sample => [qw(&process_run_list match_sra_files_in_dir sample_of_run read_table run_command)]);
+
+sub check_integrity{
+	# USA sra-tools to check the md5sum of .sra files.
+	# If passed, convert to fastq
+	my ($samples_ref,$indir,$runs_ref) = @_;
+	
+	my $bin = 'vdb-validate';
+	# check if command exists
+	die "Can't find $bin\n." unless -X $bin;
+	
+	my ($sample);
+	# For each sample
+	for $sample (@$samples_ref){
+		my ($run,@runs);
+		my $status = 0;
+		# For every run of that sample
+		for $run (@{$runs_ref->{$sample}}){
+			my $file = "$indir/" . $run . ".sra";
+			my $command = "vdb-validate $file";
+			print ">$command\n";
+			push(@runs,$$file);
+			
+		}
+		
+	}
+}
+
 
 sub match_sra_files_in_dir{
+	# Compare .sra files in directory with expected samples from
+	# required samples, and decide which samples to keep.
 	my ($indir,$runs_ref,$sample_of_run_ref,$samples_ref) = @_;
 	
 	print ">Preparing to match run files with samples...\n";
@@ -99,6 +128,18 @@ sub read_table{
 	close IN;
 	
 	return (\%Table);
+}
+
+sub run_command{
+	my ($command) = @_;
+
+	my $status = 0;
+	print "Executing:\n>$command\n";
+	$status = system($command);
+	print "Status=$status\n\n";
+	sleep 1;
+
+	return($status);
 }
 
 sub sample_of_run{
