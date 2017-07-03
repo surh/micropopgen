@@ -7,14 +7,14 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 $VERSION     = '0.0-1';
 @ISA         = qw(Exporter);
 @EXPORT      = ();
-@EXPORT_OK   = qw(process_run_list match_sra_files_in_dir sample_of_run);
-%EXPORT_TAGS = ( run2sample => [qw(&process_run_list match_sra_files_in_dir sample_of_run)]);
+@EXPORT_OK   = qw(process_run_list match_sra_files_in_dir sample_of_run read_table);
+%EXPORT_TAGS = ( run2sample => [qw(&process_run_list match_sra_files_in_dir sample_of_run read_table)]);
 
 sub match_sra_files_in_dir{
 	my ($indir,$runs_ref,$sample_of_run_ref,$samples_ref) = @_;
 	
 	opendir(DIR, $indir) or die "Can't open $indir ($!)";
-	my ($file.@sra_files);
+	my ($file, @sra_files);
 	while($file = readdir DIR){
 		next unless (-f "$indir/$file") && ($file =~ /\.sra$/);
 		
@@ -56,6 +56,22 @@ sub process_run_list{
 	return(\%runs_per_sample);
 }
 
+
+sub read_table{
+	my($infile,$col1,$col2,$skip) = @_;
+	open(IN,$infile) or die "Can't open $infile ($!)";
+	my $i = 0;
+	my %Table;
+	while(<IN>){
+		chomp;
+		next if $i++ < $skip;
+		my @line = split(/\t/,$_);
+		$Table{$line[$col1]} = $line[$col2];
+	}
+	close IN;
+	
+	return \%Table
+}
 
 sub sample_of_run{
 	my ($infile,$sample_col,$run_col,$skip) = @_;
