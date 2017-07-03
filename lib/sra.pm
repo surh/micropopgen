@@ -45,12 +45,12 @@ sub check_integrity{
 			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $tmpdir, SUFFIX => '.txt', CLEANUP => 0);
 			
 			my $command = "vdb-validate $file > $tmp";
-			print ">$command\n";
-			#my $out = run_command($command);
+			#print ">$command\n";
+			my $out = run_command($command);
 			my $check = read_vdb_validate($tmp)
 			print "Check:$check\n";
 			
-			push(@runs,$file);
+			#push(@runs,$file);
 			
 		}
 		
