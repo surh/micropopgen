@@ -48,7 +48,7 @@ sub match_sra_files_in_dir{
 	# MEANS THAT ALL THE RUNS ARE PRESENT.
 	my @keep;
 	for $sample (keys %samples_to_keep){
-		my $expected = scalar @$runs_ref->{$sample};
+		my $expected = scalar @{$runs_ref->{$sample}};
 		my $found = $samples_to_keep{$sample};
 		print ">$sample=\t=$found=\t=$expected\=n"; 
 	}
