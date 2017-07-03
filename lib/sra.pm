@@ -47,7 +47,7 @@ sub check_integrity{
 			my $command = "vdb-validate $file > $tmp";
 			#print ">$command\n";
 			my $out = run_command($command);
-			my $check = read_vdb_validate($tmp)
+			my $check = read_vdb_validate($tmp);
 			print "Check:$check\n";
 			
 			#push(@runs,$file);
