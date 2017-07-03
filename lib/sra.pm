@@ -21,6 +21,7 @@ sub check_integrity{
 	# If passed, convert to fastq
 	my ($samples_ref,$indir,$runs_ref) = @_;
 	
+	print "\n=============================================\n";
 	print "> Validating integrity of .sra files.\n";
 	my $bin = 'vdb-validate';
 	$bin = which($bin);
@@ -42,9 +43,9 @@ sub check_integrity{
 			
 			
 			# Create temporary file for validation results
-			#my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $indir, SUFFIX => '.dat', CLEANUP => 1);
+			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $tmpdir, SUFFIX => '.txt', CLEANUP => 1);
 			
-			my $command = "vdb-validate $file";
+			my $command = "vdb-validate $file > $tmp";
 			print ">$command\n";
 			#my $out = run_command($command);
 			push(@runs,$file);
@@ -52,6 +53,7 @@ sub check_integrity{
 		}
 		
 	}
+	print "=============================================\n";
 }
 
 sub match_sra_files_in_dir{
