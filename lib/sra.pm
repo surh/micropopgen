@@ -13,14 +13,20 @@ $VERSION     = '0.0-1';
 sub match_sra_files_in_dir{
 	my ($indir,$runs_ref,$sample_of_run_ref,$samples_ref) = @_;
 	
+	print "Preparing to match run files with samples...\n";
+	
 	opendir(DIR, $indir) or die "Can't open $indir ($!)";
-	my ($file, @sra_files);
+	my ($file, @sra_files, $sample, $run);
 	while($file = readdir DIR){
+		# Remove non .sra files
 		next unless (-f "$indir/$file") && ($file =~ /\.sra$/);
 		
-		
-		my @sra_files =  readdir DIR;
-			
+		$run = $file;
+		$file =~ s/\.sra$//;
+		$sample = $sample_of_run_ref->{$run};
+		print "\t$run\t$file\t$sample\n";
+
+		push(@sra_files,$file);
 	}
 	close DIR;
 	
@@ -70,7 +76,7 @@ sub read_table{
 	}
 	close IN;
 	
-	return \%Table
+	return (\%Table);
 }
 
 sub sample_of_run{
