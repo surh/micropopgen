@@ -44,21 +44,37 @@ sub check_integrity{
 			# Create temporary file for validation results
 			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $tmpdir, SUFFIX => '.txt', CLEANUP => 0);
 			
-			my $command = "vdb-validate $file > $tmp";
+			my $command = "$bin $file > $tmp";
 			print ">$command\n";
 			#my $out = run_command($command);
 			my $check = read_vdb_validate($tmp);
-			print "Check:$check\n";
+			last if $check;
+			
+			#print "Check:$check\n";
 			
 			#push(@runs,$file);
 			
 		}
+		
+		# Check if all files passed, and dump fastq files.
+		if($check){
+			print ">>WARNING: Sample $sample had at least one run faling validation ($run).\n";
+		}else{
+			for $run (@{$runs_ref->{$sample}}){
+				my $file = "$indir/" . $run . ".sra";
+				my $command = "fastq-dump -O $outdir $file"; # Missing split command
+				print ">$command\n";
+				#my $out = run_command($command);
+			}	
+		}
+		
 		
 	}
 	print "=============================================\n";
 }
 
 sub read_vdb_validate{
+	# Checks if a file with output from vdb-validate returns a positive result.
 	my ($infile) = @_;
 	open(IN,$infile) or die "Can't open $infile ($!)";
 	my @file = <IN>;
