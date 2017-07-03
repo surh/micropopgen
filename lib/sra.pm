@@ -4,6 +4,9 @@ use strict;
 use Exporter;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
+# Dependencies
+use File::Which;
+
 $VERSION     = '0.0-1';
 @ISA         = qw(Exporter);
 @EXPORT      = ();
@@ -18,6 +21,7 @@ sub check_integrity{
 	my ($samples_ref,$indir,$runs_ref) = @_;
 	
 	my $bin = 'vdb-validate';
+	print which{bin} . "\t" . $bin . "\n";
 	# check if command exists
 	die "Can't find $bin\n." unless -X $bin;
 	
