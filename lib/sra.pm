@@ -19,7 +19,7 @@ $VERSION     = '0.0-1';
 sub check_integrity{
 	# USA sra-tools to check the md5sum of .sra files.
 	# If passed, convert to fastq
-	my ($samples_ref,$indir,$runs_ref) = @_;
+	my ($samples_ref,$indir,$runs_ref,$outdir) = @_;
 	
 	print "\n=============================================\n";
 	print "> Validating integrity of .sra files.\n";
@@ -33,11 +33,13 @@ sub check_integrity{
 	print ">>Created $tmpdir to save results from $bin\n";
 	
 	my ($sample);
-	# For each sample
+	# For each sample First check md5 sums and if all pass use fastq-dump
+	my $sample_i  = 0;
+	my $sample_n = 0;
 	for $sample (@$samples_ref){
-		my ($run,@runs);
-		my $status = 0;
-		# For every run of that sample
+		my ($run);
+		my $check = 0;
+		# For every run of that sample. Check that it passed
 		for $run (@{$runs_ref->{$sample}}){
 			my $file = "$indir/" . $run . ".sra";
 			
@@ -49,28 +51,60 @@ sub check_integrity{
 			#my $out = run_command($command);
 			my $check = read_vdb_validate($tmp);
 			last if $check;
-			
 			#print "Check:$check\n";
-			
-			#push(@runs,$file);
-			
 		}
-		
-		# Check if all files passed, and dump fastq files.
 		if($check){
-			print ">>WARNING: Sample $sample had at least one run faling validation ($run).\n";
+			splice @$samples_ref, $sample_n, 1;
 		}else{
-			for $run (@{$runs_ref->{$sample}}){
-				my $file = "$indir/" . $run . ".sra";
-				my $command = "fastq-dump -O $outdir $file"; # Missing split command
-				print ">$command\n";
-				#my $out = run_command($command);
-			}	
+			$sample_i++
+		}
+		$sample_n++;
+	}
+	print ">>$sample_i of $sample_n samples passed the test.\n";
+	print "=============================================\n";
+	return $samples_ref;
+}
+
+sub generate_sample_fastq{
+	my ($indir, $outdir, $samples_ref, $runs_ref) = @_;
+	
+	print "\n=============================================\n";
+	print "> Dumping fasts and concatenating files from same sample.\n";
+	my $bin = 'fastq-dump';
+	$bin = which($bin);
+	# check if command exists
+	die "Can't find $bin\n." unless -X $bin;
+	
+	# Create temporary directory for vdb-validate results
+	my $tmpdir = File::Temp::tempdir(TEMPLATE => 'fastqXXXXX', CLEANUP => 0, DIR => $indir);
+	print ">>Created $tmpdir to save results from $bin\n";
+	
+	# Create main output directory
+	(mkdir $outdir or die "Can't create $outdir ($!)") unless -d $outdir;
+	 
+	my $sample;
+	for $sample (@$samples_ref){
+		my $run;
+		my @runs;
+		for $run (@{$runs_ref->{$sample}}){
+			my $file = "$indir/" . $run . ".sra";
+			my $command = "fastq-dump -O $tmpdir $file"; # Missing split command
+			print ">$command\n";
+			#my $out = run_command($command);
+			
+			push (@runs, $file);
 		}
 		
+		my $command;
+		$command = "cat " . join("\s",@runs) . " > $outdir/$sample.1.fastq"
+		print ">$command\n";
+		#my $out = run_command($command);
 		
+		$command = "cat " . join("\s",@runs) . " > $outdir/$sample.2.fastq"
+		print ">$command\n";
+		#my $out = run_command($command);
 	}
-	print "=============================================\n";
+	
 }
 
 sub read_vdb_validate{
