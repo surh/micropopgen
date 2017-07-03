@@ -13,7 +13,7 @@ $VERSION     = '0.0-1';
 sub match_sra_files_in_dir{
 	my ($indir,$runs_ref,$sample_of_run_ref,$samples_ref) = @_;
 	
-	print "Preparing to match run files with samples...\n";
+	print ">Preparing to match run files with samples...\n";
 	
 	opendir(DIR, $indir) or die "Can't open $indir ($!)";
 	my ($file, @sra_files, $sample, $run);
@@ -41,7 +41,7 @@ sub match_sra_files_in_dir{
 	}
 	close DIR;
 	
-	print scalar @sra_files, ":@sra_files" . "\n";
+	print ">>Found " . scalar @sra_files . " .sra files that match required samples\n";
 	
 	# Check if samples wanted have all runs.
 	# IMPORTANT: WE ARE ASSUMING THAT THE SAME NUMBER OF RUNS AS EXPECTED
@@ -50,13 +50,14 @@ sub match_sra_files_in_dir{
 	for $sample (keys %samples_to_keep){
 		my $expected = scalar @{$runs_ref->{$sample}};
 		my $found = $samples_to_keep{$sample};
-		print ">$sample=\t=$found=\t=$expected\=n"; 
+		#print ">$sample=\t=$found=\t=$expected=\n";
+		if($found == $expected){
+			push(@keep,$sample);
+		}
 	}
+	print ">>" . scalar @keep . " samples out of " . scalar (keys %samples_to_keep) . " were found to have a complete set of run files.\n"; 
 	
-	# NEXT STAGE FIND SAMPLES TO KEEP
-	# DEPURATE SAMPLES TO KEEP ACCORDING TO COMPLETNESS IN RUNS_REF
-	# RETURN SAMPLES TO KEEP
-	
+	return \@keep;	
 }
 
 sub process_run_list{
