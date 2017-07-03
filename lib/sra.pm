@@ -6,6 +6,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
 # Dependencies
 use File::Which;
+use File::Temp;
 
 $VERSION     = '0.0-1';
 @ISA         = qw(Exporter);
@@ -26,6 +27,10 @@ sub check_integrity{
 	# check if command exists
 	die "Can't find $bin\n." unless -X $bin;
 	
+	# Create temporary directory for vdb-validate results
+	my $tmpdir = tempdir(TEMPLATE => 'vdbXXXXX', CLEANUP = > 1, DIR => $indir)
+	print ">>Created $tmpdir to save results from $bin\n";
+	
 	my ($sample);
 	# For each sample
 	for $sample (@$samples_ref){
@@ -34,9 +39,14 @@ sub check_integrity{
 		# For every run of that sample
 		for $run (@{$runs_ref->{$sample}}){
 			my $file = "$indir/" . $run . ".sra";
+			
+			
+			# Create temporary file for validation results
+			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $outdir, SUFFIX => '.dat', CLEANUP => 1);
+			
 			my $command = "vdb-validate $file";
-			#print ">$command\n";
-			my $out = run_command($command);
+			print ">$command\n";
+			#my $out = run_command($command);
 			push(@runs,$file);
 			
 		}
