@@ -29,7 +29,7 @@ sub check_integrity{
 	die "Can't find $bin\n." unless -X $bin;
 	
 	# Create temporary directory for vdb-validate results
-	my $tmpdir = File::Temp::tempdir(TEMPLATE => 'vdbXXXXX', CLEANUP => 1, DIR => $indir);
+	my $tmpdir = File::Temp::tempdir(TEMPLATE => 'vdbXXXXX', CLEANUP => 0, DIR => $indir);
 	print ">>Created $tmpdir to save results from $bin\n";
 	
 	my ($sample);
@@ -41,19 +41,45 @@ sub check_integrity{
 		for $run (@{$runs_ref->{$sample}}){
 			my $file = "$indir/" . $run . ".sra";
 			
-			
 			# Create temporary file for validation results
-			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $tmpdir, SUFFIX => '.txt', CLEANUP => 1);
+			my $tmp = File::Temp->new( TEMPLATE => 'tempXXXXX', DIR => $tmpdir, SUFFIX => '.txt', CLEANUP => 0);
 			
 			my $command = "vdb-validate $file > $tmp";
 			print ">$command\n";
 			#my $out = run_command($command);
+			my $check = read_vdb_validate($tmp)
+			print "Check:$check\n";
+			
 			push(@runs,$file);
 			
 		}
 		
 	}
 	print "=============================================\n";
+}
+
+sub read_vdb_validate{
+	my ($infile) = @_;
+	open(IN,$infile) or die "Can't open $infile ($!)";
+	my @file = while <>;
+	
+#	2017-07-03T21:25:19 vdb-validate.2.8.0 info: Table 'SRR059326.sra' metadata: md5 ok
+#	2017-07-03T21:25:23 vdb-validate.2.8.0 info: Column 'QUALITY': checksums ok
+#	2017-07-03T21:25:24 vdb-validate.2.8.0 info: Column 'RD_FILTER': checksums ok
+#	2017-07-03T21:25:25 vdb-validate.2.8.0 info: Column 'READ': checksums ok
+#	2017-07-03T21:25:25 vdb-validate.2.8.0 info: Column 'X': checksums ok
+#	2017-07-03T21:25:25 vdb-validate.2.8.0 info: Column 'Y': checksums ok
+#	2017-07-03T21:25:26 vdb-validate.2.8.0 info: Table 'SRR059326.sra' is consistent
+	
+	return 1 if ($file[0] ~! /metadata: md5 ok$/);
+	return 1 if ($file[1] ~! /Column 'QUALITY': checksums ok$/);
+	return 1 if ($file[2] ~! /Column 'RD_FILTER': checksums ok$/);
+	return 1 if ($file[3] ~! /Column 'READ': checksums o$/);
+	return 1 if ($file[4] ~! /Column 'X': checksums ok$/);
+	return 1 if ($file[5] ~! /Column 'Y': checksums ok$/);
+	return 1 if ($file[6] ~! /is consistent$/);
+	
+	return 0;
 }
 
 sub match_sra_files_in_dir{
