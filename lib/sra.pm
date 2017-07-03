@@ -28,7 +28,7 @@ sub check_integrity{
 	die "Can't find $bin\n." unless -X $bin;
 	
 	# Create temporary directory for vdb-validate results
-	my $tmpdir = tempdir(TEMPLATE => 'vdbXXXXX', CLEANUP => 1, DIR => $indir);
+	my $tmpdir = File::Temp::tempdir(TEMPLATE => 'vdbXXXXX', CLEANUP => 1, DIR => $indir);
 	print ">>Created $tmpdir to save results from $bin\n";
 	
 	my ($sample);
