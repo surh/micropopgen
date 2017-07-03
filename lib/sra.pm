@@ -17,21 +17,41 @@ sub match_sra_files_in_dir{
 	
 	opendir(DIR, $indir) or die "Can't open $indir ($!)";
 	my ($file, @sra_files, $sample, $run);
+	my (%samples_to_keep);
 	while($file = readdir DIR){
 		# Remove non .sra files
 		next unless (-f "$indir/$file") && ($file =~ /\.sra$/);
 		
+		# Check if run belongs to requested sample
 		$run = $file;
 		$run =~ s/\.sra$//;
-		print ">" . $sample_of_run_ref->{SRR060370} . "\n";
 		$sample = $sample_of_run_ref->{$run};
-		print "\t==$run==\t$file\t$sample\n";
-
+		#print "\t==$run==\t$file\t$sample\n";
+		next unless exists($samples_ref->{$sample});
+		
+		# Save files tthat we are keeping
 		push(@sra_files,$file);
+		
+		# Save samples to keep
+		if(exists($samples_to_keep{$sample})){
+			$samples_to_keep{$sample}++;
+		}else{
+			$samples_to_keep{$sample} = 1;
+		}
 	}
 	close DIR;
 	
 	print scalar @sra_files, ":@sra_files" . "\n";
+	
+	# Check if samples wanted have all runs.
+	# IMPORTANT: WE ARE ASSUMING THAT THE SAME NUMBER OF RUNS AS EXPECTED
+	# MEANS THAT ALL THE RUNS ARE PRESENT.
+	my @keep;
+	for $sample (keys %samples_to_keep){
+		my $expected = scalar @$runs_ref->{$sample};
+		my $found = $samples_to_keep{$sample};
+		print ">$sample=\t=$found=\t=$expected\=n"; 
+	}
 	
 	# NEXT STAGE FIND SAMPLES TO KEEP
 	# DEPURATE SAMPLES TO KEEP ACCORDING TO COMPLETNESS IN RUNS_REF
