@@ -23,8 +23,9 @@ sub match_sra_files_in_dir{
 		
 		$run = $file;
 		$file =~ s/\.sra$//;
+		print ">" . $sample_of_run_ref->{SRR060370} . "\n";
 		$sample = $sample_of_run_ref->{$run};
-		print "\t$run\t$file\t$sample\n";
+		print "\t==$run==\t$file\t$sample\n";
 
 		push(@sra_files,$file);
 	}
