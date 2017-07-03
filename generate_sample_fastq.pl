@@ -44,7 +44,7 @@ my $runs_ref = process_run_list($mapfile,$sample_col,$run_col,$skip);
 my $sample_of_run_ref = sample_of_run($mapfile,$sample_col,$run_col,$skip);
 my $sample_list_ref = read_table($samples_file,0,0,0);
 
-my @samples = match_sra_files_in_dir($indir,$runs_ref,$sample_list_ref);
+my @samples = match_sra_files_in_dir($indir,$runs_ref,$sample_of_run_ref,$sample_list_ref);
 
 #### SUBROUTINES ####
 

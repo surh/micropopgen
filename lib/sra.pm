@@ -95,7 +95,7 @@ sub sample_of_run{
 			die "ERROR: Repeated run ($run), with two samples ($sample_of_run{$run}, $sample)\n";
 		}else{
 			$sample_of_run{$run} = $sample;
-			print "==$run=>$sample==\n";
+			#print "==$run=>$sample==\n";
 		}
 	}
 	my $nruns = $i - $skip;
