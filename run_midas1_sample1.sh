@@ -5,4 +5,4 @@
 #PBS -e logs/download.err
 #PBS -l mem=2000mb
 module load MIDAS
-run_midas.py species midas1/sample1 -1 /godot/hmp/WGS/temp/temp_fastq/SRS011061_R1.fastq.gz  -2 /godot hmp/WGS/temp/temp_fastq/SRS011061_R2.fastq.gz
+run_midas.py species midas1/sample1 -1 /godot/hmp/WGS/temp/temp_fastq/SRS011061_R1.fastq.gz  -2 /godot/hmp/WGS/temp/temp_fastq/SRS011061_R2.fastq.gz
