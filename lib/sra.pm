@@ -99,7 +99,7 @@ sub generate_sample_fastq{
 		}
 		
 		my $command;
-		$command = "cat " . join("\s",@runs) . " > $outdir/$sample.1.fastq";
+		$command = "cat " . join(" ",@runs) . " > $outdir/$sample.1.fastq";
 		print ">$command\n";
 		#my $out = run_command($command);
 		
