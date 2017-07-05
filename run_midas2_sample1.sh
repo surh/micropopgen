@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N MIDAS2.2
+#PBS -N MIDAS2.1
 #PBS -d /home/sur/micropopgen/exp/2017/today4/
 #PBS -o logs/midas2_sample1.log
 #PBS -e logs/midas2_sample1.err
