@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N MIDAS2
-#PBS -d ~/micropopgen/experiments/2017/today4/
-#PBS -o ~/micropopgen/experiments/2017/today4/logs/midas2_sample1.log
+#PBS -d ~/micropopgen/exp/2017/today4/
+#PBS -o ~/micropopgen/exp/2017/today4/logs/midas2_sample1.log
 #PBS -e logs/download.err
 #PBS -l mem=2000mb
 module load MIDAS
