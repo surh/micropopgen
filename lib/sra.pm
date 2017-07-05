@@ -14,9 +14,10 @@ $VERSION     = '0.0-1';
 @ISA         = qw(Exporter);
 @EXPORT      = ();
 @EXPORT_OK   = qw(process_run_list match_sra_files_in_dir sample_of_run read_table
-                  run_command check_integrity read_vdb_validate);
+                  run_command check_integrity read_vdb_validate generate_sample_fastq);
 %EXPORT_TAGS = ( run2sample => [qw(&process_run_list match_sra_files_in_dir sample_of_run
-                                   read_table run_command check_integrity read_vdb_validate)]);
+                                   read_table run_command check_integrity read_vdb_validate
+                                   generate_sample_fastq)]);
 
 sub check_integrity{
 	# USA sra-tools to check the md5sum of .sra files.
