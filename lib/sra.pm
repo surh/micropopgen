@@ -1,3 +1,5 @@
+# Copyright (C) 2017 Sur Herrera Paredes
+
 package sra;
 
 use strict;
@@ -88,7 +90,7 @@ sub generate_sample_fastq{
 		my @runs;
 		for $run (@{$runs_ref->{$sample}}){
 			my $file = "$indir/" . $run . ".sra";
-			my $command = "fastq-dump -O $tmpdir $file"; # Missing split command
+			my $command = "$bin -O $tmpdir -I --split-files $file"; # Missing split command
 			print ">$command\n";
 			#my $out = run_command($command);
 			
@@ -138,6 +140,7 @@ sub match_sra_files_in_dir{
 	# required samples, and decide which samples to keep.
 	my ($indir,$runs_ref,$sample_of_run_ref,$samples_ref) = @_;
 	
+	print "\n=============================================\n";
 	print ">Preparing to match run files with samples...\n";
 	
 	opendir(DIR, $indir) or die "Can't open $indir ($!)";
@@ -181,12 +184,16 @@ sub match_sra_files_in_dir{
 		}
 	}
 	print ">>" . scalar @keep . " samples out of " . scalar (keys %samples_to_keep) . " were found to have a complete set of run files.\n"; 
+	print "=============================================\n";
 	
 	return \@keep;	
 }
 
 sub process_run_list{
 	my ($infile,$sample_col,$run_col,$skip) = @_;
+	
+	print "\n=============================================\n";
+	print "> Processing map of runs.\n";
 	
 	open(my $in,$infile) or die "Can't open $infile ($!)";
 	my %runs_per_sample;
@@ -205,8 +212,9 @@ sub process_run_list{
 	}
 	my $nruns = $i - $skip;
 	my $nsamples = scalar keys %runs_per_sample;
-	print "Processed $nruns runs in $nsamples samples.\n";
+	print ">>Processed $nruns runs in $nsamples samples.\n";
 	return(\%runs_per_sample);
+	print "=============================================\n";
 }
 
 
