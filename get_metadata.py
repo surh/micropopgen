@@ -99,8 +99,11 @@ with open(run_list_file,'r') as infile:
         
         print(search_url)
         outfile = outdir + "/" + sample + ".csv"
-        print(outfile)
-        #meta_file = wget.download(search_url, outfile, bar_adaptive)
+        if os.path.exists(outfile):
+            print(outfile)
+            print("\tWARN: File {} exists already. Will not download".format(outfile))
+        else:
+            meta_file = wget.download(search_url, outfile, bar_adaptive)
         #print(meta_file)
         
         # Get metadata from runs downloaded
@@ -110,10 +113,11 @@ with open(run_list_file,'r') as infile:
         
         # Clean
         if not keep_intermediate_files:
-            os.remove(outfile)
+            os.unlink(outfile)
     
     # Write total number of runs per sample
     write_table(outdir + "/" + total_runs_file, RUNS, header = ["Sample", "N.runs"])
     
     # Write master metadata
     write_table(outdir + "/" + master_file, META, header = header)    
+
