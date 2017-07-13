@@ -35,9 +35,28 @@ def process_ebi_metadata(infile,accession,accession_col = 4):
                 else:
                     row.append('NA')
         meta_file.close()
-    return([header,res,nruns])
+    return(header,res,nruns)
                     
+def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
+    with open(outfile,'w') as out_fh:
+        writer = csv.writer(out_fh,delimiter = '\t')
+        if verbose:
+            print("\tWriting {}".format(outfile))
+            
+        nlines = 0
+        if header is not None:
+            writer.writerow(header)
+            nlines += 1
+        for row in rows:
+            writer.writerow(row)
+            nlines += 1
+    out_fh.close()
 
+    if verbose:
+        print("\t\tWrote {} lines".format(nlines))
+    
+    return(nlines)        
+                
 
 ###################################
 
@@ -48,6 +67,9 @@ run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
 sample_col = 1
 header = True
 outdir = "out/"
+total_runs_file = "total_runs.txt"
+master_file = 'all_runs.txt'
+keep_intermediate_files = True
 
 # Prepare output
 if not os.path.exists(outdir):
@@ -61,10 +83,14 @@ with open(run_list_file,'r') as infile:
     if header:
         infile.readline()
     run_reader = csv.reader(infile, delimiter = ",")
+    
+    META = []
+    RUNS = []
     for row in run_reader:
         sample = row[sample_col]
         print("Current sample is: {}".format(sample))
         
+        # Download run list and metadata for sample 
         base_url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={}&result=read_run"
         search_url = base_url.format(sample)
         
@@ -76,8 +102,18 @@ with open(run_list_file,'r') as infile:
         print(outfile)
         #meta_file = wget.download(search_url, outfile, bar_adaptive)
         #print(meta_file)
-        process_ebi_metadata(outfile, sample)
         
-
-
-
+        # Get metadata from runs downloaded
+        header, meta, nruns = process_ebi_metadata(outfile, sample)
+        RUNS.append([sample,nruns])
+        META.append(meta)
+        
+        # Clean
+        if not keep_intermediate_files:
+            os.remove(outfile)
+    
+    # Write total number of runs per sample
+    write_table(outdir + "/" + total_runs_file, RUNS, header = ["Sample", "N.runs"])
+    
+    # Write master metadata
+    write_table(outdir + "/" + master_file, META, header = header)    
