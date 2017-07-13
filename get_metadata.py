@@ -31,8 +31,13 @@ with open(run_list_file,'r') as infile:
     for row in run_reader:
         sample = row[sample_col]
         print("Current sample is: {}".format(sample))
-        base_url = 'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term='
-        search_url = base_url + sample
+        
+        base_url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={}&result=read_run"
+        search_url = base_url.format(sample)
+        
+        #base_url = 'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term='
+        #search_url = base_url + sample
+        
         print(search_url)
         outfile = outdir + "/" + sample + ".csv"
         print(outfile)
