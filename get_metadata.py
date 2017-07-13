@@ -34,6 +34,8 @@ def process_ebi_metadata(infile,accession,accession_col = 4):
                     row.append(m.group(1))
                 else:
                     row.append('NA')
+                
+                res.append(row)
         meta_file.close()
     return(header,res,nruns)
                     
@@ -63,7 +65,8 @@ def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
 
 # Global variables
 # Eventually command line parameters
-run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
+# run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
+run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
 sample_col = 1
 header = True
 outdir = "out/"
@@ -108,16 +111,19 @@ with open(run_list_file,'r') as infile:
         
         # Get metadata from runs downloaded
         header, meta, nruns = process_ebi_metadata(outfile, sample)
+        #print(len(meta))
         RUNS.append([sample,nruns])
-        META.append(meta)
+        META.extend(meta)
         
         # Clean
         if not keep_intermediate_files:
             os.unlink(outfile)
-    
+
+    #print(len(header))
+    #print(len(META))
     # Write total number of runs per sample
-    write_table(outdir + "/" + total_runs_file, RUNS, header = ["Sample", "N.runs"])
+    write_table(outdir + "/" + total_runs_file, RUNS, header = ["Sample", "N.runs"], verbose = True)
     
     # Write master metadata
-    write_table(outdir + "/" + master_file, META, header = header)    
+    write_table(outdir + "/" + master_file, META, header = header, verbose = True)    
 
