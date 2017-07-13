@@ -72,8 +72,8 @@ def write_download(download,outfile):
 
 # Global variables
 # Eventually command line parameters
-run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
-#run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
+#run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
+run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
 sample_col = 1
 header = True
 outdir = "out/"
