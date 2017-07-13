@@ -8,6 +8,39 @@ import csv
 import wget
 import os
 from wget import bar_adaptive
+import re
+
+################ Modules ##########
+def process_ebi_metadata(infile,accession,accession_col = 4):
+    accession_col -= 1
+    with open(infile,'r') as meta_file:
+        reader = csv.reader(meta_file,delimiter = '\t')
+        header = next(reader)
+        header.append('subject_id')
+        print("\tSeaching for accession {} in column {}".format(accession,header[accession_col]))
+        #print(header[accession_col])
+        nruns = 0
+        res = []
+        for row in reader:
+            if row[accession_col] == accession:
+                nruns += 1
+                #print(row[22]) 
+                
+                # Search for subject id
+                title = row[22]
+                m = re.search('containing sample (\d+) from participant (\d+)', title)
+                if m is not None:
+                    #print(m.group(1))
+                    row.append(m.group(1))
+                else:
+                    row.append('NA')
+        meta_file.close()
+    return([header,res,nruns])
+                    
+
+
+###################################
+
 
 # Global variables
 # Eventually command line parameters
@@ -41,4 +74,10 @@ with open(run_list_file,'r') as infile:
         print(search_url)
         outfile = outdir + "/" + sample + ".csv"
         print(outfile)
-        meta_file = wget.download(search_url, outfile, bar_adaptive)
+        #meta_file = wget.download(search_url, outfile, bar_adaptive)
+        #print(meta_file)
+        process_ebi_metadata(outfile, sample)
+        
+
+
+
