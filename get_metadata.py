@@ -7,7 +7,8 @@
 import csv
 import wget
 import os
-from wget import bar_adaptive
+# from wget import bar_adaptive
+import requests
 import re
 
 ################ Modules ##########
@@ -59,14 +60,20 @@ def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
     
     return(nlines)        
                 
+def write_download(download,outfile):
+    with open(outfile,'w') as out_fh:
+        out_fh.write(download.text)
+    out_fh.close()
+    
+    
 
 ###################################
 
 
 # Global variables
 # Eventually command line parameters
-# run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
-run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
+run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
+#run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
 sample_col = 1
 header = True
 outdir = "out/"
@@ -89,6 +96,7 @@ with open(run_list_file,'r') as infile:
     
     META = []
     RUNS = []
+    SKIPPED = []
     for row in run_reader:
         sample = row[sample_col]
         print("Current sample is: {}".format(sample))
@@ -106,14 +114,21 @@ with open(run_list_file,'r') as infile:
             print(outfile)
             print("\tWARN: File {} exists already. Will not download".format(outfile))
         else:
-            meta_file = wget.download(search_url, outfile, bar_adaptive)
+            #meta_file = wget.download(search_url, outfile, bar_adaptive)
+            try:
+                download = requests.get(search_url,timeout = 2)
+                write_download(download, outfile)
+                
+                # Get metadata from runs downloaded
+                header, meta, nruns = process_ebi_metadata(outfile, sample)
+                #print(len(meta))
+                RUNS.append([sample,nruns])
+                META.extend(meta)
+            except (ConnectionError, Timeout):
+                print("WARN: Metadata for sample {} could not be downloaded ({}). Skipping.\n".format(sample,e))
+                SKIP.append(sample)
+            
         #print(meta_file)
-        
-        # Get metadata from runs downloaded
-        header, meta, nruns = process_ebi_metadata(outfile, sample)
-        #print(len(meta))
-        RUNS.append([sample,nruns])
-        META.extend(meta)
         
         # Clean
         if not keep_intermediate_files:
