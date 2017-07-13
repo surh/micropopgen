@@ -79,6 +79,7 @@ header = True
 outdir = "out/"
 total_runs_file = "total_runs.txt"
 master_file = 'all_runs.txt'
+skipped_file = "skipped_samples.txt"
 keep_intermediate_files = True
 
 # Prepare output
@@ -90,55 +91,56 @@ else:
 sample_col -= 1
 # print(sample_col)
 with open(run_list_file,'r') as infile:
+    sample_colnames = None
     if header:
-        infile.readline()
+        sample_colnames = infile.readline()
     run_reader = csv.reader(infile, delimiter = ",")
     
     META = []
     RUNS = []
-    SKIPPED = []
+    SKIP = []
     for row in run_reader:
         sample = row[sample_col]
         print("Current sample is: {}".format(sample))
         
-        # Download run list and metadata for sample 
+        # Prepare url for download and outfile 
         base_url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={}&result=read_run"
         search_url = base_url.format(sample)
-        
-        #base_url = 'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term='
-        #search_url = base_url + sample
-        
         print(search_url)
         outfile = outdir + "/" + sample + ".csv"
-        if os.path.exists(outfile):
-            print(outfile)
-            print("\tWARN: File {} exists already. Will not download".format(outfile))
-        else:
-            #meta_file = wget.download(search_url, outfile, bar_adaptive)
-            try:
+        print(outfile)
+        
+        try:
+            if os.path.exists(outfile):
+                print("\tWARN: File {} exists already. Will not download".format(outfile))
+            else:
+                # Download and write result
                 download = requests.get(search_url,timeout = 2)
                 write_download(download, outfile)
+                print("\tSucessfully downloaded...")
                 
-                # Get metadata from runs downloaded
-                header, meta, nruns = process_ebi_metadata(outfile, sample)
-                #print(len(meta))
-                RUNS.append([sample,nruns])
-                META.extend(meta)
-            except (ConnectionError, Timeout):
-                print("WARN: Metadata for sample {} could not be downloaded ({}). Skipping.\n".format(sample,e))
-                SKIP.append(sample)
-            
-        #print(meta_file)
-        
+            # Get metadata from runs downloaded
+            colnames, meta, nruns = process_ebi_metadata(outfile, sample)
+            #print(len(meta))
+            RUNS.append([sample,nruns])
+            META.extend(meta)
+            print("\tSaved metadata...")
+        except (ConnectionError, Timeout):
+            # Print warning if failed 
+            print("\tWARN: Metadata for sample {} could not be downloaded ({}). Skipping.\n".format(sample,e))
+            SKIP.append(row)
+                
         # Clean
         if not keep_intermediate_files:
             os.unlink(outfile)
 
-    #print(len(header))
-    #print(len(META))
+    # After iterating from all files, write output
     # Write total number of runs per sample
     write_table(outdir + "/" + total_runs_file, RUNS, header = ["Sample", "N.runs"], verbose = True)
     
     # Write master metadata
-    write_table(outdir + "/" + master_file, META, header = header, verbose = True)    
-
+    write_table(outdir + "/" + master_file, META, header = colnames, verbose = True)
+    
+    # Write skipped files
+    if len(SKIP) > 0:
+        write_table(outdir + "/" + skipped_file, SKIP,  header = sample_colnames, verbose = True) 
