@@ -5,9 +5,7 @@
 # the metadata from the SRA API
 
 import csv
-import wget
 import os
-# from wget import bar_adaptive
 import requests
 import re
 
@@ -72,8 +70,10 @@ def write_download(download,outfile):
 
 # Global variables
 # Eventually command line parameters
-#run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
-run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
+#sample_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
+#sample_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
+#sample_list_file = "/home/sur/micropopgen/data/HMP/test_hmp_cataloghe.csv"
+sample_list_file = "/home/sur/micropopgen/data/HMP/hmp_catalogue_wgs_all_metadata.csv"
 sample_col = 1
 header = True
 outdir = "out/"
@@ -90,7 +90,7 @@ else:
 
 sample_col -= 1
 # print(sample_col)
-with open(run_list_file,'r') as infile:
+with open(sample_list_file,'r') as infile:
     sample_colnames = None
     if header:
         sample_colnames = infile.readline()
