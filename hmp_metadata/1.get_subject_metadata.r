@@ -23,10 +23,15 @@ for(sample in levels(dat$SRS_SampleID)){
   sex <- unique(temp$Sex)
   body_subsite <- unique(temp$HMPBodySubsite)
   body_site <- unique(temp$HMPBodySite)
-  visits <- length(unique(temp$VisitNo))
+  visit_no <- unique(temp$VisitNo)
   
-  res <- data.frame(SRS.ID = sample, RSID = rsid, Sex = sex, Body.Site = body_site, Body.Subsite = body_subsite, Visits = visits, stringsAsFactors = FALSE)
+  res <- data.frame(SRS.ID = sample, RSID = rsid, Sex = sex, Body.Site = body_site, Body.Subsite = body_subsite, Visit.No = visit_no, stringsAsFactors = FALSE)
+  if(nrow(res) > 1){
+    stop("ERROR")
+  }
   Res <- rbind(Res,res)
 }
   
-  
+head(Res)  
+write.table(Res, "subject_metadata.txt", sep = "\t", col.names = TRUE, row.names = FALSE, quote = FALSE)
+
