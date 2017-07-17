@@ -156,6 +156,14 @@ with open(sample_list_file,'r') as infile:
     # Write master metadata
     write_table(outdir + "/" + master_file, META, header = colnames, verbose = True)
     
+    # Write.duplicated files
+    dup = []
+    for sam, reps in DUP.items():
+        dup.append([sam,reps])
+    #print(dup)
+    if len(dup) > 0:
+        write_table(outdir + "/duplicated.txt", dup,  header = ["Sample", "N.times"], verbose = True)
+    
     # Write skipped files
     if len(SKIP) > 0:
         write_table(outdir + "/" + skipped_file, SKIP,  header = sample_colnames, verbose = True) 
