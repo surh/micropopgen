@@ -46,7 +46,7 @@ def process_run_list(file,sample_col,run_col,header = True):
 
     return(RUNS)
 
-def create_submission_sets(runs_per_sample,outdir,split_by,ngroups):
+def create_submission_sets(runs_per_sample,outdir,split_by,ngroups, logdir = "logs/"):
     print("\n=============================================")
     # Create output directory
     if not os.path.exists(outdir):
@@ -56,9 +56,11 @@ def create_submission_sets(runs_per_sample,outdir,split_by,ngroups):
     
     submission_dir = tempfile.mkdtemp(suffix = None, prefix = 'submissions',
                                       dir = outdir)
+    #print(submission_dir)
     
     SUBMISSIONS = []
     if split_by == 'sample':
+        raise ValueError("Not implemented submission by sample, try perl script")
         print("== Entering splity by sample")
         for sample, runs in runs_per_sample.items():
             print("NOTHING")
@@ -78,16 +80,47 @@ def create_submission_sets(runs_per_sample,outdir,split_by,ngroups):
             GROUPS[group_i - 1].extend(runs)
             i += 1
         
+        i = 1
         for group in GROUPS:
-            #newfile = create_single_submission_file(group,submission_dir.name,outdir)
-            #SUBMISSIONS.append(newfile)
-            print(group)
+            name = str(i)
+            name = "group" + name + ".bash"
+            #print(name)
+            newfile = create_single_submission(name,group,
+                                               submission_dir,
+                                               outdir,logdir)
+            SUBMISSIONS.append(newfile)
+            #print(newfile)
+            #print(group)
+            i += 1
     else:
         raise ValueError("Unrecognized split_by value")
     
-    return(GROUPS)
+    print("\tSplitted runs")
+    print("=============================================")
+    return(SUBMISSIONS)
 
-
+def create_single_submission(name, group,submission_dir,outdir,logdir):
+    submission_file = submission_dir + "/" + name
+    with open(submission_file,'w') as fh:
+        fh.write("#!/bin/bash\n")
+        fh.write("#PBS -N download." + name + "\n")
+        fh.write("#PBS -d " + outdir + "\n")
+        fh.write("#PBS -o " + logdir + "/download." + name + ".log\n")
+        fh.write("#PBS -e " + logdir + "/download." + name + ".err\n")
+        fh.write("#PBS -l mem=1000mb\n")
+        
+        # Add lines for every run in sample
+        ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
+        sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
+        for run in group:
+            run_location = run[0:6] + "/" + run + "/" + run + ".sra"
+            command = " ".join([ascp_command, sra_prefix + "/" + run_location, outdir + "\n"])
+            fh.write(command)
+    fh.close()
+    os.chmod(submission_file, 0o744)
+    
+    return(submission_file)
+  
 # print(__name__)
 # Run if called as script
 if __name__ == "__main__":
@@ -125,7 +158,8 @@ if __name__ == "__main__":
     
     runs_per_sample = process_run_list(args.infile, args.sample_col,
                                        args.run_col, args.header)
-    create_submission_sets(runs_per_sample, args.outdir,
-                           args.split_by, args.ngroups)
-
+    submissions = create_submission_sets(runs_per_sample, args.outdir,
+                                         args.split_by, args.ngroups, args.logdir)
+ 
+    
 
