@@ -146,6 +146,6 @@ download <- data.frame(Sample = dat.runs$secondary_sample_accession, Run = dat.r
 download <- download[ order(download$Sample), ]
 head(download)
 
-write.table(dat,"runs_to_download.txt",sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+write.table(download,"runs_to_download.txt",sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
 
 
