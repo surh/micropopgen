@@ -130,6 +130,18 @@ def run_command(command):
 
     return(status)
 
+def qsub_submissions(submissions,logdir):
+    
+    if os.path.exists(logdir):
+        print("Logdir exists")
+    else:
+        os.mkdir(logdir)
+        
+    for file in submissions:
+        run_command("qsub " + file)
+        
+    print("==========SUBMISSIONS DONE==========\n\n")
+  
   
 # print(__name__)
 # Run if called as script
