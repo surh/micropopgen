@@ -136,3 +136,16 @@ table(dat$HMP.Isolation.Body.Subsite, useNA = "always")
 
 ftable(dat$Host.Gender ~ dat$HMP.Isolation.Body.Subsite)
 
+write.table(dat,"samples_to_start.txt",sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+
+## Select runs
+dat.runs <- subset(dat.runs, secondary_sample_accession %in% as.character(dat$Sequence.Read.Archive.ID))
+dat.runs <- droplevels(dat.runs)
+download <- data.frame(Sample = dat.runs$secondary_sample_accession, Run = dat.runs$run_accession)
+
+download <- download[ order(download$Sample), ]
+head(download)
+
+write.table(dat,"runs_to_download.txt",sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+
+
