@@ -1,11 +1,7 @@
 # Load metadata from metagenome samples
-# file <- "~/micropopgen/data/HMP/HMIWGS_healthy_run_metadata/all_runs.txt"
-# all_runs <- read.table(file,header = TRUE,sep = "\t")
-# head(all_runs)
-
-# file <- "~/micropopgen/data/HMP/HMIWGS_healthy.csv"
-# hmiwgs_samples <- read.table(file,sep = ",", quote = '"', header = TRUE)
-# head(hmiwgs_samples)
+file <- "~/micropopgen/data/HMP/2017-07-17.all_runs/all_runs.txt"
+all_runs <- read.table(file,header = TRUE,sep = "\t")
+head(all_runs)
 
 file <- "~/micropopgen/data/HMP/HMASM.csv"
 hmasm_samples <- read.table(file,sep = ",", quote = '"', header = TRUE)
@@ -18,10 +14,6 @@ head(hmasm_samples_690)
 file <- "~/micropopgen/data/HMP/hmp_catalogue_wgs_all_metadata.csv"
 catalogue <- read.csv(file)
 head(catalogue)
-
-# file <- "subject_metadata.txt"
-# ssu <- read.table(file,header = TRUE,sep = "\t",quote = '')
-# head(ssu)
 
 # The first thing is to identify which samples are in the original publication,
 # and which passed QC
@@ -56,36 +48,50 @@ catalogue$HMASM.QC <- hmasm_samples[ as.character(catalogue$Sequence.Read.Archiv
 table(catalogue$HMASM, useNA = "always")
 table(catalogue$HMASM.QC, useNA = "always")
 
+all(as.character(all_runs$secondary_sample_accession) %in% as.character(catalogue$Sequence.Read.Archive.ID))
 
-# Add body subsite
-hmiwgs_samples$Body.Subsite <- NA
-hmiwgs_samples$Body.Subsite[ hmiwgs_samples$Body.Site %in% c("anterior_nares") ] <- "Airways"
-hmiwgs_samples$Body.Subsite[ hmiwgs_samples$Body.Site %in% c("stool") ] <- "Gastrointestinal_tract"
-hmiwgs_samples$Body.Subsite[ hmiwgs_samples$Body.Site %in% c("attached_keratinized_gingiva","buccal_mucosa","hard_palate",
-                                                             "palatine_tonsils","saliva","aubgingival_plaque","supragingival_plaque",
-                                                             "throat","tongue_dorsum","subgingival_plaque") ] <- "Oral"
-hmiwgs_samples$Body.Subsite[ hmiwgs_samples$Body.Site %in% c("left_antecubital_fossa","left_retroauricular_crease","right_antecubital_fossa",
-                                                             "right_retroauricular_crease") ] <- "Skin"
-hmiwgs_samples$Body.Subsite[ hmiwgs_samples$Body.Site %in% c("mid_vagina","posterior_fornix","vaginal_introitus") ] <- "Urogenital_tract"
-table(hmiwgs_samples$Body.Subsite,useNA = "always")
-subset(hmiwgs_samples,is.na(Body.Subsite))
+# Now we need to identify samples for basic analysis
+dat <- subset(catalogue, HMASM.QC == TRUE & HMP.Isolation.Body.Site %in% c("gastrointestinal_tract","oral"))
+dat <- droplevels(dat)
 
-# Add metadata to run file
-row.names(hmiwgs_samples) <- as.character(hmiwgs_samples$SRS.ID)
-head(all_runs)
-all_runs$Body.Site <- hmiwgs_samples[ as.character(all_runs$secondary_sample_accession), "Body.Site"]
-table(all_runs$Body.Site, useNA = "always")
+dat.runs <- all_runs
+# Get illumina runs only
+#dat.runs <- subset(all_runs, instrument_model == "Illumina HiSeq 2000")
 
-all_runs$Body.Subsite <- hmiwgs_samples[ as.character(all_runs$secondary_sample_accession), "Body.Subsite"]
-table(all_runs$Body.Subsite, useNA = "always")
+dat.runs <- droplevels(dat.runs)
+table(dat.runs$instrument_model, useNA = "always")
+table(dat.runs$library_strategy, useNA = "always")
+table(dat.runs$library_source, useNA = "always")
+table(dat.runs$library_layout, useNA = "always")
+table(dat.runs$library_selection, useNA = "always")
 
-all_runs$HMASM <- hmiwgs_samples[ as.character(all_runs$secondary_sample_accession), "HMASM"]
-table(all_runs$HMASM, useNA = "always")
+# Get runs from selected samples
+dat.runs <- subset(dat.runs, secondary_sample_accession %in% as.character(dat$Sequence.Read.Archive.ID))
 
-all_runs$HMASM.QC <- hmiwgs_samples[ as.character(all_runs$secondary_sample_accession), "HMASM.QC"]
-table(all_runs$HMASM.QC, useNA = "always")
+dat.runs <- droplevels(dat.runs)
+table(dat.runs$instrument_model, useNA = "always")
+table(dat.runs$library_strategy, useNA = "always")
+table(dat.runs$library_source, useNA = "always")
+table(dat.runs$library_layout, useNA = "always")
+table(dat.runs$library_selection, useNA = "always")
 
-# check no samples with infor are missing subject id
-intersect(as.character((subset(all_runs, !is.na(subject_id))$secondary_sample_accession)),as.character((subset(all_runs, is.na(subject_id))$secondary_sample_accession)))
+# Eliminate 454
+dat.runs <- subset(dat.runs, instrument_model != "454 GS FLX Titanium")
 
-write.table(all_runs, "merged_metadata.txt", sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+dat.runs <- droplevels(dat.runs)
+table(dat.runs$instrument_model, useNA = "always")
+table(dat.runs$library_strategy, useNA = "always")
+table(dat.runs$library_source, useNA = "always")
+table(dat.runs$library_layout, useNA = "always")
+table(dat.runs$library_selection, useNA = "always")
+
+# Eliminate unpaired
+dat.runs <- subset(dat.runs, library_layout == "PAIRED")
+
+dat.runs <- droplevels(dat.runs)
+table(dat.runs$instrument_model, useNA = "always")
+table(dat.runs$library_strategy, useNA = "always")
+table(dat.runs$library_source, useNA = "always")
+table(dat.runs$library_layout, useNA = "always")
+table(dat.runs$library_selection, useNA = "always")
+
