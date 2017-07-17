@@ -15,6 +15,9 @@
 # Adapted from download_all_runs.pl script
 
 import csv
+import os
+import tempfile
+from math import ceil
 
 def process_run_list(file,sample_col,run_col,header = True):
     print("\n=============================================")
@@ -43,6 +46,48 @@ def process_run_list(file,sample_col,run_col,header = True):
 
     return(RUNS)
 
+def create_submission_sets(runs_per_sample,outdir,split_by,ngroups):
+    print("\n=============================================")
+    # Create output directory
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    else:
+        print("Outdir ({}) already exists. Using it.".format(outdir))
+    
+    submission_dir = tempfile.mkdtemp(suffix = None, prefix = 'submissions',
+                                      dir = outdir)
+    
+    SUBMISSIONS = []
+    if split_by == 'sample':
+        print("== Entering splity by sample")
+        for sample, runs in runs_per_sample.items():
+            print("NOTHING")
+    elif split_by == 'groups':
+        samples = runs_per_sample.keys()
+        total_samples = len(samples)
+        samples_per_submission = ceil(total_samples / ngroups)
+        
+        print("\tSplitting {} samples into {} submissions".format(total_samples,ngroups))
+        GROUPS = []
+        i = 0
+        group_i = 0
+        for sample, runs in runs_per_sample.items():
+            if (i % samples_per_submission) == 0:
+                GROUPS.append([])
+                group_i += 1
+            GROUPS[group_i - 1].extend(runs)
+            i += 1
+        
+        for group in GROUPS:
+            #newfile = create_single_submission_file(group,submission_dir.name,outdir)
+            #SUBMISSIONS.append(newfile)
+            print(group)
+    else:
+        raise ValueError("Unrecognized split_by value")
+    
+    return(GROUPS)
+
+
 # print(__name__)
 # Run if called as script
 if __name__ == "__main__":
@@ -64,7 +109,7 @@ if __name__ == "__main__":
     parser.add_argument("--header", help = "Flag indicating whether table has headers in the first row",
                         action = "store_true")
     parser.add_argument("--split_by", help = "Method to split runs for download", default = 'sample',
-                        choices = ['sample'])
+                        choices = ['sample','groups'])
     parser.add_argument('--logdir','-l', help = "Directory where to store log of run", default = './logs/',
                         type = str)
     parser.add_argument('--ngroups', help = "Number of groups to divide the runs into. Equal to the number of jobs that will be submitted",
@@ -80,5 +125,7 @@ if __name__ == "__main__":
     
     runs_per_sample = process_run_list(args.infile, args.sample_col,
                                        args.run_col, args.header)
+    create_submission_sets(runs_per_sample, args.outdir,
+                           args.split_by, args.ngroups)
 
 
