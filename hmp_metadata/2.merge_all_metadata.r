@@ -50,6 +50,10 @@ table(catalogue$HMASM.QC, useNA = "always")
 
 all(as.character(all_runs$secondary_sample_accession) %in% as.character(catalogue$Sequence.Read.Archive.ID))
 
+# Set to stool all GI samples
+catalogue$HMP.Isolation.Body.Subsite <- as.character(catalogue$HMP.Isolation.Body.Subsite)
+catalogue$HMP.Isolation.Body.Subsite[ catalogue$HMP.Isolation.Body.Site == "gastrointestinal_tract" ] <- "Stool"
+
 # Now we need to identify samples for basic analysis
 dat <- subset(catalogue, HMASM.QC == TRUE & HMP.Isolation.Body.Site %in% c("gastrointestinal_tract","oral"))
 dat <- droplevels(dat)
@@ -94,4 +98,41 @@ table(dat.runs$library_strategy, useNA = "always")
 table(dat.runs$library_source, useNA = "always")
 table(dat.runs$library_layout, useNA = "always")
 table(dat.runs$library_selection, useNA = "always")
+
+# Select samples with runs
+dat <- subset(dat, Sequence.Read.Archive.ID %in% unique(as.character(dat.runs$secondary_sample_accession)))
+
+# Add depth
+reads <- aggregate(read_count ~ secondary_sample_accession, data = dat.runs, FUN = sum)
+summary(reads)
+row.names(reads) <- as.character(reads$secondary_sample_accession)
+dat$Reads <- reads[ as.character(dat$Sequence.Read.Archive.ID), "read_count"]
+
+# Select samples with one visit and one replicate
+dat <- subset(dat, Visit.Number == 1)
+dat <- subset(dat, Replicate.Number == 0)
+
+table(dat$HMP.Isolation.Body.Site, useNA = "always")
+table(dat$HMP.Isolation.Body.Subsite, useNA = "always")
+
+# Select samples with subjects that donated multiple samples
+subjects <- table(dat$MRN..Subject.ID)
+subjects <- names(subjects)[subjects > 1]
+dat <- subset(dat, dat$MRN..Subject.ID %in% subjects)
+dat <- droplevels(dat)
+
+table(dat$HMP.Isolation.Body.Site, useNA = "always")
+table(dat$HMP.Isolation.Body.Subsite, useNA = "always")
+
+# Select samples in 4 more common sites
+dat <- subset(dat,HMP.Isolation.Body.Subsite %in% c("Stool","Supragingival plaque","Buccal mucosa","Tongue dorsum"))
+subjects <- table(dat$MRN..Subject.ID)
+subjects <- names(subjects)[subjects == 4 ]
+dat <- subset(dat, dat$MRN..Subject.ID %in% subjects)
+dat <- droplevels(dat)
+
+table(dat$HMP.Isolation.Body.Site, useNA = "always")
+table(dat$HMP.Isolation.Body.Subsite, useNA = "always")
+
+ftable(dat$Host.Gender ~ dat$HMP.Isolation.Body.Subsite)
 
