@@ -99,9 +99,24 @@ with open(sample_list_file,'r') as infile:
     META = []
     RUNS = []
     SKIP = []
+    PASSED = dict()
+    DUP = dict()
+    
     for row in run_reader:
         sample = row[sample_col]
         print("Current sample is: {}".format(sample))
+        
+        #Check if exists already and break
+        if sample in PASSED:
+            print("\tWARN: Sample {} is duplicated, will not be processed again.".format(sample))
+            if sample in DUP:
+                DUP[ sample ] += 1
+            else:
+                DUP[ sample ] = 2
+            continue
+        else:
+            PASSED[ sample ] = True
+        
         
         # Prepare url for download and outfile 
         base_url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={}&result=read_run"
