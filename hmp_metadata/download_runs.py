@@ -18,6 +18,7 @@ import csv
 import os
 import tempfile
 from math import ceil
+import subprocess
 
 def process_run_list(file,sample_col,run_col,header = True):
     print("\n=============================================")
@@ -120,6 +121,15 @@ def create_single_submission(name, group,submission_dir,outdir,logdir):
     os.chmod(submission_file, 0o744)
     
     return(submission_file)
+
+def run_command(command):
+    status = 0;
+    print("Executing:\n>{}".format(command))
+    #status = subprocess.run(command)
+    print("Status={}\n\n".format(status));
+
+    return(status)
+
   
 # print(__name__)
 # Run if called as script
@@ -160,6 +170,17 @@ if __name__ == "__main__":
                                        args.run_col, args.header)
     submissions = create_submission_sets(runs_per_sample, args.outdir,
                                          args.split_by, args.ngroups, args.logdir)
+    
+    # Submit files
+    if args.method == 'qsub':
+        qsub_submissions(submissions,args.logdir)
+    elif args.method == 'bash':
+        for sub in submissions:
+            run_command(sub)
+    else:
+        raise ValueError("Method ($method) not recognized")
+
+    
  
     
 
