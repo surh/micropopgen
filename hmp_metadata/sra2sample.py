@@ -29,7 +29,7 @@ def check_set_of_runs(runs, dir):
         run_sra = dir + "/" + run + ".sra"
         check = 0
         if os.path.exists(run_sra):
-            command = 'vdb-validate ' + run_sra + " &"
+            command = 'vdb-validate ' + run_sra
             check = download_runs.run_command(command)
             #check = subprocess.run('vdb-validate ' + run_sra + " &", shell = True)
             if check != 0:
