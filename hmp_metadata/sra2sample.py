@@ -71,7 +71,7 @@ def concatenate_files(infiles, outfile):
     command = "cat " + command + " > " + outfile
     check = download_runs.run_command(command)
     
-    if check != 0:
+    if check.returncode != 0:
         raise ProcessError("Could not concatenate files")
     
     return(check)
