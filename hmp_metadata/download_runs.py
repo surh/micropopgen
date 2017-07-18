@@ -254,7 +254,7 @@ if __name__ == "__main__":
     submissions = create_submission_sets(runs_per_sample,
                                          args.split_by,
                                          args.ngroups)
-    
+    print(submissions)
     # Submit files
     if args.method == 'qsub':
         submission_files = create_submission_files(submissions, args.outdir, args.logdir)
