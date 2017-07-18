@@ -19,6 +19,7 @@ import os
 import tempfile
 from math import ceil
 import subprocess
+from subprocess import CalledProcessError
 
 def process_run_list(file,sample_col,run_col,header = True):
     print("\n=============================================")
@@ -201,16 +202,26 @@ def qsub_submissions(submissions,logdir):
         
     print("==========SUBMISSIONS DONE==========\n\n")
 
-def aspera_download(groups):
+def aspera_download(groups,outdir):
     
     ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
     sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
     
+    FAILED = []
     for name, runs in groups.items():
         for run in runs:
             run_location = run[0:6] + "/" + run + "/" + run + ".sra"
             command = " ".join([ascp_command, sra_prefix + "/" + run_location, outdir + "\n"])
             print(command)
+#             try:
+#                 check = run_command(command)
+#                 if check.returncode != 0:
+#                     raise CalledProcessError("Aspera download failed"                                         )
+#             except (CalledProcessError):
+#                 print("\tWARNING: Failed downloading run {}".format(run))
+#                 FAILED.append(run)
+    
+    return(FAILED)
     
 
   
@@ -265,7 +276,9 @@ if __name__ == "__main__":
             run_command(sub + " &")
     elif args.method == 'python':
         print("python")
-        aspera_download(submissions)
+        failed = aspera_download(submissions, args.outdir)
+        if len(failed) > 0:
+            print(failed)
     else:
         raise ValueError("Method ($method) not recognized")
 
