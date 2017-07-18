@@ -140,7 +140,7 @@ if __name__ == "__main__":
     
     for sample in runs_per_sample.keys():
         print("== Processing sample {}".format(sample))
-        process_sample(sample, runs_per_sample[sample], indir, outdir)
+        process_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.keep_intermediate)
 
         
     
