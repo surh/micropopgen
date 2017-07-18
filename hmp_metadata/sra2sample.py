@@ -22,6 +22,7 @@ def check_set_of_runs(runs, dir):
         return(check)
 
 def fastq_dump_runs(runs,indir,outdir):
+    FILES = [[], []]
     for run in runs:
         run_sra = indir + "/" + run + ".sra"
         
@@ -31,11 +32,41 @@ def fastq_dump_runs(runs,indir,outdir):
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check != 0:
                 raise ERROR("\rRun {} could not be processed by fastq-dump".format(run))
+            else:
+                read1 = outdir + "/" + run + "_1.fastq"                
+                FILES[0].append(read1)
+                read1 = outdir + "/" + run + "_2.fastq"                
+                FILES[1].append(read2)
         else:
             raise ERROR("\tRun {} file does not exist in {}".format(run,outdir))
         
-        return(check)
-        
+        return(FILES)
+
+def concatenate_files(infiles, outfile):
+    command = " ".join(infiles) 
+    command = "cat " + command + " > " + outfile
+    check = download_runs.run_command(command)
+    
+    if check != 0:
+        raise ERROR("Could not concatenate files")
+    
+    return(check)
+
+def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
+    i = 1
+    FILES = []
+    for files in file_sets:
+        newfile = outdir + "/" + name_prefix + "_read" + i + extension
+        try:
+            concatenate_files(files, newfile)
+            i += 1
+            FILES.append(newfile)
+        except (ERROR):
+            raise ERROR("Could not concatenate files from read {}".format(i))
+    
+    return(FILES)
+         
+    
 def process_sample(sample,runs,indir,outdir):
     
     # Validate files
@@ -46,11 +77,17 @@ def process_sample(sample,runs,indir,outdir):
     
     # Proceed to fastq-dump
     try:
-        fastq_dump_runs(runs,indir,outdir)
+        run_fastq = astq_dump_runs(runs,indir,outdir)
     except (ERROR):
-        raise ERROR("\tSample could not be processed by fastq dump")
+        raise ERROR("\tSample {} could not be processed by fastq dump".format(sample))
     
     # Proceed to concatenate
+    try:
+        concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq")
+    except:
+        raise ERROR("Could not concatenate files from sample {}".format(sample))
+    
+    return(concatenated_files)
         
         
 
