@@ -206,7 +206,7 @@ def aspera_download(groups):
     ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
     sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
     
-    for name, runs in groups:
+    for name, runs in groups.items():
         for run in runs:
             run_location = run[0:6] + "/" + run + "/" + run + ".sra"
             command = " ".join([ascp_command, sra_prefix + "/" + run_location, outdir + "\n"])
