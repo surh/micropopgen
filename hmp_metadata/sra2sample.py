@@ -7,6 +7,7 @@ import subprocess
 import os
 
 def check_set_of_runs(runs, dir):
+    print("\t Checking runs..,")
     for run in runs:
         run_sra = dir + "/" + run + ".sra"
         check = 0
@@ -22,6 +23,12 @@ def check_set_of_runs(runs, dir):
         return(check)
 
 def fastq_dump_runs(runs,indir,outdir,keep):
+    if not os.path.isdir(indir):
+        raise ERROR("Directory {} does not exisst".format(indir))
+    if not os.path.isdir(outdir):
+        print("\tCreating output directory {}".format(outdir))
+        os.mkdir(outdir)
+        
     FILES = [[], []]
     for run in runs:
         run_sra = indir + "/" + run + ".sra"
@@ -53,6 +60,10 @@ def concatenate_files(infiles, outfile):
     return(check)
 
 def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
+    if not os.path.isdir(outdir):
+        print("\tCreating output directory {}".format(outdir))
+        os.mkdir(outdir)
+    
     i = 1
     FILES = []
     for files in file_sets:
@@ -128,8 +139,8 @@ if __name__ == "__main__":
     runs_per_sample = download_runs.process_run_list(args.map, args.sample_col, args.run_col, args.header)
     
     for sample in runs_per_sample.keys():
-        print(sample)
-        #process_sample(sample, runs_per_sample[sample], indir, outdir)
+        print("== Processing sample {}".format(sample))
+        process_sample(sample, runs_per_sample[sample], indir, outdir)
 
         
     
