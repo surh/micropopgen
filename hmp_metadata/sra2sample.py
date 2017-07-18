@@ -37,7 +37,7 @@ def check_set_of_runs(runs, dir):
         else:
             raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
         
-        return(check)
+    return(check)
 
 def fastq_dump_runs(runs,indir,outdir,keep):
     if not os.path.isdir(indir):
@@ -51,7 +51,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
         run_sra = indir + "/" + run + ".sra"
         
         if os.path.exists(run_sra):
-            command = 'fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &"
+            command = 'fastq-dump -O ' + outdir + ' --split-files ' + run_sra
             check = download_runs.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check.returncode != 0:
@@ -64,7 +64,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
         else:
             raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
         
-        return(FILES)
+    return(FILES)
 
 def concatenate_files(infiles, outfile):
     command = " ".join(infiles) 
@@ -157,6 +157,7 @@ if __name__ == "__main__":
     
     for sample in runs_per_sample.keys():
         print("== Processing sample {}".format(sample))
+        print(" ".join(runs_per_sample[sample]))
         process_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.keep_intermediate)
 
         
