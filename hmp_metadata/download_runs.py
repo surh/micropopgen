@@ -125,7 +125,7 @@ def create_single_submission(name, group,submission_dir,outdir,logdir):
 def run_command(command):
     status = 0;
     print("Executing:\n>{}".format(command))
-    status = subprocess.run(command)
+    status = subprocess.run(command, shell = True)
     print("Status={}\n\n".format(status));
 
     return(status)
