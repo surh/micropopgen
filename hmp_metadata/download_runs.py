@@ -251,8 +251,9 @@ if __name__ == "__main__":
     
     runs_per_sample = process_run_list(args.infile, args.sample_col,
                                        args.run_col, args.header)
-    submissions = create_submission_sets(runs_per_sample, args.outdir,
-                                         args.split_by, args.ngroups, args.logdir)
+    submissions = create_submission_sets(runs_per_sample,
+                                         args.split_by,
+                                         args.ngroups)
     
     # Submit files
     if args.method == 'qsub':
