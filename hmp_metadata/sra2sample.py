@@ -94,6 +94,23 @@ def process_sample(sample,runs,indir,outdir):
 if __name__ == "__main__":
     import argparse
     
+    parser = argparse.ArgumentParser()
+    
+    # Required arguments
+    required = parser.add_argument_group("Required arguments")
+    required.add_argument("--indir","-i", help = "Directory containing .sra files from all the runs to be processed",
+                          type = str, required = True)
+    required.add_argument("--fastq_dir","-f", help = "Directory where to place the fastq files that are produced from sra files",
+                          type = str, required = True)
+    required.add_argument("--outdir","-o", help = "Directory where to place the final fastq files, one per sample",
+                          type = str, required = True)    
+    required.add_argument("--map","-m", help = "Input tab delimited file that maps runs (SRR) and samples (SRS)",
+                        type = str, required = True)
+    
+    
+    
+    
+    
     indir = "./runs/"
     outdit = "./samples/"
     runs_file = "/home/sur/micropopgen/exp/2017/today8/runs_to_download.txt"
