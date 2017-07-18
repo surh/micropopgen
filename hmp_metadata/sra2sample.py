@@ -57,9 +57,9 @@ def fastq_dump_runs(runs,indir,outdir,keep):
             if check.returncode != 0:
                 raise ProcessError("\rRun {} could not be processed by fastq-dump".format(run))
             else:
-                read1 = outdir + "/" + run + "_1.fastq"                
+                read1 = outdir + "/" + run + "_1.fastq.bz2"                
                 FILES[0].append(read1)
-                read2 = outdir + "/" + run + "_2.fastq"                
+                read2 = outdir + "/" + run + "_2.fastq.bz2"                
                 FILES[1].append(read2)
         else:
             raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
