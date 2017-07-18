@@ -47,6 +47,65 @@ def process_run_list(file,sample_col,run_col,header = True):
 
     return(RUNS)
 
+def create_submission_sets(runs_per_sample, split_by, ngroups):
+    print("\n=============================================")
+    GROUPS = dict()
+    if split_by == 'sample':
+        print("== Entering splity by sample")
+        GROUPS = runs_per_sample
+    elif split_by == 'groups':
+        samples = runs_per_sample.keys()
+        total_samples = len(samples)
+        samples_per_submission = ceil(total_samples / ngroups)
+        
+        print("== Splitting {} samples into {} submissions".format(total_samples,ngroups))
+        i = 0
+        group_i = 0
+        for sample, runs in runs_per_sample.items():
+            if (i % samples_per_submission) == 0:
+                #GROUPS.append([])
+                id = 'group' + str(group_i)
+                groups[id] = []
+                group_i += 1
+            GROUPS[id].extend(runs)
+            i += 1
+    else:
+        raise ValueError("Unrecognized split_by value")
+    
+    print("\tSplitted runs")
+    print("=============================================")
+    return(GROUPS)
+
+def create_submission_files(groups, outdir, logdir):
+    print("\n=============================================")
+    # Create output directory
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    else:
+        print("== Outdir ({}) already exists. Using it.".format(outdir))
+    
+    submission_dir = tempfile.mkdtemp(suffix = None, prefix = 'submissions',
+                                      dir = outdir)
+    
+    SUBMISSIONS = []
+    #i = 1
+    for name, runs in groups:
+        #name = str(i)
+        #name = "group" + name + ".bash"
+        #print(name)
+        newfile = create_single_submission(name,runs,
+                                           submission_dir,
+                                           outdir,logdir)
+        SUBMISSIONS.append(newfile)
+        #print(newfile)
+        #print(group)
+        #i += 1
+    
+    print("\tCreated submision files")
+    print("=============================================")
+    return(SUBMISSIONS)
+    
+
 def create_submission_sets(runs_per_sample,outdir,split_by,ngroups, logdir = "logs/"):
     print("\n=============================================")
     # Create output directory
@@ -141,7 +200,10 @@ def qsub_submissions(submissions,logdir):
         run_command("qsub " + file)
         
     print("==========SUBMISSIONS DONE==========\n\n")
-  
+
+def aspera_download():
+    pass
+
   
 # print(__name__)
 # Run if called as script
@@ -189,6 +251,8 @@ if __name__ == "__main__":
     elif args.method == 'bash':
         for sub in submissions:
             run_command(sub + " &")
+    elif args.method == 'python':
+        print("Python")
     else:
         raise ValueError("Method ($method) not recognized")
 
