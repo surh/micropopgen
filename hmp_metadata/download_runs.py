@@ -188,7 +188,7 @@ if __name__ == "__main__":
         qsub_submissions(submissions,args.logdir)
     elif args.method == 'bash':
         for sub in submissions:
-            run_command(sub)
+            run_command(sub + " &")
     else:
         raise ValueError("Method ($method) not recognized")
 
