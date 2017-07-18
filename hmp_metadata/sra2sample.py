@@ -107,14 +107,21 @@ if __name__ == "__main__":
     required.add_argument("--map","-m", help = "Input tab delimited file that maps runs (SRR) and samples (SRS)",
                         type = str, required = True)
     
+    # Optional arguments
+    parser.add_argument("--sample_col", help = "Column where the sample name is located in map", type = int,
+                        default = 1)
+    parser.add_argument("--run_col", help = "Column where the run accession is located in map. Run names must match names of sra files", type = int,
+                        default = 2)
+    parser.add_argument("--keep_intermediate", help = "Flag indicating whether to keep the intermediate fastq files.", action = "store_true")
     
     
     
     
-    indir = "./runs/"
-    outdit = "./samples/"
-    runs_file = "/home/sur/micropopgen/exp/2017/today8/runs_to_download.txt"
-    
+#     
+#     indir = "./runs/"
+#     outdit = "./samples/"
+#     runs_file = "/home/sur/micropopgen/exp/2017/today8/runs_to_download.txt"
+#     
     runs_per_sample = download_runs.process_run_list(runs_file, 0, 1, True)
     
     for sample in runs_per_sample.keys():
