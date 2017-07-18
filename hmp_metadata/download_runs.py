@@ -65,7 +65,7 @@ def create_submission_sets(runs_per_sample, split_by, ngroups):
             if (i % samples_per_submission) == 0:
                 #GROUPS.append([])
                 id = 'group' + str(group_i)
-                groups[id] = []
+                GROUPS[id] = []
                 group_i += 1
             GROUPS[id].extend(runs)
             i += 1
