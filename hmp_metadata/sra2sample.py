@@ -128,7 +128,7 @@ if __name__ == "__main__":
     runs_per_sample = download_runs.process_run_list(args.map, args.sample_col, args.run_col, args.header)
     
     for sample in runs_per_sample.keys():
-        print(sample)n
+        print(sample)
         #process_sample(sample, runs_per_sample[sample], indir, outdir)
 
         
