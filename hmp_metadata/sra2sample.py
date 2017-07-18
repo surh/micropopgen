@@ -59,7 +59,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
             else:
                 read1 = outdir + "/" + run + "_1.fastq"                
                 FILES[0].append(read1)
-                read1 = outdir + "/" + run + "_2.fastq"                
+                read2 = outdir + "/" + run + "_2.fastq"                
                 FILES[1].append(read2)
         else:
             raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
