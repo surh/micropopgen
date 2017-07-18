@@ -6,6 +6,48 @@ import download_runs
 import subprocess
 import os
 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class IntegrityError(Error):
+    """Exception raised for failure in the vdb-vvalidate.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
+
+class MissingFileError(Error):
+    """Exception raised for missing files.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
+
+class ProcessError(Error):
+    """Exception raised for failure in the some sra-tools call.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
+
+
+
 def check_set_of_runs(runs, dir):
     print("\t Checking runs..,")
     for run in runs:
@@ -16,9 +58,9 @@ def check_set_of_runs(runs, dir):
             check = download_runs.run_command(command)
             #check = subprocess.run('vdb-validate ' + run_sra + " &", shell = True)
             if check != 0:
-                raise ERROR("\rRun {} did not pass the validation".format(run))
+                raise IntegrityError("\rRun {} did not pass the validation".format(run))
         else:
-            raise ERROR("\tRun {} file does not exist in {}".format(run,outdir))
+            raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
         
         return(check)
 
@@ -38,14 +80,14 @@ def fastq_dump_runs(runs,indir,outdir,keep):
             check = download_runs.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check != 0:
-                raise ERROR("\rRun {} could not be processed by fastq-dump".format(run))
+                raise ProcessError("\rRun {} could not be processed by fastq-dump".format(run))
             else:
                 read1 = outdir + "/" + run + "_1.fastq"                
                 FILES[0].append(read1)
                 read1 = outdir + "/" + run + "_2.fastq"                
                 FILES[1].append(read2)
         else:
-            raise ERROR("\tRun {} file does not exist in {}".format(run,outdir))
+            raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
         
         return(FILES)
 
@@ -55,7 +97,7 @@ def concatenate_files(infiles, outfile):
     check = download_runs.run_command(command)
     
     if check != 0:
-        raise ERROR("Could not concatenate files")
+        raise ProcessError("Could not concatenate files")
     
     return(check)
 
@@ -72,8 +114,8 @@ def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
             concatenate_files(files, newfile)
             i += 1
             FILES.append(newfile)
-        except (ERROR):
-            raise ERROR("Could not concatenate files from read {}".format(i))
+        except (ProcessError):
+            raise ProcessError("Could not concatenate files from read {}".format(i))
     
     return(FILES)
          
@@ -83,20 +125,20 @@ def process_sample(sample,runs,indir,fastqdir,outdir,keep = False):
     # Validate files
     try:
         check_set_of_runs(runs,indir)
-    except (ERROR):
-        raise ERROR("\tSample didn't pass check")
+    except (IntegrityError, MissingFileError):
+        raise ProcessError("\tSample didn't pass check")
     
     # Proceed to fastq-dump
     try:
         run_fastq = fastq_dump_runs(runs,indir,fastqdir,keep)
-    except (ERROR):
-        raise ERROR("\tSample {} could not be processed by fastq dump".format(sample))
+    except (ProcessError, MissingFileError):
+        raise ProcessError("\tSample {} could not be processed by fastq dump".format(sample))
     
     # Proceed to concatenate
     try:
         concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq")
     except:
-        raise ERROR("Could not concatenate files from sample {}".format(sample))
+        raise ProcessError("Could not concatenate files from sample {}".format(sample))
     
     return(concatenated_files)
         
