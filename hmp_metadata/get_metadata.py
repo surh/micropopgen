@@ -5,9 +5,7 @@
 # the metadata from the SRA API
 
 import csv
-import wget
 import os
-# from wget import bar_adaptive
 import requests
 import re
 
@@ -72,8 +70,10 @@ def write_download(download,outfile):
 
 # Global variables
 # Eventually command line parameters
-#run_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
-run_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
+#sample_list_file = "/home/sur/micropopgen/data/HMP/test_hmiwgs.csv"
+#sample_list_file = "/home/sur/micropopgen/data/HMP/HMIWGS_healthy.csv"
+#sample_list_file = "/home/sur/micropopgen/data/HMP/test_hmp_cataloghe.csv"
+sample_list_file = "/home/sur/micropopgen/data/HMP/hmp_catalogue_wgs_all_metadata.csv"
 sample_col = 1
 header = True
 outdir = "out/"
@@ -90,7 +90,7 @@ else:
 
 sample_col -= 1
 # print(sample_col)
-with open(run_list_file,'r') as infile:
+with open(sample_list_file,'r') as infile:
     sample_colnames = None
     if header:
         sample_colnames = infile.readline()
@@ -99,9 +99,24 @@ with open(run_list_file,'r') as infile:
     META = []
     RUNS = []
     SKIP = []
+    PASSED = dict()
+    DUP = dict()
+    
     for row in run_reader:
         sample = row[sample_col]
         print("Current sample is: {}".format(sample))
+        
+        #Check if exists already and break
+        if sample in PASSED:
+            print("\tWARN: Sample {} is duplicated, will not be processed again.".format(sample))
+            if sample in DUP:
+                DUP[ sample ] += 1
+            else:
+                DUP[ sample ] = 2
+            continue
+        else:
+            PASSED[ sample ] = True
+        
         
         # Prepare url for download and outfile 
         base_url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={}&result=read_run"
@@ -140,6 +155,14 @@ with open(run_list_file,'r') as infile:
     
     # Write master metadata
     write_table(outdir + "/" + master_file, META, header = colnames, verbose = True)
+    
+    # Write.duplicated files
+    dup = []
+    for sam, reps in DUP.items():
+        dup.append([sam,reps])
+    #print(dup)
+    if len(dup) > 0:
+        write_table(outdir + "/duplicated.txt", dup,  header = ["Sample", "N.times"], verbose = True)
     
     # Write skipped files
     if len(SKIP) > 0:
