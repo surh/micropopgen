@@ -21,7 +21,7 @@ def check_set_of_runs(runs, dir):
         
         return(check)
 
-def fastq_dump_runs(runs,indir,outdir):
+def fastq_dump_runs(runs,indir,outdir,keep):
     FILES = [[], []]
     for run in runs:
         run_sra = indir + "/" + run + ".sra"
@@ -67,17 +67,17 @@ def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
     return(FILES)
          
     
-def process_sample(sample,runs,indir,outdir):
+def process_sample(sample,runs,indir,fastqdir,outdir,keep = False):
     
     # Validate files
     try:
-        check_set_of_runs(runs, indir)
+        check_set_of_runs(runs,indir)
     except (ERROR):
         raise ERROR("\tSample didn't pass check")
     
     # Proceed to fastq-dump
     try:
-        run_fastq = astq_dump_runs(runs,indir,outdir)
+        run_fastq = fastq_dump_runs(runs,indir,fastqdir,keep)
     except (ERROR):
         raise ERROR("\tSample {} could not be processed by fastq dump".format(sample))
     
@@ -113,19 +113,22 @@ if __name__ == "__main__":
     parser.add_argument("--run_col", help = "Column where the run accession is located in map. Run names must match names of sra files", type = int,
                         default = 2)
     parser.add_argument("--keep_intermediate", help = "Flag indicating whether to keep the intermediate fastq files.", action = "store_true")
+    parser.add_argument("--header", help = "Flag indicating whether table has headers in the first row",
+                        action = "store_true")
     
-    
-    
+    args = parser.parse_args()
+    args.sample_col -= 1
+    args.run_col -= 1
     
 #     
 #     indir = "./runs/"
 #     outdit = "./samples/"
 #     runs_file = "/home/sur/micropopgen/exp/2017/today8/runs_to_download.txt"
 #     
-    runs_per_sample = download_runs.process_run_list(runs_file, 0, 1, True)
+    runs_per_sample = download_runs.process_run_list(args.map, args.sample_col, args.run_col, args.header)
     
     for sample in runs_per_sample.keys():
-        print(sample)
+        print(sample)n
         #process_sample(sample, runs_per_sample[sample], indir, outdir)
 
         
