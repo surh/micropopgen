@@ -84,7 +84,7 @@ def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
     i = 1
     FILES = []
     for files in file_sets:
-        newfile = outdir + "/" + name_prefix + "_read" + i + extension
+        newfile = outdir + "/" + name_prefix + "_read" + str(i) + extension
         try:
             concatenate_files(files, newfile)
             i += 1
