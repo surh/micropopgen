@@ -222,7 +222,26 @@ def aspera_download(groups,outdir):
 #                 FAILED.append(run)
     
     return(FAILED)
+
+def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
+    with open(outfile,'w') as out_fh:
+        writer = csv.writer(out_fh,delimiter = '\t')
+        if verbose:
+            print("\tWriting {}".format(outfile))
+            
+        nlines = 0
+        if header is not None:
+            writer.writerow(header)
+            nlines += 1
+        for row in rows:
+            writer.writerow(row)
+            nlines += 1
+    out_fh.close()
+
+    if verbose:
+        print("\t\tWrote {} lines".format(nlines))
     
+    return(nlines)    
 
   
 # print(__name__)
@@ -278,7 +297,7 @@ if __name__ == "__main__":
         print("python")
         failed = aspera_download(submissions, args.outdir)
         if len(failed) > 0:
-            print(failed)
+            write_table('failed.txt', failed)
     else:
         raise ValueError("Method ($method) not recognized")
 
