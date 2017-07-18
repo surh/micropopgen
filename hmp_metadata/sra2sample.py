@@ -51,7 +51,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
         run_sra = indir + "/" + run + ".sra"
         
         if os.path.exists(run_sra):
-            command = 'fastq-dump -I -O ' + outdir + ' --split-files --bzip2' + run_sra
+            command = 'fastq-dump -I -O ' + outdir + ' --split-files --bzip2 ' + run_sra
             check = download_runs.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check.returncode != 0:
