@@ -106,58 +106,58 @@ def create_submission_files(groups, outdir, logdir):
     return(SUBMISSIONS)
     
 
-def create_submission_sets(runs_per_sample,outdir,split_by,ngroups, logdir = "logs/"):
-    print("\n=============================================")
-    # Create output directory
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
-    else:
-        print("Outdir ({}) already exists. Using it.".format(outdir))
-    
-    submission_dir = tempfile.mkdtemp(suffix = None, prefix = 'submissions',
-                                      dir = outdir)
-    #print(submission_dir)
-    
-    SUBMISSIONS = []
-    if split_by == 'sample':
-        raise ValueError("Not implemented submission by sample, try perl script")
-        print("== Entering splity by sample")
-        for sample, runs in runs_per_sample.items():
-            print("NOTHING")
-    elif split_by == 'groups':
-        samples = runs_per_sample.keys()
-        total_samples = len(samples)
-        samples_per_submission = ceil(total_samples / ngroups)
-        
-        print("\tSplitting {} samples into {} submissions".format(total_samples,ngroups))
-        GROUPS = []
-        i = 0
-        group_i = 0
-        for sample, runs in runs_per_sample.items():
-            if (i % samples_per_submission) == 0:
-                GROUPS.append([])
-                group_i += 1
-            GROUPS[group_i - 1].extend(runs)
-            i += 1
-        
-        i = 1
-        for group in GROUPS:
-            name = str(i)
-            name = "group" + name + ".bash"
-            #print(name)
-            newfile = create_single_submission(name,group,
-                                               submission_dir,
-                                               outdir,logdir)
-            SUBMISSIONS.append(newfile)
-            #print(newfile)
-            #print(group)
-            i += 1
-    else:
-        raise ValueError("Unrecognized split_by value")
-    
-    print("\tSplitted runs")
-    print("=============================================")
-    return(SUBMISSIONS)
+# def create_submission_sets(runs_per_sample,outdir,split_by,ngroups, logdir = "logs/"):
+#     print("\n=============================================")
+#     # Create output directory
+#     if not os.path.exists(outdir):
+#         os.mkdir(outdir)
+#     else:
+#         print("Outdir ({}) already exists. Using it.".format(outdir))
+#     
+#     submission_dir = tempfile.mkdtemp(suffix = None, prefix = 'submissions',
+#                                       dir = outdir)
+#     #print(submission_dir)
+#     
+#     SUBMISSIONS = []
+#     if split_by == 'sample':
+#         raise ValueError("Not implemented submission by sample, try perl script")
+#         print("== Entering splity by sample")
+#         for sample, runs in runs_per_sample.items():
+#             print("NOTHING")
+#     elif split_by == 'groups':
+#         samples = runs_per_sample.keys()
+#         total_samples = len(samples)
+#         samples_per_submission = ceil(total_samples / ngroups)
+#         
+#         print("\tSplitting {} samples into {} submissions".format(total_samples,ngroups))
+#         GROUPS = []
+#         i = 0
+#         group_i = 0
+#         for sample, runs in runs_per_sample.items():
+#             if (i % samples_per_submission) == 0:
+#                 GROUPS.append([])
+#                 group_i += 1
+#             GROUPS[group_i - 1].extend(runs)
+#             i += 1
+#         
+#         i = 1
+#         for group in GROUPS:
+#             name = str(i)
+#             name = "group" + name + ".bash"
+#             #print(name)
+#             newfile = create_single_submission(name,group,
+#                                                submission_dir,
+#                                                outdir,logdir)
+#             SUBMISSIONS.append(newfile)
+#             #print(newfile)
+#             #print(group)
+#             i += 1
+#     else:
+#         raise ValueError("Unrecognized split_by value")
+#     
+#     print("\tSplitted runs")
+#     print("=============================================")
+#     return(SUBMISSIONS)
 
 def create_single_submission(name, group,submission_dir,outdir,logdir):
     submission_file = submission_dir + "/" + name
@@ -201,8 +201,17 @@ def qsub_submissions(submissions,logdir):
         
     print("==========SUBMISSIONS DONE==========\n\n")
 
-def aspera_download():
-    pass
+def aspera_download(groups):
+    
+    ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
+    sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
+    
+    for name, runs in groups:
+        for run in runs:
+            run_location = run[0:6] + "/" + run + "/" + run + ".sra"
+            command = " ".join([ascp_command, sra_prefix + "/" + run_location, outdir + "\n"])
+            print(command)
+    
 
   
 # print(__name__)
@@ -218,7 +227,7 @@ if __name__ == "__main__":
     required.add_argument("--outdir","-o", help = "Output directory", type = str,
                           required = True)
     parser.add_argument("--method","-m", help = "method to submit jobs to the server", type = str,
-                        default = 'qsub', choices = ['qsub','bash'])
+                        default = 'qsub', choices = ['qsub','bash','python'])
     parser.add_argument("--sample_col", help = "Column number where the sample ID (SRS) is stored", type = int,
                         default = 1)
     parser.add_argument("--run_col", help = "Column number where the run ID (SRR) is stored", type = int,
@@ -247,12 +256,15 @@ if __name__ == "__main__":
     
     # Submit files
     if args.method == 'qsub':
-        qsub_submissions(submissions,args.logdir)
+        submission_files = create_submission_files(submissions, args.outdir, args.logdir)
+        qsub_submissions(submission_files,args.logdir)
     elif args.method == 'bash':
-        for sub in submissions:
+        submission_files = create_submission_files(submissions, args.outdir, args.logdir)
+        for sub in submission_files:
             run_command(sub + " &")
     elif args.method == 'python':
-        print("Python")
+        print("python")
+        aspera_download(submissions)
     else:
         raise ValueError("Method ($method) not recognized")
 
