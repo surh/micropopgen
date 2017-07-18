@@ -51,7 +51,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
         run_sra = indir + "/" + run + ".sra"
         
         if os.path.exists(run_sra):
-            command = 'fastq-dump -I -O ' + outdir + ' --split-files ' + run_sra
+            command = 'fastq-dump -I -O ' + outdir + ' --split-files --bzip2' + run_sra
             check = download_runs.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check.returncode != 0:
@@ -111,7 +111,7 @@ def process_sample(sample,runs,indir,fastqdir,outdir,keep = False):
     
     # Proceed to concatenate
     try:
-        concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq")
+        concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq.bz2")
     except:
         raise ProcessError("Could not concatenate files from sample {}".format(sample))
     
