@@ -11,41 +11,16 @@ class Error(Exception):
     pass
 
 class IntegrityError(Error):
-    """Exception raised for failure in the vdb-vvalidate.
-
-    Attributes:
-        expression -- input expression in which the error occurred
-        message -- explanation of the error
-    """
-
-    def __init__(self, expression, message):
-        self.expression = expression
-        self.message = message
+    """Exception raised for failure in the vdb-vvalidate."""
+    pass
 
 class MissingFileError(Error):
-    """Exception raised for missing files.
-
-    Attributes:
-        expression -- input expression in which the error occurred
-        message -- explanation of the error
-    """
-
-    def __init__(self, expression, message):
-        self.expression = expression
-        self.message = message
+    """Exception raised for missing files."""
+    pass
 
 class ProcessError(Error):
-    """Exception raised for failure in the some sra-tools call.
-
-    Attributes:
-        expression -- input expression in which the error occurred
-        message -- explanation of the error
-    """
-
-    def __init__(self, expression, message):
-        self.expression = expression
-        self.message = message
-
+    """Exception raised for failure in the some sra-tools call."""
+    pass
 
 
 def check_set_of_runs(runs, dir):
