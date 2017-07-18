@@ -32,7 +32,7 @@ def check_set_of_runs(runs, dir):
             command = 'vdb-validate ' + run_sra
             check = download_runs.run_command(command)
             #check = subprocess.run('vdb-validate ' + run_sra + " &", shell = True)
-            if check != 0:
+            if check.returncode != 0:
                 raise IntegrityError("\rRun {} did not pass the validation".format(run))
         else:
             raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
@@ -54,7 +54,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
             command = 'fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &"
             check = download_runs.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
-            if check != 0:
+            if check.returncode != 0:
                 raise ProcessError("\rRun {} could not be processed by fastq-dump".format(run))
             else:
                 read1 = outdir + "/" + run + "_1.fastq"                
