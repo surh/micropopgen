@@ -299,7 +299,7 @@ if __name__ == "__main__":
             run_command(sub + " &")
     elif args.method == 'python':
         print("python")
-        if parser.threads > 1:
+        if args.threads > 1:
             # Convert dictionary into list of dictionaries
             submissions_threading = []
             for sample in submissions:
