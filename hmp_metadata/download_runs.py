@@ -305,7 +305,10 @@ if __name__ == "__main__":
             for sample in submissions:
                 submissions_threading.append({sample : submissions[sample]})
             
-            print(submissions_threading)
+            #print(submissions_threading)
+            for i in zip(submissions_threading, itertools.repeat(args.outdir)):
+                print(i)
+            
             # Then call threading
             #pool = Pool(args.threads)
             #failed = pool.map(aspera_download,
