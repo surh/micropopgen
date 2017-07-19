@@ -41,7 +41,7 @@ def check_set_of_runs(runs, dir):
 
 def fastq_dump_runs(runs,indir,outdir,keep):
     if not os.path.isdir(indir):
-        raise ERROR("Directory {} does not exisst".format(indir))
+        raise FileNotFoundError("Input directory {} does not exist".format(indir))
     if not os.path.isdir(outdir):
         print("\tCreating output directory {}".format(outdir))
         os.mkdir(outdir)
@@ -55,7 +55,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
             check = download_runs.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check.returncode != 0:
-                raise ProcessError("\rRun {} could not be processed by fastq-dump".format(run))
+                raise ProcessError("\tRun {} could not be processed by fastq-dump".format(run))
             else:
                 read1 = outdir + "/" + run + "_1.fastq.bz2"                
                 FILES[0].append(read1)
@@ -100,24 +100,54 @@ def process_sample(sample,runs,indir,fastqdir,outdir,keep = False):
     # Validate files
     try:
         check_set_of_runs(runs,indir)
-    except (IntegrityError, MissingFileError):
+    except IntegrityError as error:
+        print("\tWARNING: Run(s) in sample {} did not pass integrity check. SKIPPING".format(sample))
         raise ProcessError("\tSample didn't pass check")
+    except MissingFileError as error:
+        print("\tWARNING: Missing file(s) for run(s) in sample {}. SKIPPING".format(sample))
+        raise ProcessError("\tSample didn't pass check")    
     
     # Proceed to fastq-dump
     try:
         run_fastq = fastq_dump_runs(runs,indir,fastqdir,keep)
-    except (ProcessError, MissingFileError):
-        raise ProcessError("\tSample {} could not be processed by fastq dump".format(sample))
+    except FileNotFoundError as error:
+        print("\tERROR: Input directory {} does not exist. TERMINATING".format(indir))
+        raise FileNotFoundError("Input directory {} does not exist".format(indir))
+    except ProcessError as error:
+        print("\tWARNING: Run(s) in sample {} could not be processed by fastq-dump. SKIPPING".format(sample))
+        raise ProcessError("\tSample could not be processed  with fastq-dump")
+    except MissingFileError as error:
+        print("\tWARNING:Run(s) file(s) for sample {} missing".format(sample))
+        raise ProcessError("Run(s) file(s) for sample {} missing".format(sample))
     
     # Proceed to concatenate
     try:
         concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq.bz2")
-    except:
+    except ProcessError as error:
+        print("\tWARNING. Could not concatenate files from sample {}. SKIPPING")
         raise ProcessError("Could not concatenate files from sample {}".format(sample))
     
     return(concatenated_files)
-        
-        
+
+def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
+    with open(outfile,'w') as out_fh:
+        writer = csv.writer(out_fh,delimiter = '\t')
+        if verbose:
+            print("\tWriting {}".format(outfile))
+            
+        nlines = 0
+        if header is not None:
+            writer.writerow(header)
+            nlines += 1
+        for row in rows:
+            writer.writerow(row)
+            nlines += 1
+    out_fh.close()
+
+    if verbose:
+        print("\t\tWrote {} lines".format(nlines))
+    
+    return(nlines)
 
 if __name__ == "__main__":
     import argparse
@@ -155,10 +185,20 @@ if __name__ == "__main__":
 #     
     runs_per_sample = download_runs.process_run_list(args.map, args.sample_col, args.run_col, args.header)
     
+    failed = []
     for sample in runs_per_sample.keys():
         print("== Processing sample {}".format(sample))
         print(" ".join(runs_per_sample[sample]))
-        process_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.keep_intermediate)
+        try:
+            files = process_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.keep_intermediate)
+        except FileNotFoundError as error:
+            print("==Input directory {} does not exist==".format(args.indir))
+            raise FileNotFoundError("ERROR:Input directory {} does not exist".format(args.indir))
+        except (MissingFileError,ProcessError, IntegrityError) as error:
+            print("\tSkipping sample {}".format(sample))
+            failed.append([sample])
+    if len(failed) > 0:
+        write_table('failed.txt',failed)
 
         
     
