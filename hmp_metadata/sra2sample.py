@@ -173,6 +173,7 @@ if __name__ == "__main__":
     parser.add_argument("--keep_intermediate", help = "Flag indicating whether to keep the intermediate fastq files.", action = "store_true")
     parser.add_argument("--header", help = "Flag indicating whether table has headers in the first row",
                         action = "store_true")
+    parser.add_argument("--failed", help = "File to store the failed samples", type = str, default = 'failed.txt')
     
     args = parser.parse_args()
     args.sample_col -= 1
@@ -198,7 +199,7 @@ if __name__ == "__main__":
             print("\tSkipping sample {}".format(sample))
             failed.append([sample])
     if len(failed) > 0:
-        write_table('failed.txt',failed)
+        write_table(args.failed,failed)
 
         
     
