@@ -221,8 +221,8 @@ def aspera_download(groups,outdir):
 #                     raise CalledProcessError("Aspera download failed"                                         )
 #             except (CalledProcessError):
 #                 print("\tWARNING: Failed downloading run {}".format(run))
-#                 FAILED.append(run)
-    FAILED = [1,2]
+#                 FAILED.append([run])
+    FAILED = [[1],[2]]
     return(FAILED)
 
 def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
