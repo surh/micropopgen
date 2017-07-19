@@ -306,7 +306,7 @@ if __name__ == "__main__":
                 submissions_threading.append({sample : submissions[sample]})
             
             # Then call threading
-            poool = Pool(args.threads)
+            pool = Pool(args.threads)
             failed = pool.map(aspera_download,
                               zip(submissions_threading,
                                   itertools.repeat(args.outdir)))
