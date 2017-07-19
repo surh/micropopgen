@@ -288,7 +288,7 @@ if __name__ == "__main__":
     submissions = create_submission_sets(runs_per_sample,
                                          args.split_by,
                                          args.ngroups)
-    print(submissions)
+    #print(submissions)
     # Submit files
     if args.method == 'qsub':
         submission_files = create_submission_files(submissions, args.outdir, args.logdir)
@@ -305,13 +305,14 @@ if __name__ == "__main__":
             for sample in submissions:
                 submissions_threading.append({sample : submissions[sample]})
             
+            print(submissions_threading)
             # Then call threading
-            pool = Pool(args.threads)
-            failed = pool.map(aspera_download,
-                              zip(submissions_threading,
-                                  itertools.repeat(args.outdir)))
-            pool.close()
-            pool.join()
+            #pool = Pool(args.threads)
+            #failed = pool.map(aspera_download,
+            #                  zip(submissions_threading,
+            #                      itertools.repeat(args.outdir)))
+            #pool.close()
+            #pool.join()
         else:
             failed = aspera_download(submissions, args.outdir)
         
