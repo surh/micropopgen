@@ -311,9 +311,9 @@ if __name__ == "__main__":
             
             # Then call threading
             pool = Pool(args.threads)
-            failed = pool.starmap(aspera_download,
-                                  zip(submissions_threading,
-                                      itertools.repeat(args.outdir)))
+            failed = pool.map(aspera_download,
+                              zip(submissions_threading,
+                                  itertools.repeat(args.outdir)))
             pool.close()
             pool.join()
         else:
