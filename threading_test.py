@@ -4,13 +4,13 @@ from itertools import repeat
 from multiprocessing import Pool, freeze_support
 
 def func(a, b):
-    return a + b
+    return a['1'] + b
 
 def main():
-    a_args = [1,2,3]
+    a_args = [{'1' : 1},{'1' : 2},{'1' : 3}]
     second_arg = 1
     with Pool(2) as pool:
-        L = pool.starmap(func, [(1, 1), (2, 1), (3, 1)])
+        L = pool.starmap(func, [({'1' : 1}, 1), ({'1' : 2}, 1), ({'1' : 3}, 1)])
         M = pool.starmap(func, zip(a_args, repeat(second_arg)))
         N = pool.map(partial(func, b=second_arg), a_args)
         print(L)
