@@ -20,7 +20,7 @@ import tempfile
 from math import ceil
 import subprocess
 from subprocess import CalledProcessError
-from multiprocessing.dummy import Pool
+from multiprocessing import Pool
 import itertools
 
 def process_run_list(file,sample_col,run_col,header = True):
@@ -309,11 +309,12 @@ if __name__ == "__main__":
             #for i in zip(submissions_threading, itertools.repeat(args.outdir)):
             #    print(i)
             
+            #print([(submissions_threading[0],args.outdir),(submissions_threading[1],args.outdir)])
+            
             # Then call threading
             pool = Pool(args.threads)
-            failed = pool.map(aspera_download,
-                              zip(submissions_threading,
-                                  itertools.repeat(args.outdir)))
+            #failed = pool.starmap(aspera_download,[(submissions_threading[0],args.outdir),(submissions_threading[1],args.outdir)])
+            failed = pool.starmap(aspera_download,zip(submissions_threading,itertools.repeat(args.outdir)))
             pool.close()
             pool.join()
         else:
