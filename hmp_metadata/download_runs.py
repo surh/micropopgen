@@ -301,7 +301,7 @@ if __name__ == "__main__":
         print("python")
         if args.threads > 1:
             # Convert dictionary into list of dictionaries
-            submissions_threading = []
+            submissions_threading = ()
             for sample in submissions:
                 submissions_threading.append({sample : submissions[sample]})
             
