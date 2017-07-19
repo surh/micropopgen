@@ -21,6 +21,7 @@ from math import ceil
 import subprocess
 from subprocess import CalledProcessError
 from multiprocessing.dummy import Pool
+import itertools
 
 def process_run_list(file,sample_col,run_col,header = True):
     print("\n=============================================")
@@ -203,7 +204,7 @@ def qsub_submissions(submissions,logdir):
         
     print("==========SUBMISSIONS DONE==========\n\n")
 
-def aspera_download(groups,outdir = args.outdir):
+def aspera_download(groups,outdir):
     
     ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
     sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
@@ -306,7 +307,9 @@ if __name__ == "__main__":
             
             # Then call threading
             poool = Pool(args.threads)
-            failed = pool.map(aspera_download,submissions_threading)
+            failed = pool.map(aspera_download,
+                              zip(submissions_threading,
+                                  itertools.repeat(args.outdir)))
             pool.close()
             pool.join()
         else:
