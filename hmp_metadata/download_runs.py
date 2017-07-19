@@ -20,6 +20,7 @@ import tempfile
 from math import ceil
 import subprocess
 from subprocess import CalledProcessError
+from multiprocessing.dummy import Pool
 
 def process_run_list(file,sample_col,run_col,header = True):
     print("\n=============================================")
@@ -202,7 +203,7 @@ def qsub_submissions(submissions,logdir):
         
     print("==========SUBMISSIONS DONE==========\n\n")
 
-def aspera_download(groups,outdir):
+def aspera_download(groups,outdir = args.outdir):
     
     ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
     sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
@@ -220,7 +221,7 @@ def aspera_download(groups,outdir):
 #             except (CalledProcessError):
 #                 print("\tWARNING: Failed downloading run {}".format(run))
 #                 FAILED.append(run)
-    
+    FAILED = [1,2]
     return(FAILED)
 
 def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
@@ -270,6 +271,8 @@ if __name__ == "__main__":
                         type = str)
     parser.add_argument('--ngroups', help = "Number of groups to divide the runs into. Equal to the number of jobs that will be submitted",
                         default = 2, type = int)
+    parser.add_argument('--threads', help = "Number of threads to use", default = 1,
+                        type = int, choices = [1, 2, 3, 4])
     args = parser.parse_args()
     
     # Process column numbers
@@ -295,7 +298,20 @@ if __name__ == "__main__":
             run_command(sub + " &")
     elif args.method == 'python':
         print("python")
-        failed = aspera_download(submissions, args.outdir)
+        if parser.threads > 1:
+            # Convert dictionary into list of dictionaries
+            submissions_threading = []
+            for sample in submissions:
+                submissions_threading.append({sample : submissions[sample]})
+            
+            # Then call threading
+            poool = Pool(args.threads)
+            failed = pool.map(aspera_download,submissions_threading)
+            pool.close()
+            pool.join()
+        else:
+            failed = aspera_download(submissions, args.outdir)
+            
         if len(failed) > 0:
             write_table('failed.txt', failed)
     else:
