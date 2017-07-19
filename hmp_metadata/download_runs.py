@@ -274,6 +274,8 @@ if __name__ == "__main__":
                         default = 2, type = int)
     parser.add_argument('--threads', help = "Number of threads to use", default = 1,
                         type = int, choices = [1, 2, 3, 4])
+    parser.add_argument('--failed', help = "File where to save list of failed downloads", default = 'failed.txt',
+                        type = str)
     args = parser.parse_args()
     
     # Process column numbers
@@ -325,7 +327,7 @@ if __name__ == "__main__":
         
         print(failed)
         if len(failed) > 0:
-            write_table('failed.txt', failed)
+            write_table(args.failed, failed)
     else:
         raise ValueError("Method ($method) not recognized")
 
