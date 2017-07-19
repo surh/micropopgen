@@ -215,14 +215,14 @@ def aspera_download(groups,outdir):
             run_location = run[0:6] + "/" + run + "/" + run + ".sra"
             command = " ".join([ascp_command, sra_prefix + "/" + run_location, outdir + "\n"])
             print(command)
-#             try:
-#                 check = run_command(command)
-#                 if check.returncode != 0:
-#                     raise CalledProcessError("Aspera download failed"                                         )
-#             except (CalledProcessError):
-#                 print("\tWARNING: Failed downloading run {}".format(run))
-#                 FAILED.append([run, 'dummy])
-    FAILED = [[1,'a'],[2,'a']]
+            try:
+                check = run_command(command)
+                if check.returncode != 0:
+                    raise CalledProcessError("Aspera download failed for run {}".format(run))
+            except (CalledProcessError):
+                print("\tWARNING: Failed downloading run {}".format(run))
+                FAILED.append([run, 'dummy'])
+    #FAILED = [[1,'a'],[2,'a']]
     return(FAILED)
 
 def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
