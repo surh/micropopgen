@@ -107,60 +107,6 @@ def create_submission_files(groups, outdir, logdir):
     print("\tCreated submision files")
     print("=============================================")
     return(SUBMISSIONS)
-    
-
-# def create_submission_sets(runs_per_sample,outdir,split_by,ngroups, logdir = "logs/"):
-#     print("\n=============================================")
-#     # Create output directory
-#     if not os.path.exists(outdir):
-#         os.mkdir(outdir)
-#     else:
-#         print("Outdir ({}) already exists. Using it.".format(outdir))
-#     
-#     submission_dir = tempfile.mkdtemp(suffix = None, prefix = 'submissions',
-#                                       dir = outdir)
-#     #print(submission_dir)
-#     
-#     SUBMISSIONS = []
-#     if split_by == 'sample':
-#         raise ValueError("Not implemented submission by sample, try perl script")
-#         print("== Entering splity by sample")
-#         for sample, runs in runs_per_sample.items():
-#             print("NOTHING")
-#     elif split_by == 'groups':
-#         samples = runs_per_sample.keys()
-#         total_samples = len(samples)
-#         samples_per_submission = ceil(total_samples / ngroups)
-#         
-#         print("\tSplitting {} samples into {} submissions".format(total_samples,ngroups))
-#         GROUPS = []
-#         i = 0
-#         group_i = 0
-#         for sample, runs in runs_per_sample.items():
-#             if (i % samples_per_submission) == 0:
-#                 GROUPS.append([])
-#                 group_i += 1
-#             GROUPS[group_i - 1].extend(runs)
-#             i += 1
-#         
-#         i = 1
-#         for group in GROUPS:
-#             name = str(i)
-#             name = "group" + name + ".bash"
-#             #print(name)
-#             newfile = create_single_submission(name,group,
-#                                                submission_dir,
-#                                                outdir,logdir)
-#             SUBMISSIONS.append(newfile)
-#             #print(newfile)
-#             #print(group)
-#             i += 1
-#     else:
-#         raise ValueError("Unrecognized split_by value")
-#     
-#     print("\tSplitted runs")
-#     print("=============================================")
-#     return(SUBMISSIONS)
 
 def create_single_submission(name, group,submission_dir,outdir,logdir):
     submission_file = submission_dir + "/" + name
