@@ -314,7 +314,8 @@ if __name__ == "__main__":
             pool.join()
         else:
             failed = aspera_download(submissions, args.outdir)
-            
+        
+        print(failed)
         if len(failed) > 0:
             write_table('failed.txt', failed)
     else:
