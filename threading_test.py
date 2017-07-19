@@ -13,9 +13,12 @@ def main():
         L = pool.starmap(func, [(1, 1), (2, 1), (3, 1)])
         M = pool.starmap(func, zip(a_args, repeat(second_arg)))
         N = pool.map(partial(func, b=second_arg), a_args)
+        print(L)
+        print(M)
+        print(N)
         assert L == M == N
 
 if __name__=="__main__":
-    freeze_support()
+    #freeze_support()
     main()
 
