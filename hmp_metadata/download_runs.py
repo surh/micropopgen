@@ -301,7 +301,7 @@ if __name__ == "__main__":
         print("python")
         if args.threads > 1:
             # Convert dictionary into list of dictionaries
-            submissions_threading = ()
+            submissions_threading = []
             for sample in submissions:
                 submissions_threading.append({sample : submissions[sample]})
             
@@ -312,7 +312,8 @@ if __name__ == "__main__":
             # Then call threading
             pool = Pool(args.threads)
             failed = pool.starmap(aspera_download,
-                                  submissions_threading)
+                                  zip(submissions_threading,
+                                      itertools.repeat(args.outdir)))
             pool.close()
             pool.join()
         else:
