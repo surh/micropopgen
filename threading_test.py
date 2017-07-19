@@ -9,7 +9,7 @@ def func(a, b):
 def main():
     a_args = [1,2,3]
     second_arg = 1
-    with Pool() as pool:
+    with Pool(2) as pool:
         L = pool.starmap(func, [(1, 1), (2, 1), (3, 1)])
         M = pool.starmap(func, zip(a_args, repeat(second_arg)))
         N = pool.map(partial(func, b=second_arg), a_args)
