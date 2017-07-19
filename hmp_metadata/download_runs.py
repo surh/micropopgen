@@ -221,8 +221,8 @@ def aspera_download(groups,outdir):
 #                     raise CalledProcessError("Aspera download failed"                                         )
 #             except (CalledProcessError):
 #                 print("\tWARNING: Failed downloading run {}".format(run))
-#                 FAILED.append([run])
-    FAILED = [[1],[2]]
+#                 FAILED.append([run, 'dummy])
+    FAILED = [[1,'a'],[2,'a']]
     return(FAILED)
 
 def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
@@ -317,6 +317,9 @@ if __name__ == "__main__":
             failed = pool.starmap(aspera_download,zip(submissions_threading,itertools.repeat(args.outdir)))
             pool.close()
             pool.join()
+            
+            # Flatten failed
+            failed = [ent for sublist in failed for ent in sublist]
         else:
             failed = aspera_download(submissions, args.outdir)
         
