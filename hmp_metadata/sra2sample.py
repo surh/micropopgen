@@ -221,7 +221,7 @@ if __name__ == "__main__":
                         type = str, default = "failed")
     parser.add_argument("--submissions_dir", help = "If method is cluster based. Where to store the submission bash files",
                         type = str, default = "submissions")
-    pareser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
+    parser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
                          type = "str", default = "logs")
     
     args = parser.parse_args()
