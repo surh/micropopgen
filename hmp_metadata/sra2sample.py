@@ -35,7 +35,7 @@ def check_set_of_runs(runs, dir):
             if check.returncode != 0:
                 raise IntegrityError("\rRun {} did not pass the validation".format(run))
         else:
-            raise MissingFileError("\tRun {} file does not exist in {}".format(run,outdir))
+            raise MissingFileError("\tRun {} file does not exist in {}".format(run,dir))
         
     return(check)
 
