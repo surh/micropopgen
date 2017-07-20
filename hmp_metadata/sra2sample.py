@@ -176,7 +176,8 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
         # Add lines for every run in sample
         failedfile = failedir + "/failed." + sample + ".txt"
         bin = "/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py"
-        option = ["--indir", indir, "--fastqdir", fastqdir,
+        option = ["--indir", indir,
+                  "--fastq_dir", fastqdir,
                   "--map", mapfile, "--run_col", '2',
                   "--sample_col", '1', "--keep_intermediate",
                   "--header", "--failed", failedfile,
@@ -184,6 +185,7 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
         option = " ".join(option)
         
         command = bin + " " + option
+        fh.write("module load anaconda")
         fh.write(command)
     fh.close()
     os.chmod(submission_file, 0o744)
@@ -266,6 +268,6 @@ if __name__ == "__main__":
     if len(failed) > 0:
         write_table(args.failed,failed)
 #/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py --indir runs --fastq_dir fastq --outdir samples --map map2.txt --failed failed.txt --header --keep_intermediate --run_col 2 --sample_col 1 --failed failed.txt
-
+#/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py --indir /godot/hmp/WGS/runs/ --fastq_dir /godot/hmp/WGS/fastq --outdir /godot/hmp/WGS/samples --map /home/sur/micropopgen/data/hmp_download_records/2017-07-17.runs_to_download.txt --failed failed.txt --header --keep_intermediate --run_col 2 --sample_col 1 --method qsub --failed_dir failed --submissions_dir submissions --logdir logs
         
     
