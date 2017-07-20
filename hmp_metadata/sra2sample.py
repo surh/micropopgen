@@ -177,6 +177,7 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
         failedfile = failedir + "/failed." + sample + ".txt"
         bin = "/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py"
         option = ["--indir", indir,
+                  "--outdir",outdir,
                   "--fastq_dir", fastqdir,
                   "--map", mapfile, "--run_col", '2',
                   "--sample_col", '1', "--keep_intermediate",
@@ -185,12 +186,13 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
         option = " ".join(option)
         
         command = bin + " " + option
-        fh.write("module load anaconda")
+        fh.write("module load anaconda\n")
         fh.write(command)
     fh.close()
     os.chmod(submission_file, 0o744)
     
     # submit qsub
+    #sutilspy.io.qsub_submissions(submission_file,logdir)
 
 if __name__ == "__main__":
     import argparse
