@@ -221,6 +221,8 @@ if __name__ == "__main__":
                         type = str, default = "failed")
     parser.add_argument("--submissions_dir", help = "If method is cluster based. Where to store the submission bash files",
                         type = str, default = "submissions")
+    pareser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
+                         type = "str", default = "logs")
     
     args = parser.parse_args()
     args.sample_col -= 1
@@ -248,7 +250,10 @@ if __name__ == "__main__":
         print(" ".join(runs_per_sample[sample]))
         
         if args.method == 'qsub':
-            qsub_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.logdir, args.submissions_dir, args.failed_dir, args.keep_intermediate)
+            qsub_sample(sample, runs_per_sample[sample], args.indir, 
+                        args.fastq_dir, args.outdir,
+                        args.logdir, args.submissions_dir,
+                        args.failed_dir, args.keep_intermediate)
         else:
             try:
                 files = process_sample(sample, runs_per_sample[sample], args.indir,args.fastq_dir, args.outdir, args.keep_intermediate)
