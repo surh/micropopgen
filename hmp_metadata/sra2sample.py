@@ -215,11 +215,11 @@ if __name__ == "__main__":
     parser.add_argument("--header", help = "Flag indicating whether table has headers in the first row",
                         action = "store_true")
     parser.add_argument("--failed", help = "File to store the failed samples", type = str, default = 'failed.txt')
-    parser.add_argumemt("--method", help = "Whether to process samples serially, or use a parallelized approach",
+    parser.add_argument("--method", help = "Whether to process samples serially, or use a parallelized approach",
                         type = str, default = "serial", choices = ['serial','qsub'])
     parser.add_argument("--failed_dir", help = "If method is not serial, where to store files of failed samples",
                         type = str, default = "failed")
-    parser.add_argumemt("--submissions_dir", help = "If method is cluster based. Where to store the submission bash files",
+    parser.add_argument("--submissions_dir", help = "If method is cluster based. Where to store the submission bash files",
                         type = str, default = "submissions")
     
     args = parser.parse_args()
@@ -260,6 +260,7 @@ if __name__ == "__main__":
                 failed.append([sample])
     if len(failed) > 0:
         write_table(args.failed,failed)
+#/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py --indir runs --fastq_dir fastq --outdir samples --map map2.txt --failed failed.txt --header --keep_intermediate --run_col 2 --sample_col 1 --failed failed.txt
 
         
     
