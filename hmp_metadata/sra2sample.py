@@ -156,7 +156,7 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
     #map = [['Sample','Run']]
     #map.extend(zip(itertools.repeat(sample),runs))
     mapfile = "map." + sample + ".txt"
-    sutilspy.io.write_table(otfile = mapfile,
+    sutilspy.io.write_table(outfile = mapfile,
                             rows = zip(itertools.repeat(sample),runs),
                             header = ['Sample','Run'],
                             delimiter = "\t",
