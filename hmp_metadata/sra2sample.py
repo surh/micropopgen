@@ -164,11 +164,12 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
     
     # Create qsub file
     submission_file = submissionsdir + "/sra2sample." + sample + ".bash"
+    cwd = os.getcwd()
     
     with open(submission_file,'w') as fh:
         fh.write("#!/bin/bash\n")
         fh.write("#PBS -N sra2sample." + sample + "\n")
-        #fh.write("#PBS -d " + outdir + "\n")
+        fh.write("#PBS -d " + cwd + "\n")
         fh.write("#PBS -o " + logdir + "/sra2sample." + sample + ".log\n")
         fh.write("#PBS -e " + logdir + "/sra2sample." + sample + ".err\n")
         fh.write("#PBS -l mem=1000mb\n")
@@ -187,6 +188,7 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
         
         command = bin + " " + option
         fh.write("module load anaconda\n")
+        fh.write("module load sra-tools\n")
         fh.write(command)
     fh.close()
     os.chmod(submission_file, 0o744)
