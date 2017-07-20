@@ -2,7 +2,7 @@
 # Copyright (C) 2017 Sur Herrera Paredes
 
 
-import download_runs
+#import download_runs
 import subprocess
 import os
 import sutilspy
@@ -32,7 +32,7 @@ def check_set_of_runs(runs, dir):
         check = 0
         if os.path.exists(run_sra):
             command = 'vdb-validate ' + run_sra
-            check = download_runs.run_command(command)
+            check = sutilspy.io.run_command(command)
             #check = subprocess.run('vdb-validate ' + run_sra + " &", shell = True)
             if check.returncode != 0:
                 raise IntegrityError("\rRun {} did not pass the validation".format(run))
@@ -54,7 +54,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
         
         if os.path.exists(run_sra):
             command = 'fastq-dump -I -O ' + outdir + ' --split-files --bzip2 ' + run_sra
-            check = download_runs.run_command(command)
+            check = sutilspy.io.run_command(command)
             #check = subprocess.run('fastq-dump -O ' + outdir + ' --split-files ' + run_sra + " &", shell = True)
             if check.returncode != 0:
                 raise ProcessError("\tRun {} could not be processed by fastq-dump".format(run))
@@ -71,7 +71,7 @@ def fastq_dump_runs(runs,indir,outdir,keep):
 def concatenate_files(infiles, outfile):
     command = " ".join(infiles) 
     command = "cat " + command + " > " + outfile
-    check = download_runs.run_command(command)
+    check = sutilspy.io.run_command(command)
     
     if check.returncode != 0:
         raise ProcessError("Could not concatenate files")
@@ -237,7 +237,7 @@ if __name__ == "__main__":
 #     outdit = "./samples/"
 #     runs_file = "/home/sur/micropopgen/exp/2017/today8/runs_to_download.txt"
 #     
-    runs_per_sample = download_runs.process_run_list(args.map, args.sample_col, args.run_col, args.header)
+    runs_per_sample = sutilspy.io.process_run_list(args.map, args.sample_col, args.run_col, args.header)
     
     # Make cluster output directories
     if args.method == 'qsub':
