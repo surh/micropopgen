@@ -5,7 +5,8 @@
 import download_runs
 import subprocess
 import os
-import csv
+import sutilspy
+import itertools
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -150,6 +151,45 @@ def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
     
     return(nlines)
 
+def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir,keep):
+    # Create mappting ffile
+    #map = [['Sample','Run']]
+    #map.extend(zip(itertools.repeat(sample),runs))
+    mapfile = "map." + sample + ".txt"
+    sutilspy.io.write_table(otfile = mapfile,
+                            rows = zip(itertools.repeat(sample),runs),
+                            header = ['Sample','Run'],
+                            delimiter = "\t",
+                            verbose = True)
+    
+    # Create qsub file
+    submission_file = submissionsdir + "/sra2sample." + sample + ".bash"
+    
+    with open(submission_file,'w') as fh:
+        fh.write("#!/bin/bash\n")
+        fh.write("#PBS -N sra2sample." + sample + "\n")
+        #fh.write("#PBS -d " + outdir + "\n")
+        fh.write("#PBS -o " + logdir + "/sra2sample." + sample + ".log\n")
+        fh.write("#PBS -e " + logdir + "/sra2sample." + sample + ".err\n")
+        fh.write("#PBS -l mem=1000mb\n")
+        
+        # Add lines for every run in sample
+        failedfile = failedir + "/failed." + sample + ".txt"
+        bin = "/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py"
+        option = ["--indir", indir, "--fastqdir", fastqdir,
+                  "--map", mapfile, "--run_col", '2',
+                  "--sample_col", '1', "--keep_intermediate",
+                  "--header", "--failed", failedfile,
+                  "--method", "serial"]
+        option = " ".join(option)
+        
+        command = bin + " " + option
+        fh.write(command)
+    fh.close()
+    os.chmod(submission_file, 0o744)
+    
+    # submit qsub
+
 if __name__ == "__main__":
     import argparse
     
@@ -175,6 +215,12 @@ if __name__ == "__main__":
     parser.add_argument("--header", help = "Flag indicating whether table has headers in the first row",
                         action = "store_true")
     parser.add_argument("--failed", help = "File to store the failed samples", type = str, default = 'failed.txt')
+    parser.add_argumemt("--method", help = "Whether to process samples serially, or use a parallelized approach",
+                        type = str, default = "serial", choices = ['serial','qsub'])
+    parser.add_argument("--failed_dir", help = "If method is not serial, where to store files of failed samples",
+                        type = str, default = "failed")
+    parser.add_argumemt("--submissions_dir", help = "If method is cluster based. Where to store the submission bash files",
+                        type = str, default = "submissions")
     
     args = parser.parse_args()
     args.sample_col -= 1
@@ -187,18 +233,31 @@ if __name__ == "__main__":
 #     
     runs_per_sample = download_runs.process_run_list(args.map, args.sample_col, args.run_col, args.header)
     
+    # Make cluster output directories
+    if args.method == 'qsub':
+        if not os.path.isdir(args.failed_dir):
+            os.mkdir(args.failed_dir)
+        if not os.path.isdir(args.submissions_dir):
+            os.mkdir(args.submissions_dir)
+        if not os.path.isdir(args.logdir):
+            os.mkdir(args.logdir)
+    
     failed = []
     for sample in runs_per_sample.keys():
         print("== Processing sample {}".format(sample))
         print(" ".join(runs_per_sample[sample]))
-        try:
-            files = process_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.keep_intermediate)
-        except FileNotFoundError as error:
-            print("==Input directory {} does not exist==".format(args.indir))
-            raise FileNotFoundError("ERROR:Input directory {} does not exist".format(args.indir))
-        except (MissingFileError,ProcessError, IntegrityError) as error:
-            print("\tSkipping sample {}".format(sample))
-            failed.append([sample])
+        
+        if args.method == 'qsub':
+            qsub_sample(sample, runs_per_sample[sample], args.indir, args.fastq_dir, args.outdir, args.logdir, args.submissions_dir, args.failed_dir, args.keep_intermediate)
+        else:
+            try:
+                files = process_sample(sample, runs_per_sample[sample], args.indir,args.fastq_dir, args.outdir, args.keep_intermediate)
+            except FileNotFoundError as error:
+                print("==Input directory {} does not exist==".format(args.indir))
+                raise FileNotFoundError("ERROR:Input directory {} does not exist".format(args.indir))
+            except (MissingFileError,ProcessError, IntegrityError) as error:
+                print("\tSkipping sample {}".format(sample))
+                failed.append([sample])
     if len(failed) > 0:
         write_table(args.failed,failed)
 
