@@ -85,8 +85,10 @@ if __name__ == "__main__":
         
         with open(submission_file,'w') as fh:
             sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
-                                              name = name, memory = memory,
-                                              logfile = logfile, errorfile = errorfile,
+                                              name = job_name,
+                                              memory = memory,
+                                              logfile = logfile,
+                                              errorfile = errorfile,
                                               nodes = nodes)
         fh.close()
         os.chmod(submission_file, 0o744)  
