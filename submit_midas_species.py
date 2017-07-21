@@ -68,7 +68,7 @@ if __name__ == "__main__":
             raise FileNotFoundError("File {} not found".format(read2))
         
         midas_command = [bin,"species",args.outdir + "/" + sample,
-                         "-1", read1, "-2", read2,"-t","2",
+                         "-1", read1, "-2", read2,"-t","8",
                          "--remove_temp"]
         midas_command = " ".join(midas_command)
         #print(midas_command)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         memory = "10000mb"
         logfile = args.logdir + "/midas.species." + sample + ".log"
         errorfile = args.logdir + "/midas.species." + sample + ".err"
-        nodes = "nodes=1:ppn=2"
+        nodes = "nodes=1:ppn=8"
         
         submission_file = args.submissions_dir + "/midas.species." + sample + ".bash"
         
