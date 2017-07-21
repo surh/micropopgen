@@ -25,6 +25,8 @@ if __name__ == "__main__":
                         default = 'qsub', choices = ['qsub'])
     parser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
                          type = str, default = "logs")
+    parser.add_argument("--submissions_dir", help = "Directory where to store submission dirs",
+                        type = str, default = "submissions")
     
     args = parser.parse_args()
     #args.sample_col -= 1
@@ -35,13 +37,23 @@ if __name__ == "__main__":
                                         col = args.sample_col,
                                         separator = '\t',
                                         header = False)
+    # Prepare directories
+    if args.method in ['qsub']:
+        if not os.path.isdir(args.logdir):
+            print("Creating directory {}".format(args.logdir))
+            os.mkdir(args.logdir)
+        if not os.path.isdir(args.submissions_dir):
+            print("Creating directory {}".format(args.submissions_dir))
+            os.mkdir(args.submissions_dir)
+    
+    
     #print(samples)
     
-    pre_commands = []
+    commands = []
     
     # Add module dependencies
-    pre_commands.append("module load MIDAS/1.2.1")
-    pre_commands.append("echo MIDAS database is $MIDAS_DB")
+    commands.append("module load MIDAS/1.2.1")
+    commands.append("echo MIDAS database is $MIDAS_DB")
     bin = "run_midas.py"
     
     for sample in samples:
@@ -55,11 +67,29 @@ if __name__ == "__main__":
             raise FileNotFoundError("File {} not found".format(read2))
         
         midas_command = [bin,"species",args.outdir + "/" + sample,
-                         "-1", read1, "-2", read2,"--remove_temp"]
+                         "-1", read1, "-2", read2,"-t","2",
+                         "--remove_temp"]
         midas_command = " ".join(midas_command)
-        print(midas_command)
+        #print(midas_command)
         
-    
+        commands.append(midas_command)
+        print(commands)
+        
+        job_name = sample + ".midas"
+        memory = "10000mb"
+        logfile = args.logdir + "/midas.species." + sample + ".log"
+        errorfile = args.logdir + "/midas.species." + sample + ".err"
+        nodes = "nodes=1:ppn=2"
+        
+        submission_file = args.submissions_dir + "/midas.species." + sample + ".bash"
+        
+        with open(submission_file,'w') as fh:
+            sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
+                                              name = name, memory = memory,
+                                              logfile = logfile, errorfile = errorfile,
+                                              nodes = nodes)
+        fh.close()
+        os.chmod(submission_file, 0o744)  
     
     
     
