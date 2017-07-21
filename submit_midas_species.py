@@ -34,6 +34,31 @@ if __name__ == "__main__":
                                         col = args.sample_col,
                                         separator = '\t',
                                         header = False)
-    print(samples)
+    #print(samples)
+    
+    pre_commands = []
+    
+    # Add module dependencies
+    pre_commands.append("module load MIDAS/1.2.1")
+    pre_commands.append("echo MIDAS database is $MIDAS_DB")
+    bin = "run_midas.py"
+    
+    for sample in samples:
+        sample_file_base = args.indir + "/" + sample
+        read1 = sample_file_base + "_read1.fastq.bz2"
+        read2 = sample_file_base + "_read2.fastq.bz2"
+        
+        if not os.path.isfile(read1):
+            raise FileNotFoundError("File {} not found".format(read1))
+        if not os.path.isfile(read2):
+            raise FileNotFoundError("File {} not found".format(read2))
+        
+        midas_command = [bin,"species",args.outdir + "/" + sample,
+                         "-1", read1, "-2", read2,"--remove_temp"]
+        midas_command = " ".join(midas_command)
+        print(midas_command)
+        
+    
+    
     
     
