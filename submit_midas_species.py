@@ -57,6 +57,7 @@ if __name__ == "__main__":
     bin = "run_midas.py"
     
     for sample in samples:
+        print("== Processing sample {}".format(sample))
         sample_file_base = args.indir + "/" + sample
         read1 = sample_file_base + "_read1.fastq.bz2"
         read2 = sample_file_base + "_read2.fastq.bz2"
@@ -73,7 +74,7 @@ if __name__ == "__main__":
         #print(midas_command)
         
         commands.append(midas_command)
-        print(commands)
+        #print(commands)
         
         job_name = sample + ".midas"
         memory = "10000mb"
@@ -91,7 +92,13 @@ if __name__ == "__main__":
                                               errorfile = errorfile,
                                               nodes = nodes)
         fh.close()
-        os.chmod(submission_file, 0o744)  
-    
-    
+        os.chmod(submission_file, 0o744)
+        
+        # Submit submission file
+        if args.method == 'qsub':
+            sutilspy.io.qsub_submissions([submission_file],args.logdir)
+        elif args.method == 'bash':
+            sutilspy.io.run_command(submission_file)
+        else:
+            raise ValueError("Incorrect method supplie ({})".format(args.method))
     
