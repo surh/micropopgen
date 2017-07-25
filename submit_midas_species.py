@@ -49,11 +49,11 @@ if __name__ == "__main__":
     
     #print(samples)
     
-    commands = []
+    pre_commands = []
     
     # Add module dependencies
-    commands.append("module load MIDAS/1.2.1")
-    commands.append("echo MIDAS database is $MIDAS_DB")
+    pre_commands.append("module load MIDAS/1.2.1")
+    pre_commands.append("echo MIDAS database is $MIDAS_DB")
     bin = "run_midas.py"
     
     for sample in samples:
@@ -73,6 +73,7 @@ if __name__ == "__main__":
         midas_command = " ".join(midas_command)
         #print(midas_command)
         
+        commands = pre_commands
         commands.append(midas_command)
         #print(commands)
         
