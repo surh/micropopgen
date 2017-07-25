@@ -77,16 +77,16 @@ if __name__ == "__main__":
         
         print("#######")
         # Clean commands for next iteration
-        commands =[]
+        #commands =[]
         print(pre_commands)
-        commands = pre_commands
+        commands = pre_commands[:]
         print(commands)
         print("#######")
         
-        print("#######")
+        #print("#######")
         commands.append(midas_command)
-        print(commands)
-        print("#######")
+        #print(commands)
+        #print("#######")
         
         job_name = sample + ".midas"
         memory = "10000mb"
