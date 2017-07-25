@@ -78,6 +78,7 @@ if __name__ == "__main__":
         print("#######")
         # Clean commands for next iteration
         commands =[]
+        print(pre_commands)
         commands = pre_commands
         print(commands)
         print("#######")
