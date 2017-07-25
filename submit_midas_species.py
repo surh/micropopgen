@@ -71,9 +71,9 @@ if __name__ == "__main__":
                          "-1", read1, "-2", read2,"-t","8",
                          "--remove_temp"]
         midas_command = " ".join(midas_command)
-        print("#######")
-        print(midas_command)
-        print("#######")
+        #print("#######")
+        #print(midas_command)
+        #print("#######")
         
         print("#######")
         # Clean commands for next iteration
