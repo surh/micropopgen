@@ -49,11 +49,11 @@ if __name__ == "__main__":
     
     #print(samples)
     
-    commands = []
+    pre_commands = []
     
     # Add module dependencies
-    commands.append("module load MIDAS/1.2.1")
-    commands.append("echo MIDAS database is $MIDAS_DB")
+    pre_commands.append("module load MIDAS/1.2.1")
+    pre_commands.append("echo MIDAS database is $MIDAS_DB")
     bin = "run_midas.py"
     
     for sample in samples:
@@ -71,10 +71,12 @@ if __name__ == "__main__":
                          "-1", read1, "-2", read2,"-t","8",
                          "--remove_temp"]
         midas_command = " ".join(midas_command)
+        #print("#######")
         #print(midas_command)
+        #print("#######")
         
+        commands = pre_commands[:]
         commands.append(midas_command)
-        #print(commands)
         
         job_name = sample + ".midas"
         memory = "10000mb"
@@ -96,6 +98,7 @@ if __name__ == "__main__":
         
         # Submit submission file
         if args.method == 'qsub':
+            #print(submission_file)
             sutilspy.io.qsub_submissions([submission_file],args.logdir)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
