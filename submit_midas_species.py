@@ -76,6 +76,8 @@ if __name__ == "__main__":
         print("#######")
         
         print("#######")
+        # Clean commands for next iteration
+        commands =[]
         commands = pre_commands
         print(commands)
         print("#######")
@@ -102,9 +104,6 @@ if __name__ == "__main__":
                                               nodes = nodes)
         fh.close()
         os.chmod(submission_file, 0o744)
-        
-        # Clean commands for next iteration
-        del commands
         
         # Submit submission file
         if args.method == 'qsub':
