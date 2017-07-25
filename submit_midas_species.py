@@ -71,11 +71,19 @@ if __name__ == "__main__":
                          "-1", read1, "-2", read2,"-t","8",
                          "--remove_temp"]
         midas_command = " ".join(midas_command)
-        #print(midas_command)
+        print("#######")
+        print(midas_command)
+        print("#######")
         
+        print("#######")
         commands = pre_commands
+        print(commands)
+        print("#######")
+        
+        print("#######")
         commands.append(midas_command)
         print(commands)
+        print("#######")
         
         job_name = sample + ".midas"
         memory = "10000mb"
