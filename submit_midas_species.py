@@ -103,6 +103,9 @@ if __name__ == "__main__":
         fh.close()
         os.chmod(submission_file, 0o744)
         
+        # Clean commands for next iteration
+        del commands
+        
         # Submit submission file
         if args.method == 'qsub':
             print(submission_file)
