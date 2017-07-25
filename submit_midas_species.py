@@ -75,18 +75,8 @@ if __name__ == "__main__":
         #print(midas_command)
         #print("#######")
         
-        print("#######")
-        # Clean commands for next iteration
-        #commands =[]
-        print(pre_commands)
         commands = pre_commands[:]
-        print(commands)
-        print("#######")
-        
-        #print("#######")
         commands.append(midas_command)
-        #print(commands)
-        #print("#######")
         
         job_name = sample + ".midas"
         memory = "10000mb"
@@ -108,8 +98,8 @@ if __name__ == "__main__":
         
         # Submit submission file
         if args.method == 'qsub':
-            print(submission_file)
-            #sutilspy.io.qsub_submissions([submission_file],args.logdir)
+            #print(submission_file)
+            sutilspy.io.qsub_submissions([submission_file],args.logdir)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
         else:
