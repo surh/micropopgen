@@ -27,6 +27,8 @@ if __name__ == "__main__":
                          type = str, default = "logs")
     parser.add_argument("--submissions_dir", help = "Directory where to store submission dirs",
                         type = str, default = "submissions")
+    parser.add_argument("--queue", help = "If method is  'slurm, the partition to use", default = "hbfraser",
+                        choices = ['hbfraser','owners'])
     
     args = parser.parse_args()
     #args.sample_col -= 1
@@ -104,7 +106,7 @@ if __name__ == "__main__":
                                                    memory = memory,
                                                    logfile = logfile,
                                                    errorfile = errorfile,
-                                                   queue = 'hbfraser',
+                                                   queue = args.queue,
                                                    nodes = '1',
                                                    cpus = '8',
                                                    time = '20:00:00')
