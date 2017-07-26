@@ -38,7 +38,7 @@ if __name__ == "__main__":
                                         separator = '\t',
                                         header = False)
     # Prepare directories
-    if args.method in ['qsub']:
+    if args.method in ['qsub','slurm']:
         if not os.path.isdir(args.logdir):
             print("Creating directory {}".format(args.logdir))
             os.mkdir(args.logdir)
@@ -78,21 +78,38 @@ if __name__ == "__main__":
         commands = pre_commands[:]
         commands.append(midas_command)
         
-        job_name = sample + ".midas"
-        memory = "10000mb"
+        job_name = sample + ".midas"     
         logfile = args.logdir + "/midas.species." + sample + ".log"
         errorfile = args.logdir + "/midas.species." + sample + ".err"
-        nodes = "nodes=1:ppn=8"
-        
+   
         submission_file = args.submissions_dir + "/midas.species." + sample + ".bash"
         
         with open(submission_file,'w') as fh:
-            sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
-                                              name = job_name,
-                                              memory = memory,
-                                              logfile = logfile,
-                                              errorfile = errorfile,
-                                              nodes = nodes)
+            if args.method == 'qsub':
+                memory = "16000mb"
+                nodes = "nodes=1:ppn=8"
+                sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
+                                                  name = job_name,
+                                                  memory = memory,
+                                                  logfile = logfile,
+                                                  errorfile = errorfile,
+                                                  nodes = nodes)
+            elif args.method == 'slurm':
+                memory = "16G"
+                nodes = "1"
+                cpus = "8"
+                sutilspy.io.write_slurm_submission(fh = fh,
+                                                   commands = commands,
+                                                   name = job_name,
+                                                   memory = memory,
+                                                   logfile = logfile,
+                                                   errorfile = errorfile,
+                                                   queue = 'hbfraser',
+                                                   nodes = '1',
+                                                   cpus = '8',
+                                                   time = '20:00:00')
+            else:
+                raise ValueError("Invalid method {}".format(args.method))
         fh.close()
         os.chmod(submission_file, 0o744)
         
@@ -100,6 +117,8 @@ if __name__ == "__main__":
         if args.method == 'qsub':
             #print(submission_file)
             sutilspy.io.qsub_submissions([submission_file],args.logdir)
+        elif args.method == 'slurm':
+            print(submission_file)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
         else:
