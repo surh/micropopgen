@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--sample_col",help = "Column where sample id is located in --samples",
                         default = 1, type = int)
     parser.add_argument("--method", help = "Method to use for submissions", type = str,
-                        default = 'qsub', choices = ['qsub'])
+                        default = 'qsub', choices = ['qsub','slurm'])
     parser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
                          type = str, default = "logs")
     parser.add_argument("--submissions_dir", help = "Directory where to store submission dirs",
