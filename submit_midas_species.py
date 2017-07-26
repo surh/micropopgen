@@ -120,7 +120,8 @@ if __name__ == "__main__":
             #print(submission_file)
             sutilspy.io.qsub_submissions([submission_file],args.logdir)
         elif args.method == 'slurm':
-            print(submission_file)
+            #print(submission_file)
+            sutilspy.io.sbatch_submissions([submission_file], args.logdir)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
         else:
