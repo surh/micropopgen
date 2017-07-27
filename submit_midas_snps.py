@@ -100,7 +100,7 @@ if __name__ == "__main__":
         midas_command = [bin,"snps",args.outdir + "/" + sample,
                          "-1", read1, "-2", read2,"-t","8",
                          "--remove_temp",
-                         "--species_cov",args.species_cov.,
+                         "--species_cov",args.species_cov,
                          "--mapid", args.mapid,
                          "--mapq", args.mapq,
                          "--baseq", args.baseq,
