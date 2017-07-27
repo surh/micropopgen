@@ -50,7 +50,7 @@ if __name__ == "__main__":
     parser.add_argument("--baq", help = "Flag to enable per-base alignment quality (BAQ)",
                         action = "store_true")
     parser.add_argument("--adjust_m1", help = "Adjust MAPQ",
-                        action_= "store_true")
+                        action = "store_true")
     args = parser.parse_args()
     #args.sample_col -= 1
     
