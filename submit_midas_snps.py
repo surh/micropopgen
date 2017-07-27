@@ -100,13 +100,13 @@ if __name__ == "__main__":
         midas_command = [bin,"snps",args.outdir + "/" + sample,
                          "-1", read1, "-2", read2,"-t","8",
                          "--remove_temp",
-                         "--species_cov",args.species_cov,
-                         "--mapid", args.mapid,
-                         "--mapq", args.mapq,
-                         "--baseq", args.baseq,
-                         "--readq", args.readq]
+                         "--species_cov",str(args.species_cov),
+                         "--mapid", str(args.mapid),
+                         "--mapq", str(args.mapq),
+                         "--baseq", str(args.baseq),
+                         "--readq", str(args.readq)]
         if args.trim > 0:
-            midas_command.extend(["--trim",args.trim])
+            midas_command.extend(["--trim",str(args.trim)])
         if args.discard:
             midas_command.append("--discard")
         if args.baq:
