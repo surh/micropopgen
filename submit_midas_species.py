@@ -28,7 +28,10 @@ if __name__ == "__main__":
     parser.add_argument("--submissions_dir", help = "Directory where to store submission dirs",
                         type = str, default = "submissions")
     parser.add_argument("--queue", help = "If method is  'slurm, the partition to use", default = "hbfraser",
-                        choices = ['hbfraser','owners'])
+                        choices = ['hbfraser','owners'], type = str)
+    parser.add_argument("--memory", help = "Amount of memory to request", default = "10G", type = str)
+    parser.add_argument("--time", help = "If method is slurm, amount of time to reserve",
+                        type = str, default = "4:00:00")
     
     args = parser.parse_args()
     #args.sample_col -= 1
@@ -88,28 +91,28 @@ if __name__ == "__main__":
         
         with open(submission_file,'w') as fh:
             if args.method == 'qsub':
-                memory = "16000mb"
+                #memory = "16000mb"
                 nodes = "nodes=1:ppn=8"
                 sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
                                                   name = job_name,
-                                                  memory = memory,
+                                                  memory = args.memory,
                                                   logfile = logfile,
                                                   errorfile = errorfile,
                                                   nodes = nodes)
             elif args.method == 'slurm':
-                memory = "16G"
+                #memory = "16G"
                 nodes = "1"
                 cpus = "8"
                 sutilspy.io.write_slurm_submission(fh = fh,
                                                    commands = commands,
                                                    name = job_name,
-                                                   memory = memory,
+                                                   memory = args.memory,
                                                    logfile = logfile,
                                                    errorfile = errorfile,
                                                    queue = args.queue,
                                                    nodes = '1',
                                                    cpus = '8',
-                                                   time = '20:00:00')
+                                                   time = args.time)
             else:
                 raise ValueError("Invalid method {}".format(args.method))
         fh.close()
