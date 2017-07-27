@@ -49,7 +49,7 @@ if __name__ == "__main__":
                         action = "store_true")
     parser.add_argument("--baq", help = "Flag to enable per-base alignment quality (BAQ)",
                         action = "store_true")
-    parser.add_argument("--adjust_m1", help = "Adjust MAPQ",
+    parser.add_argument("--adjust_mq", help = "Adjust MAPQ",
                         action = "store_true")
     args = parser.parse_args()
     #args.sample_col -= 1
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             raise FileNotFoundError("File {} not found".format(read2))
         
         # We also need to check if the species coverage file exists
-        species_file = args.outdir + "/" + sample + "species/species_profile.txt"
+        species_file = args.outdir + "/" + sample + "/species/species_profile.txt"
         if not os.path.isfile(species_file):
             raise FileNotFoundError("File {} not found".format(species_file))
         
