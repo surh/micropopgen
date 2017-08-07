@@ -104,7 +104,8 @@ if __name__ == "__main__":
                          "--mapid", str(args.mapid),
                          "--mapq", str(args.mapq),
                          "--baseq", str(args.baseq),
-                         "--readq", str(args.readq)]
+                         "--readq", str(args.readq),
+                         "--species_id","Haemophilus_parainfluenzae_62356"]
         if args.trim > 0:
             midas_command.extend(["--trim",str(args.trim)])
         if args.discard:
@@ -123,10 +124,10 @@ if __name__ == "__main__":
         commands.append(midas_command)
         
         job_name = sample + ".midas"     
-        logfile = args.logdir + "/midas.species." + sample + ".log"
-        errorfile = args.logdir + "/midas.species." + sample + ".err"
+        logfile = args.logdir + "/midas.snps." + sample + ".log"
+        errorfile = args.logdir + "/midas.snps." + sample + ".err"
    
-        submission_file = args.submissions_dir + "/midas.species." + sample + ".bash"
+        submission_file = args.submissions_dir + "/midas.snps." + sample + ".bash"
         
         with open(submission_file,'w') as fh:
             if args.method == 'qsub':
