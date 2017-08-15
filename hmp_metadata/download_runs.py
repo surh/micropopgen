@@ -55,6 +55,7 @@ def create_submission_sets(runs_per_sample, split_by, ngroups):
         raise ValueError("Unrecognized split_by value")
     
     print("\tSplitted runs")
+    print(GROUPS)
     print("=============================================")
     return(GROUPS)
 
@@ -159,12 +160,16 @@ def qsub_submissions(submissions,logdir):
 def aspera_download(groups,outdir):
     """Call aspera to download runs from SRA"""
     
+    print("\n=============================================")
+    print("Aspera download")
     ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
     sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
     
     FAILED = []
     for name, runs in groups.items():
+        print("== Downloading group {}".format(name))
         for run in runs:
+            print("\tDownloading run {}".format(run))
             run_location = run[0:6] + "/" + run + "/" + run + ".sra"
             command = " ".join([ascp_command, sra_prefix + "/" + run_location, outdir + "\n"])
             print(command)
@@ -176,6 +181,8 @@ def aspera_download(groups,outdir):
                 print("\tWARNING: Failed downloading run {}".format(run))
                 FAILED.append([run, 'dummy'])
     #FAILED = [[1,'a'],[2,'a']]
+    
+    print("=============================================\n\n")
     return(FAILED)
 
 def write_table(outfile,rows, header = None, delimiter = "\t", verbose = False):
