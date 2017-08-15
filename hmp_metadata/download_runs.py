@@ -23,40 +23,19 @@ from subprocess import CalledProcessError
 from multiprocessing import Pool
 import itertools
 
-def process_run_list(file,sample_col,run_col,header = True):
-    print("\n=============================================")
-    with open(file,'r') as fh:
-        print("> Processing map of runs")
-        if header is True:
-            colnames = fh.readline()
-        reader = csv.reader(fh, delimiter = "\t")
-        
-        RUNS = dict()
-        nruns = 0
-        nsamples = 0
-        for line in reader:
-            sample = line[sample_col]
-            run = line[run_col]
-            #print([sample,run])
-            if sample in RUNS:
-                RUNS[sample].append(run)
-            else:
-                RUNS[sample] = [run]
-                nsamples += 1
-            nruns += 1
-    fh.close()
-    print("\tProcessed {} runs in {} samples".format(nruns,nsamples))
-    print("=============================================")
-
-    return(RUNS)
-
 def create_submission_sets(runs_per_sample, split_by, ngroups):
+    """Split runs into groups for downloading together"""
+    
     print("\n=============================================")
     GROUPS = dict()
     if split_by == 'sample':
+        # If samples, use the existing sample to run dictionary
         print("== Entering splity by sample")
         GROUPS = runs_per_sample
     elif split_by == 'groups':
+        # IF groups, split samples into groups, and then all runs in samples from
+        # group i go into group i. Impliciteley assumes that the number of runs per
+        # sample is homogeneously distributed.
         samples = runs_per_sample.keys()
         total_samples = len(samples)
         samples_per_submission = ceil(total_samples / ngroups)
@@ -130,6 +109,33 @@ def create_single_submission(name, group,submission_dir,outdir,logdir):
     
     return(submission_file)
 
+def process_run_list(file,sample_col,run_col,header = True):
+    print("\n=============================================")
+    with open(file,'r') as fh:
+        print("> Processing map of runs")
+        if header is True:
+            colnames = fh.readline()
+        reader = csv.reader(fh, delimiter = "\t")
+        
+        RUNS = dict()
+        nruns = 0
+        nsamples = 0
+        for line in reader:
+            sample = line[sample_col]
+            run = line[run_col]
+            #print([sample,run])
+            if sample in RUNS:
+                RUNS[sample].append(run)
+            else:
+                RUNS[sample] = [run]
+                nsamples += 1
+            nruns += 1
+    fh.close()
+    print("\tProcessed {} runs in {} samples".format(nruns,nsamples))
+    print("=============================================")
+
+    return(RUNS)
+
 def run_command(command):
     status = 0;
     print("Executing:\n>{}".format(command))
@@ -151,6 +157,7 @@ def qsub_submissions(submissions,logdir):
     print("==========SUBMISSIONS DONE==========\n\n")
 
 def aspera_download(groups,outdir):
+    """Call aspera to download runs from SRA"""
     
     ascp_command = 'ascp -i /godot/hmp/aspera/asperaweb_id_dsa.openssh -k 1 -T -l200m'
     sra_prefix = 'anonftp\@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/'
@@ -231,8 +238,14 @@ if __name__ == "__main__":
     #print(args.run_col)
     #print(args.sample_col)
     
+    # Create dictionary that has samples as keys and list of runs
+    # per sample on each dictionary value
     runs_per_sample = process_run_list(args.infile, args.sample_col,
                                        args.run_col, args.header)
+    
+    # Split the runs into a groups of runs that are going to be downloaded together.
+    # It is only important for parallel downloading. Produces a dictrionary of the
+    # same form as runs_per_sample, where there are keys that map to runs
     submissions = create_submission_sets(runs_per_sample,
                                          args.split_by,
                                          args.ngroups)
