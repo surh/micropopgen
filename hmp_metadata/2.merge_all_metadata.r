@@ -157,6 +157,18 @@ dat <- dat[ !(as.character(dat$Sequence.Read.Archive.ID) %in% as.character(pilot
 
 dat <- droplevels(dat)
 
+dat.runs <- all_runs
+# Get illumina runs only
+#dat.runs <- subset(all_runs, instrument_model == "Illumina HiSeq 2000")
+
+dat.runs <- droplevels(dat.runs)
+table(dat.runs$instrument_model, useNA = "always")
+table(dat.runs$library_strategy, useNA = "always")
+table(dat.runs$library_source, useNA = "always")
+table(dat.runs$library_layout, useNA = "always")
+table(dat.runs$library_selection, useNA = "always")
+
+
 # Get runs from selected samples
 dat.runs <- subset(dat.runs, secondary_sample_accession %in% as.character(dat$Sequence.Read.Archive.ID))
 
