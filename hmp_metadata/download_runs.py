@@ -178,7 +178,7 @@ def aspera_download(groups,outdir):
                 if check.returncode != 0:
                     print("Raising error")
                     raise CalledProcessError("Aspera download failed for run {}".format(run))
-            except (CalledProcessError):
+            except CalledProcessError:
                 print("\tWARNING: Failed downloading run {}".format(run))
                 FAILED.append([run, 'dummy'])
     #FAILED = [[1,'a'],[2,'a']]
