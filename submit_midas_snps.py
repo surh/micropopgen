@@ -2,6 +2,49 @@
 # Copyright (C) 2017 Sur Herrera Paredes
 import sutilspy
 import os
+import fyrd
+
+def build_midas_command(sample,read1,read2,bin,args):
+    """Build run_midas.py snps command
+    
+    Builds a command line command for MIDAS run_midas.py  script,
+    in the snps mode
+    
+    Args:
+        sample (str): Sample ID. typically starts with SRS
+        read1 (str): File path to read1 files.
+        read2 (str): File path to read2 files
+        bin (str): Executable path to run_midas.py
+        args (Namespace): Resuts from argparse ArgumentParser.parse_args method
+        
+    Returns: A string corresponding to a run_midas.py command
+    """
+    
+    # Build MIDAS comand
+    midas_command = [bin,"snps",args.outdir + "/" + sample,
+                         "-1", read1, "-2", read2,"-t","8",
+                         "--remove_temp",
+                         "--species_cov",str(args.species_cov),
+                         "--mapid", str(args.mapid),
+                         "--mapq", str(args.mapq),
+                         "--baseq", str(args.baseq),
+                         "--readq", str(args.readq),
+                         "--species_id","Haemophilus_parainfluenzae_62356"]
+    if args.trim > 0:
+        midas_command.extend(["--trim",str(args.trim)])
+    if args.discard:
+        midas_command.append("--discard")
+    if args.baq:
+        midas_command.append("--baq")
+    if args.adjust_mq:
+        midas_command.append("--adjust_mq")
+    
+    midas_command = " ".join(midas_command)
+    #print("#######")
+    #print(midas_command)
+    #print("#######")
+    
+    return(midas_command)
 
 if __name__ == "__main__":
     import argparse
@@ -96,30 +139,9 @@ if __name__ == "__main__":
         if not os.path.isfile(species_file):
             raise FileNotFoundError("File {} not found".format(species_file))
         
-        # Build MIDAS comand
-        midas_command = [bin,"snps",args.outdir + "/" + sample,
-                         "-1", read1, "-2", read2,"-t","8",
-                         "--remove_temp",
-                         "--species_cov",str(args.species_cov),
-                         "--mapid", str(args.mapid),
-                         "--mapq", str(args.mapq),
-                         "--baseq", str(args.baseq),
-                         "--readq", str(args.readq),
-                         "--species_id","Haemophilus_parainfluenzae_62356"]
-        if args.trim > 0:
-            midas_command.extend(["--trim",str(args.trim)])
-        if args.discard:
-            midas_command.append("--discard")
-        if args.baq:
-            midas_command.append("--baq")
-        if args.adjust_mq:
-            midas_command.append("--adjust_mq")
+        midas_command = build_midas_command(sample, read1, read2, bin, args)
         
-        midas_command = " ".join(midas_command)
-        #print("#######")
-        #print(midas_command)
-        #print("#######")
-        
+        # Final list of commands
         commands = pre_commands[:]
         commands.append(midas_command)
         
@@ -153,6 +175,8 @@ if __name__ == "__main__":
                                                    nodes = '1',
                                                    cpus = '8',
                                                    time = args.time)
+            elif args.method == 'fyrd':
+                print("\tCreating fyrd.Job")
             else:
                 raise ValueError("Invalid method {}".format(args.method))
         fh.close()
