@@ -1,0 +1,26 @@
+import fyrd
+
+command1 = "ls -la"
+command2 = "sleep 10"
+ 
+job1  = fyrd.submit(command1, runpath = "run", outpath = "out",
+                    clean_files = False, clean_outputs = False)
+#print(job1)
+print(job1.get())
+#job2 = fyrd.submit(command2, depends=job1)
+#out  = job2.get()  # Will block until job completes
+
+
+
+# def raise_me(something, power=2):
+#     print(something)
+#     return something**power
+# outs = []
+# if __name__ == '__main__':
+#     for i in range(80):
+#         outs.append(fyrd.submit(raise_me, (i,), {'power': 2},
+#                                 mem='10MB', time='00:00:30'))
+#     final_sum = 0
+#     for i in outs:
+#         final_sum += i.get()
+#     print(final_sum)
