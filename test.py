@@ -14,4 +14,4 @@ for cmd in commands:
     
     (JOBS[-1]).submit
     print(cmd)
-    print(JOBS[-1].)
+    print((JOBS[-1]).command)
