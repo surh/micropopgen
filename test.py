@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import fyrd
 
-# commands = ['sleep 180','sleep 180','sleep 180',
+commands = ['sleep 180','sleep 180','sleep 180',
             'sleep 180', 'sleep 180', 'sleep 180']
+
 JOBS = []
 for cmd in commands:
     JOBS.append(fyrd.Job(cmd, runpath = "run", outpath = "out",
