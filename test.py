@@ -12,7 +12,7 @@ command2 = "sleep 10"
 
 
 
-commands = ['ls -la /', 'ls -la /home/', 'pwd']
+commands = ['ls -la /', 'ls -la /home/', 'pwd', 'ls $SCRATHC', 'ls $PI_HOME']
 out = []
 for cmd in commands:
     out.append(fyrd.submit(cmd, runpath = "run", outpath = "out",
