@@ -12,6 +12,6 @@ for cmd in commands:
                          scriptpath = 'sub', outfile = 'test.log',
                          errfile = 'test.err', max_jobs = 2))
     
-    JOBS[-1].submit
+    (JOBS[-1]).submit
     print(cmd)
     print(JOBS[-1].)
