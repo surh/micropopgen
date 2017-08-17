@@ -184,7 +184,7 @@ if __name__ == "__main__":
             os.chmod(submission_file, 0o744)
         elif args.method == 'fyrd':
             print("\tCreating fyrd.Job")            
-            midas_job = fyrd.Job(midas_command,runpath = os.getcwd(),outpath = arg.logdir,
+            midas_job = fyrd.Job(midas_command,runpath = os.getcwd(),outpath = args.logdir,
                                   scriptpath = args.submissions_dir, clean_files = False,
                                   clean_outputs = False, mem = args.memory, name = job_name,
                                   outfile = "midas.snps." + sample,
