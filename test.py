@@ -20,18 +20,29 @@ for cmd in commands:
 #                          cores = 1, partition = 'hbfraser',
 #                          scriptpath = 'sub', outfile = 'test.log',
 #                          errfile = 'test.err'))
-    job = fyrd.Job(print_number(iter), runpath = "run", outpath = "out",
-                     clean_files = False, clean_outputs = False,
-                     mem = '10MB', nodes = 1, time ='00:30:00',
-                     cores = 1, partition = 'hbfraser',
-                     scriptpath = 'sub', outfile = 'test.log',
-                     errfile = 'test.err')
-    job.submit(max_jobs = 3)
-    iter = iter + 1
-         
 #     (JOBS[-1]).submit(max_jobs = 3)
 #     print(cmd)
     #print((JOBS[-1]).command)
+    JOBS.append(fyrd.Job(print_number,(iter), runpath = 'run',
+                outpath = 'out', scriptpath = 'sub', mem = '10MB',
+                nodes = 1, time = '00:30:00', cores = 1,
+                threads = 1, outfile = 'test.log',
+                errfile = 'test.err'))
+    (JOBS[-1]).submit(max_jobs = 3)
+    print("Iter {}".format(str(iter)))
+    iter = iter + 1
+
+#     job = fyrd.Job(print_number(iter), runpath = "run",
+#                    outpath = "out",
+#                    clean_files = False, clean_outputs = False,
+#                    mem = '10MB', nodes = 1, time ='00:30:00',
+#                    cores = 1, partition = 'hbfraser',
+#                    scriptpath = 'sub', outfile = 'test.log',
+#                    errfile = 'test.err')
+#     job.submit(max_jobs = 3)
+#     iter = iter + 1
+
+print("All submitted")
 
 
 # cmd = 'sleep 180'
