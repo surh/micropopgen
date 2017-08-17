@@ -184,14 +184,14 @@ if __name__ == "__main__":
             os.chmod(submission_file, 0o744)
         elif args.method == 'fyrd':
             print("\tCreating fyrd.Job")            
-            midas_job(midas_command,runpath = os.getcwd(),outpath = arg.logdir,
-                      scriptpath = args.submissions_dir, clean_files = False,
-                      clean_outputs = False, mem = args.memory, name = job_name,
-                      outfile = "midas.snps." + sample,
-                      errfile = "midas.snps." + sample,
-                      partition = args.queue,
-                      nodes = 1, cores = 8, time = args.time,
-                      modules = "MIDAS/1.3.0")
+            midas_job = fyrd.Job(midas_command,runpath = os.getcwd(),outpath = arg.logdir,
+                                  scriptpath = args.submissions_dir, clean_files = False,
+                                  clean_outputs = False, mem = args.memory, name = job_name,
+                                  outfile = "midas.snps." + sample,
+                                  errfile = "midas.snps." + sample,
+                                  partition = args.queue,
+                                  nodes = 1, cores = 8, time = args.time,
+                                  modules = "MIDAS/1.3.0")
             
         else:
             raise ValueError("Invalid method {}".format(args.method))
