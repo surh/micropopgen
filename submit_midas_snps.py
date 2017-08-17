@@ -64,8 +64,8 @@ if __name__ == "__main__":
     # Optional arguments
     parser.add_argument("--sample_col",help = "Column where sample id is located in --samples",
                         default = 1, type = int)
-    parser.add_argument("--method", help = "Method to use for submissions", type = str,
-                        default = 'qsub', choices = ['qsub','slurm'])
+    parser.add_argument("--method", help = "Method to use for submissions. qsub are slurm are kept for legacy reasons, it is strongly recommended to use fyrd always",
+                        type = str, default = 'fyrd', choices = ['qsub','slurm','fyrd'])
     parser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
                          type = str, default = "logs")
     parser.add_argument("--submissions_dir", help = "Directory where to store submission dirs",
@@ -118,7 +118,8 @@ if __name__ == "__main__":
     pre_commands = []
     
     # Add module dependencies
-    pre_commands.append("module load MIDAS/1.2.1")
+    #pre_commands.append("module load MIDAS/1.2.1")
+    pre_commands.append("module load MIDAS/1.3.0")
     pre_commands.append("echo MIDAS database is $MIDAS_DB")
     bin = "run_midas.py"
     
