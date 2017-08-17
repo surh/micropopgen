@@ -104,7 +104,7 @@ if __name__ == "__main__":
                                         separator = '\t',
                                         header = False)
     # Prepare directories
-    if args.method in ['qsub','slurm']:
+    if args.method in ['qsub','slurm','fyrd']:
         if not os.path.isdir(args.logdir):
             print("Creating directory {}".format(args.logdir))
             os.mkdir(args.logdir)
@@ -151,46 +151,64 @@ if __name__ == "__main__":
    
         submission_file = args.submissions_dir + "/midas.snps." + sample + ".bash"
         
-        with open(submission_file,'w') as fh:
-            if args.method == 'qsub':
-                #memory = "16000mb"
+        # Create submission file or job if method is fyrd
+        if args.method == 'qsub':
+            with open(submission_file, 'w') as fh:
+                # memory = "16000mb"
                 nodes = "nodes=1:ppn=8"
-                sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
-                                                  name = job_name,
-                                                  memory = args.memory,
-                                                  logfile = logfile,
-                                                  errorfile = errorfile,
-                                                  nodes = nodes)
-            elif args.method == 'slurm':
-                #memory = "16G"
+                sutilspy.io.write_qsub_submission(fh=fh, commands=commands,
+                                                  name=job_name,
+                                                  memory=args.memory,
+                                                  logfile=logfile,
+                                                  errorfile=errorfile,
+                                                  nodes=nodes)
+            fh.close()
+            os.chmod(submission_file, 0o744)
+        elif args.method == 'slurm':
+            with open(submission_file, 'w') as fh:
+                # memory = "16G"
                 nodes = "1"
                 cpus = "8"
-                sutilspy.io.write_slurm_submission(fh = fh,
-                                                   commands = commands,
-                                                   name = job_name,
-                                                   memory = args.memory,
-                                                   logfile = logfile,
-                                                   errorfile = errorfile,
-                                                   queue = args.queue,
-                                                   nodes = '1',
-                                                   cpus = '8',
-                                                   time = args.time)
-            elif args.method == 'fyrd':
-                print("\tCreating fyrd.Job")
-            else:
-                raise ValueError("Invalid method {}".format(args.method))
-        fh.close()
-        os.chmod(submission_file, 0o744)
+                sutilspy.io.write_slurm_submission(fh=fh,
+                                                   commands=commands,
+                                                   name=job_name,
+                                                   memory=args.memory,
+                                                   logfile=logfile,
+                                                   errorfile=errorfile,
+                                                   queue=args.queue,
+                                                   nodes='1',
+                                                   cpus='8',
+                                                   time=args.time)
+            fh.close()
+            os.chmod(submission_file, 0o744)
+        elif args.method == 'fyrd':
+            print("\tCreating fyrd.Job")            
+            midas_job(midas_command,runpath = os.getcwd(),outpath = arg.logdir,
+                      scriptpath = args.submissions_dir, clean_files = False,
+                      clean_outputs = False, mem = args.memory, name = job_name,
+                      outfile = "midas.snps." + sample,
+                      errfile = "midas.snps." + sample,
+                      partition = args.queue,
+                      nodes = 1, cores = 8, time = args.time,
+                      modules = "MIDAS/1.3.0")
+            
+        else:
+            raise ValueError("Invalid method {}".format(args.method))
+        
+        
         
         # Submit submission file
         if args.method == 'qsub':
-            #print(submission_file)
-            sutilspy.io.qsub_submissions([submission_file],args.logdir)
+            print(submission_file)
+            #sutilspy.io.qsub_submissions([submission_file],args.logdir)
         elif args.method == 'slurm':
-            #print(submission_file)
-            sutilspy.io.sbatch_submissions([submission_file], args.logdir)
+            print(submission_file)
+            #sutilspy.io.sbatch_submissions([submission_file], args.logdir)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
+        elif args.method == 'fyrd':
+            midas_job.write(overwrite = True)
+            #midas_job.submit(max_jobs = 1000)
         else:
             raise ValueError("Incorrect method supplie ({})".format(args.method))
     
