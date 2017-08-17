@@ -209,6 +209,7 @@ if __name__ == "__main__":
             sutilspy.io.run_command(submission_file)
         elif args.method == 'fyrd':
             midas_job.write(overwrite = True)
+            print("\tWriting submission scripts")
             #midas_job.submit(max_jobs = 1000)
         else:
             raise ValueError("Incorrect method supplie ({})".format(args.method))
