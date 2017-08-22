@@ -122,7 +122,7 @@ if __name__ == "__main__":
     
     # Add module dependencies
     #pre_commands.append("module load MIDAS/1.2.1")
-    pre_commands.append("module load MIDAS/1.3.0")
+    pre_commands.append("module load MIDAS/1.3.1")
     pre_commands.append("echo MIDAS database is $MIDAS_DB")
     bin = "run_midas.py"
     
