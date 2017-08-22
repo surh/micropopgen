@@ -203,17 +203,18 @@ if __name__ == "__main__":
         
         # Submit submission file
         if args.method == 'qsub':
-            print(submission_file)
-            #sutilspy.io.qsub_submissions([submission_file],args.logdir)
+            #print(submission_file)
+            sutilspy.io.qsub_submissions([submission_file],args.logdir)
         elif args.method == 'slurm':
-            print(submission_file)
-            #sutilspy.io.sbatch_submissions([submission_file], args.logdir)
+            #print(submission_file)
+            sutilspy.io.sbatch_submissions([submission_file], args.logdir)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
         elif args.method == 'fyrd':
-            midas_job.write(overwrite = True)
-            print("\tWriting submission scripts")
-            #midas_job.submit(max_jobs = 1000)
+            #midas_job.write(overwrite = True)
+            #print("\tWriting submission scripts")
+            print("\tSubmitting job")
+            midas_job.submit(max_jobs = 1000)
         else:
             raise ValueError("Incorrect method supplie ({})".format(args.method))
     
