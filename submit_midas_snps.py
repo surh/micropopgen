@@ -22,14 +22,17 @@ def build_midas_command(sample,read1,read2,bin,args):
     
     # Build MIDAS comand
     midas_command = [bin,"snps",args.outdir + "/" + sample,
-                         "-1", read1, "-2", read2,"-t","8",
-                         "--remove_temp",
+                         "-1", read1,
+                         "-2", read2,
+                         "-t","8",
                          "--species_cov",str(args.species_cov),
                          "--mapid", str(args.mapid),
                          "--mapq", str(args.mapq),
                          "--baseq", str(args.baseq),
                          "--readq", str(args.readq),
-                         "--species_id","Haemophilus_parainfluenzae_62356"]
+                         "--aln_cov", "0.75",
+                         "-m", 'local']
+                         #"--species_id","Haemophilus_parainfluenzae_62356"]
     if args.trim > 0:
         midas_command.extend(["--trim",str(args.trim)])
     if args.discard:
@@ -191,7 +194,7 @@ if __name__ == "__main__":
                                   errfile = "midas.snps." + sample + ".err",
                                   partition = args.queue,
                                   nodes = 1, cores = 8, time = args.time,
-                                  modules = "MIDAS/1.3.0")
+                                  modules = "MIDAS/1.3.1")
             
         else:
             raise ValueError("Invalid method {}".format(args.method))
