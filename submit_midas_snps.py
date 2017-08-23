@@ -41,7 +41,14 @@ def build_midas_command(sample,read1,read2,bin,args):
         midas_command.append("--baq")
     if args.adjust_mq:
         midas_command.append("--adjust_mq")
-    
+    if args.steps == 'align':
+        midas_command.append("--build_db")
+        midas_command.append("--align")
+    elif args.steps == 'call':
+        midas_command.append("--call")
+    else:
+        raise ValueError("Incorrect --steps option ({})".format(args.steps))
+        
     midas_command = " ".join(midas_command)
     #print("#######")
     #print(midas_command)
@@ -97,6 +104,8 @@ if __name__ == "__main__":
                         action = "store_true")
     parser.add_argument("--adjust_mq", help = "Adjust MAPQ",
                         action = "store_true")
+    parser.add_argument("--steps", help = "Steps to perform for <run_midas.py snps>. Either build the database and align. Or call SNPs",
+                        default = "align", choices = ['align','call'])
     args = parser.parse_args()
     #args.sample_col -= 1
     
