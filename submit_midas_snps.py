@@ -45,7 +45,7 @@ def build_midas_command(sample,read1,read2,bin,args):
         midas_command.append("--build_db")
         midas_command.append("--align")
     elif args.steps == 'call':
-        midas_command.append("--call")
+        midas_command.append("--pileup")
     else:
         raise ValueError("Incorrect --steps option ({})".format(args.steps))
         
