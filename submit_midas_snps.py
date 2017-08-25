@@ -2,6 +2,59 @@
 # Copyright (C) 2017 Sur Herrera Paredes
 import sutilspy
 import os
+import fyrd
+
+def build_midas_command(sample,read1,read2,bin,args):
+    """Build run_midas.py snps command
+    
+    Builds a command line command for MIDAS run_midas.py  script,
+    in the snps mode
+    
+    Args:
+        sample (str): Sample ID. typically starts with SRS
+        read1 (str): File path to read1 files.
+        read2 (str): File path to read2 files
+        bin (str): Executable path to run_midas.py
+        args (Namespace): Resuts from argparse ArgumentParser.parse_args method
+        
+    Returns: A string corresponding to a run_midas.py command
+    """
+    
+    # Build MIDAS comand
+    midas_command = [bin,"snps",args.outdir + "/" + sample,
+                         "-1", read1,
+                         "-2", read2,
+                         "-t","8",
+                         "--species_cov",str(args.species_cov),
+                         "--mapid", str(args.mapid),
+                         "--mapq", str(args.mapq),
+                         "--baseq", str(args.baseq),
+                         "--readq", str(args.readq),
+                         "--aln_cov", "0.75",
+                         "-m", 'local']
+                         #"--species_id","Haemophilus_parainfluenzae_62356"]
+    if args.trim > 0:
+        midas_command.extend(["--trim",str(args.trim)])
+    if args.discard:
+        midas_command.append("--discard")
+    if args.baq:
+        midas_command.append("--baq")
+    if args.adjust_mq:
+        midas_command.append("--adjust_mq")
+    if args.steps == 'align':
+        midas_command.append("--build_db")
+        midas_command.append("--align")
+    elif args.steps == 'call':
+        midas_command.append("--pileup")
+    else:
+        raise ValueError("Incorrect --steps option ({})".format(args.steps))
+        
+    midas_command = " ".join(midas_command)
+    #print("#######")
+    #print(midas_command)
+    #print("#######")
+    
+    return(midas_command)
 
 if __name__ == "__main__":
     import argparse
@@ -21,14 +74,14 @@ if __name__ == "__main__":
     # Optional arguments
     parser.add_argument("--sample_col",help = "Column where sample id is located in --samples",
                         default = 1, type = int)
-    parser.add_argument("--method", help = "Method to use for submissions", type = str,
-                        default = 'qsub', choices = ['qsub','slurm'])
+    parser.add_argument("--method", help = "Method to use for submissions. qsub are slurm are kept for legacy reasons, it is strongly recommended to use fyrd always",
+                        type = str, default = 'fyrd', choices = ['qsub','slurm','fyrd'])
     parser.add_argument("--logdir", help = "If method is cluster-based, where to store the logfiles",
                          type = str, default = "logs")
     parser.add_argument("--submissions_dir", help = "Directory where to store submission dirs",
                         type = str, default = "submissions")
     parser.add_argument("--queue", help = "If method is  'slurm, the partition to use", default = "hbfraser",
-                        choices = ['hbfraser','owners'], type = str)
+                        choices = ['hbfraser','owners','batch'], type = str)
     parser.add_argument("--memory", help = "Amount of memory to request",
                         default = "10G", type = str)
     parser.add_argument("--time", help = "If method is slurm, amount of time to reserve",
@@ -51,6 +104,8 @@ if __name__ == "__main__":
                         action = "store_true")
     parser.add_argument("--adjust_mq", help = "Adjust MAPQ",
                         action = "store_true")
+    parser.add_argument("--steps", help = "Steps to perform for <run_midas.py snps>. Either build the database and align. Or call SNPs",
+                        default = "align", choices = ['align','call'])
     args = parser.parse_args()
     #args.sample_col -= 1
     
@@ -61,7 +116,7 @@ if __name__ == "__main__":
                                         separator = '\t',
                                         header = False)
     # Prepare directories
-    if args.method in ['qsub','slurm']:
+    if args.method in ['qsub','slurm','fyrd']:
         if not os.path.isdir(args.logdir):
             print("Creating directory {}".format(args.logdir))
             os.mkdir(args.logdir)
@@ -75,7 +130,8 @@ if __name__ == "__main__":
     pre_commands = []
     
     # Add module dependencies
-    pre_commands.append("module load MIDAS/1.2.1")
+    #pre_commands.append("module load MIDAS/1.2.1")
+    pre_commands.append("module load MIDAS/1.3.1")
     pre_commands.append("echo MIDAS database is $MIDAS_DB")
     bin = "run_midas.py"
     
@@ -96,30 +152,9 @@ if __name__ == "__main__":
         if not os.path.isfile(species_file):
             raise FileNotFoundError("File {} not found".format(species_file))
         
-        # Build MIDAS comand
-        midas_command = [bin,"snps",args.outdir + "/" + sample,
-                         "-1", read1, "-2", read2,"-t","8",
-                         "--remove_temp",
-                         "--species_cov",str(args.species_cov),
-                         "--mapid", str(args.mapid),
-                         "--mapq", str(args.mapq),
-                         "--baseq", str(args.baseq),
-                         "--readq", str(args.readq),
-                         "--species_id","Haemophilus_parainfluenzae_62356"]
-        if args.trim > 0:
-            midas_command.extend(["--trim",str(args.trim)])
-        if args.discard:
-            midas_command.append("--discard")
-        if args.baq:
-            midas_command.append("--baq")
-        if args.adjust_mq:
-            midas_command.append("--adjust_mq")
+        midas_command = build_midas_command(sample, read1, read2, bin, args)
         
-        midas_command = " ".join(midas_command)
-        #print("#######")
-        #print(midas_command)
-        #print("#######")
-        
+        # Final list of commands
         commands = pre_commands[:]
         commands.append(midas_command)
         
@@ -129,34 +164,51 @@ if __name__ == "__main__":
    
         submission_file = args.submissions_dir + "/midas.snps." + sample + ".bash"
         
-        with open(submission_file,'w') as fh:
-            if args.method == 'qsub':
-                #memory = "16000mb"
+        # Create submission file or job if method is fyrd
+        if args.method == 'qsub':
+            with open(submission_file, 'w') as fh:
+                # memory = "16000mb"
                 nodes = "nodes=1:ppn=8"
-                sutilspy.io.write_qsub_submission(fh = fh, commands = commands,
-                                                  name = job_name,
-                                                  memory = args.memory,
-                                                  logfile = logfile,
-                                                  errorfile = errorfile,
-                                                  nodes = nodes)
-            elif args.method == 'slurm':
-                #memory = "16G"
+                sutilspy.io.write_qsub_submission(fh=fh, commands=commands,
+                                                  name=job_name,
+                                                  memory=args.memory,
+                                                  logfile=logfile,
+                                                  errorfile=errorfile,
+                                                  nodes=nodes)
+            fh.close()
+            os.chmod(submission_file, 0o744)
+        elif args.method == 'slurm':
+            with open(submission_file, 'w') as fh:
+                # memory = "16G"
                 nodes = "1"
                 cpus = "8"
-                sutilspy.io.write_slurm_submission(fh = fh,
-                                                   commands = commands,
-                                                   name = job_name,
-                                                   memory = args.memory,
-                                                   logfile = logfile,
-                                                   errorfile = errorfile,
-                                                   queue = args.queue,
-                                                   nodes = '1',
-                                                   cpus = '8',
-                                                   time = args.time)
-            else:
-                raise ValueError("Invalid method {}".format(args.method))
-        fh.close()
-        os.chmod(submission_file, 0o744)
+                sutilspy.io.write_slurm_submission(fh=fh,
+                                                   commands=commands,
+                                                   name=job_name,
+                                                   memory=args.memory,
+                                                   logfile=logfile,
+                                                   errorfile=errorfile,
+                                                   queue=args.queue,
+                                                   nodes='1',
+                                                   cpus='8',
+                                                   time=args.time)
+            fh.close()
+            os.chmod(submission_file, 0o744)
+        elif args.method == 'fyrd':
+            print("\tCreating fyrd.Job")            
+            midas_job = fyrd.Job(midas_command,runpath = os.getcwd(),outpath = args.logdir,
+                                  scriptpath = args.submissions_dir, clean_files = False,
+                                  clean_outputs = False, mem = args.memory, name = job_name,
+                                  outfile = "midas.snps." + sample + ".log",
+                                  errfile = "midas.snps." + sample + ".err",
+                                  partition = args.queue,
+                                  nodes = 1, cores = 8, time = args.time,
+                                  modules = "MIDAS/1.3.1")
+            
+        else:
+            raise ValueError("Invalid method {}".format(args.method))
+        
+        
         
         # Submit submission file
         if args.method == 'qsub':
@@ -167,6 +219,11 @@ if __name__ == "__main__":
             sutilspy.io.sbatch_submissions([submission_file], args.logdir)
         elif args.method == 'bash':
             sutilspy.io.run_command(submission_file)
+        elif args.method == 'fyrd':
+            #midas_job.write(overwrite = True)
+            #print("\tWriting submission scripts")
+            print("\tSubmitting job")
+            midas_job.submit(max_jobs = 1000)
         else:
             raise ValueError("Incorrect method supplie ({})".format(args.method))
     
