@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# Copyright (C) 2017 Sur Herrera Paredes
 
 # coding: utf-8
 
