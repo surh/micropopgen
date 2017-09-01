@@ -76,7 +76,7 @@ class Gene:
         print(">Gene contig: {}".format(self.contig))
         print(">Gene start: {}".format(str(self.start)))
         print(">Gene end: {}".format(str(self.end)))
-            
+
 class MKtest:
     """A class for holding the McDonald-Kreitmant test"""
     
@@ -176,25 +176,48 @@ def confirm_midas_merge_files(args):
     if not os.path.isfile(args.metadata_file):
         raise FileNotFoundError("Could not find metadata file {}".format(args.metadata_file))
 
-
-# In[6]:
-
-
 if __name__ == "__main__":
     
     ############# Arguments #################
     # Arguments for ipython
-    args = argparse.Namespace()
-    args.indir = "/home/sur/micropopgen/exp/2017/today5/test/"
-    args.test = "MK"
-    args.outfile = "/home/sur/micropopgen/exp/2017/today5/mk_results.txt"
-    args.metadata_file = "/home/sur/micropopgen/exp/2017/today5/map.txt"
-    args.group1 = "Supragingival plaque"
-    args.group2 = "Tongue dorsum"
-    args.min_count = 1
-    args.nrows = float('inf')
-    args.tables = '/home/sur/micropopgen/exp/2017/today5/tables.txt'
-    args.pseudocount = 1
+#     args = argparse.Namespace()
+#     args.indir = "/home/sur/micropopgen/exp/2017/today5/test/"
+#     args.test = "MK"
+#     args.outfile = "/home/sur/micropopgen/exp/2017/today5/mk_results.txt"
+#     args.metadata_file = "/home/sur/micropopgen/exp/2017/today5/map.txt"
+#     args.group1 = "Supragingival plaque"
+#     args.group2 = "Tongue dorsum"
+#     args.min_count = 1
+#     args.nrows = float('inf')
+#     args.tables = '/home/sur/micropopgen/exp/2017/today5/tables.txt'
+#     args.pseudocount = 1
+    
+    # Argparse
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    required = parser.add_argument_group("Required arguments")
+    required.add_argument("--indir", help = "Input directory", type = str,
+                          required = True)
+    required.add_argument("--metadata_file", help = "Mapping file for samples", type = str,
+                          required = True)
+    required.add_argument("--group1", help = "Group1 of comparison", type = str,
+                          required = True)
+    required.add_argument("--group2", help = "Group2 of comparison",
+                          required = True)
+        
+    parser.add_argument("--test", help = "Eventually specify test to perform",
+                        default = "G", type = str)
+    parser.outfile("--outfile", help = "Output file with results",
+                   default = "mk_results.txt", type = str)
+    parser.add_argument("--min_count", help = "min depth at a position in a sample to consider that sample in that position",
+                        default = 1, type = int)
+    parser.add_argument("--nrows", help = "Number of gene positions to read",
+                        default = float('inf'), type = float)
+    parser.add_argument("--table", help = "Output file for contingency tables",
+                        default = "mk_tables.txt", type = str)
+    parser.add_argument("--pseudocount", help = "Pseudocount value to use in contingency tables",
+                        default = 1, type = int)
+    
+    args = parser.parse_args()
     
     ######## Check files #################
     confirm_midas_merge_files(args)
