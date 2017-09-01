@@ -342,7 +342,7 @@ if __name__ == "__main__":
             #print(row)
 
             site_id = row[0]
-            #print(site_id)
+            print(site_id)
             if not site_id in Sites:
                 continue
 
