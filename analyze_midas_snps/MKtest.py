@@ -472,6 +472,7 @@ if __name__ == "__main__":
     ################ Test and results ########
     with open(args.outfile,mode='w') as fh, open(args.tables,mode='w') as th:
         header = ['gene','contig','start','end',
+                  'Dn','Ds','Pn','Ps',
                   'ni', 'ratio','ratio_pseudo','hg_odds','hg_p','hg_odds_pseudo','hg_p_pseudo',
                   'g_none_p','g_yates_p','g_williams_p',
                   'g_none_p_pseudo','g_yates_p_pseudo','g_williams_p_pseudo',
@@ -569,6 +570,7 @@ if __name__ == "__main__":
 
             # prepare res        
             res = [gene, Genes[gene].contig, str(Genes[gene].start), str(Genes[gene].end),
+                   str(mk.Dn), str(mk.Ds), str(mk.Pn), str(mk.Ps),
                    str(ni), str(ratio), str(ratio_pseudo),
                    str(hg_odds), str(hg_p), str(hg_odds_pseudo),str(hg_p_pseudo),
                    str(g_none_p), str(g_yates_p),str(g_williams_p),
