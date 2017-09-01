@@ -206,13 +206,13 @@ if __name__ == "__main__":
         
     parser.add_argument("--test", help = "Eventually specify test to perform",
                         default = "G", type = str)
-    parser.outfile("--outfile", help = "Output file with results",
+    parser.add_argument("--outfile", help = "Output file with results",
                    default = "mk_results.txt", type = str)
     parser.add_argument("--min_count", help = "min depth at a position in a sample to consider that sample in that position",
                         default = 1, type = int)
     parser.add_argument("--nrows", help = "Number of gene positions to read",
                         default = float('inf'), type = float)
-    parser.add_argument("--table", help = "Output file for contingency tables",
+    parser.add_argument("--tables", help = "Output file for contingency tables",
                         default = "mk_tables.txt", type = str)
     parser.add_argument("--pseudocount", help = "Pseudocount value to use in contingency tables",
                         default = 1, type = int)
