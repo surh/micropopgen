@@ -560,7 +560,11 @@ if __name__ == "__main__":
 
 
             # Eyre-Walker alpha
-            alpha = mk.alpha(pseudocount=0)
+            try:
+                alpha = mk.alpha(pseudocount=0)
+            except ZeroDivisionError:
+                alpha = float('nan')
+                
             alpha_pseudo = mk.alpha(pseudocount=args.pseudocount)
 
             # prepare res        
