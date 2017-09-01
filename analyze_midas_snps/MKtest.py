@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
-
 #!/usr/bin/env python
 # Copyright (C) 2017 Sur Herrera Paredes
 
@@ -14,10 +8,6 @@ import csv
 import numpy as np
 import scipy.stats as stats
 import argparse
-
-
-# In[2]:
-
 
 class GenomeSite:
     """A class for represintinc sites in genome that have potential SNPS"""
@@ -60,11 +50,6 @@ class GenomeSite:
             substitution_type = 'non-synonymous'
         
         return(substitution_type)
-            
-
-
-# In[3]:
-
 
 class Gene:
     """A class for representing a gene"""
@@ -92,12 +77,6 @@ class Gene:
         print(">Gene start: {}".format(str(self.start)))
         print(">Gene end: {}".format(str(self.end)))
             
-    
-
-
-# In[4]:
-
-
 class MKtest:
     """A class for holding the McDonald-Kreitmant test"""
     
@@ -117,12 +96,12 @@ class MKtest:
     
     def mk_ratio(self, pseudocount = 0):
         """Calculate the McDonald Kreitman ratio"""
-        ratio = ((self.Dn + pseudocount) / (self.Ds + pseudocount))                 / ((self.Pn + pseudocount) / (self.Ps) + pseudocount)
+        ratio = ((self.Dn + pseudocount) / (self.Ds + pseudocount)) / ((self.Pn + pseudocount) / (self.Ps) + pseudocount)
         return(ratio)
     
     def alpha(self, pseudocount = 0):
         """Calculate the Smith & Eyre-Walker alpha"""
-        alpha = 1 - (((self.Ds + pseudocount) * (self.Dn + pseudocount))                      / ((self.Ps + pseudocount) * (self.Pn + pseudocount)))
+        alpha = 1 - (((self.Ds + pseudocount) * (self.Dn + pseudocount)) / ((self.Ps + pseudocount) * (self.Pn + pseudocount)))
         return(alpha)
     
     def hg_test(self, pseudocount = 0):
@@ -157,9 +136,9 @@ class MKtest:
                                          lambda_="log-likelihood",
                                          correction=False)
             
-            # Calculate q correction
+            # Calculate q correction. Only for 2 x 2 table
             n = mat.sum()
-            q = 1                 + (n * (1 / mat.sum(axis = 1)).sum() - 1)                 * (n * (1 / mat.sum(axis = 0)).sum() - 1)                 / (6 * n)
+            q = 1 + (n * (1 / mat.sum(axis = 1)).sum() - 1) * (n * (1 / mat.sum(axis = 0)).sum() - 1) / (6 * n)
                 
             # correct g and recalculate p-value
             g = g / q
@@ -175,7 +154,7 @@ class MKtest:
     def neutrality_index(self, pseudocount = 1, log = True):
         """Calculate neutrality index. Following Li et al. (2008), we add a psedocount and return the -log10(NI)"""
         
-        ni = ((self.Pn + pseudocount) / (self.Dn + pseudocount))             / ((self.Ps + pseudocount) / (self.Ds + pseudocount))
+        ni = ((self.Pn + pseudocount) / (self.Dn + pseudocount)) / ((self.Ps + pseudocount) / (self.Ds + pseudocount))
         
         if log:
             ni = -np.log10(ni)
@@ -183,12 +162,8 @@ class MKtest:
 
         return(ni)
 
-
-# In[5]:
-
-
-def confirm_files(args):
-    """Confirm files are present"""
+def confirm_midas_merge_files(args):
+    """Confirm files are present. No integrity check"""
 
     # Check files exist in input directory
     file_list = os.listdir(args.indir)
@@ -222,7 +197,7 @@ if __name__ == "__main__":
     args.pseudocount = 1
     
     ######## Check files #################
-    confirm_files(args)
+    confirm_midas_merge_files(args)
 
     #### Read metadata ####
     Groups = sutilspy.io.process_run_list(args.metadata_file,
