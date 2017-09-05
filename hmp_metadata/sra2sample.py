@@ -188,6 +188,7 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
         
         command = bin + " " + option
         fh.write("module load anaconda\n")
+        fh.write("source activate sur\n")
         fh.write("module load sra-tools\n")
         fh.write(command)
     fh.close()
