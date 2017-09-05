@@ -5,38 +5,37 @@ library(GGally)
 Tab <- read.table("Porphyromonas_sp_57899_mk_results.txt", sep = "\t", header = TRUE)
 head(Tab)
 
-# Pvalues
-p1  <- ggplot(Tab, aes(x = hg_p)) +
-  geom_histogram(bins = 20)
-p1
+# Number of genes
+nrow(Tab)
 
-p1  <- ggplot(Tab, aes(x = hg_p_pseudo)) +
-  geom_histogram(bins = 20)
+# Plot histograms of all p-values
+Pvals <- Tab[,c("gene","hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
+Pvals <- melt(Pvals, id.vars = "gene", value.name = "p.value", variable.name = "Test")
+p1 <- ggplot(Pvals, aes(x = p.value)) +
+  facet_wrap(~ Test, nrow = 2) +
+  geom_histogram(bins = 20) +
+  theme(panel.background = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_rect(color = "black", fill = NA))
 p1
+ggsave("all_pvals.hist.svg", p1, width = 8, height = 4)
 
-p1  <- ggplot(Tab, aes(x = g_none_p)) +
-  geom_histogram(bins = 20)
+# Plot only those with at least one fixed non-synonymous mutation
+Pvals <- subset(Tab, Dn > 0)
+nrow(Pvals)
+Pvals <- Pvals[,c("gene","hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
+Pvals <- melt(Pvals, id.vars = "gene", value.name = "p.value", variable.name = "Test")
+p1 <- ggplot(Pvals, aes(x = p.value)) +
+  facet_wrap(~ Test, nrow = 2) +
+  geom_histogram(bins = 20) +
+  theme(panel.background = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_rect(color = "black", fill = NA))
 p1
+ggsave("withDn_pvals.hist.svg", p1, width = 8, height = 4)
 
-p1  <- ggplot(Tab, aes(x = g_yates_p)) +
-  geom_histogram(bins = 20)
-p1
 
-p1  <- ggplot(Tab, aes(x = g_williams_p)) +
-  geom_histogram(bins = 20)
-p1
 
-p1  <- ggplot(Tab, aes(x = g_none_p_pseudo)) +
-  geom_histogram(bins = 20)
-p1
-
-p1  <- ggplot(Tab, aes(x = g_yates_p_pseudo)) +
-  geom_histogram(bins = 20)
-p1
-
-p1  <- ggplot(Tab, aes(x = g_williams_p_pseudo)) +
-  geom_histogram(bins = 20)
-p1
 
 
 Pvals <- Tab[,c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
