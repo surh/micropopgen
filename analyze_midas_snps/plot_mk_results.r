@@ -35,21 +35,37 @@ p1
 ggsave("withDn_pvals.hist.svg", p1, width = 8, height = 4)
 
 
-
-
-
+### Barplot number of tests
 Pvals <- Tab[,c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
 Pvals <- apply(is.na(Pvals),2,function(x) table(factor(x,levels=c(TRUE,FALSE))))
 Pvals <- melt(Pvals, value.name = "Count", varnames = c("is.na","test"))
 p1 <- ggplot(Pvals, aes(x = test, y = Count)) + 
-  geom_bar(aes(fill = is.na), stat = "identity", position = "fill")
+  geom_bar(aes(fill = is.na), stat = "identity", position = "fill") +
+  theme(axis.text.x = element_text(angle = 90))
 p1
+ggsave("sucess_tests.barplot.svg", p1, width = 6, height = 4)
 
-Pvals <- Tab[,c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
+### Plot correlation all
+#Pvals <- Tab[,c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
 pval_columns <- c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")
 pval_columns <- which(colnames(Tab) %in% pval_columns )
-p1 <- ggpairs(subset(Tab, !is.na(g_none_p)),columns = pval_columns)
+p1 <- ggpairs(subset(Tab, !is.na(g_none_p)),columns = pval_columns) + theme(axis.text.x = element_text(angle = 90))
 p1
+ggsave("correlation_pvals_all.svg", p1, width = 10, height = 10)
+
+### Plot correlation with Dn
+Pvals <- subset(Tab, Dn > 0)
+#Pvals <- Pvals[,c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")]
+pval_columns <- c("hg_p","hg_p_pseudo","g_none_p","g_yates_p","g_williams_p","g_none_p_pseudo","g_yates_p_pseudo","g_williams_p_pseudo")
+pval_columns <- which(colnames(Pvals) %in% pval_columns )
+p1 <- ggpairs(subset(Pvals, !is.na(g_none_p)),columns = pval_columns) + theme(axis.text.x = element_text(angle = 90))
+p1
+ggsave("correlation_pvals_withDn.svg", p1, width = 10, height = 10)
+
+## Plot two versions of neutrality index
+# head(Tab)
+# ggplot(Tab, aes(x = ni, y = ratio))
+
 
 p1 <- ggplot(Tab, aes(x = ni, y = -log10(g_none_p))) +
   geom_hline(yintercept = -log10(0.05)) +
