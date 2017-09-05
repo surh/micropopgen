@@ -95,13 +95,14 @@ class MKtest:
         self.Pn += Pn
     
     def mk_ratio(self, pseudocount = 0):
-        """Calculate the McDonald Kreitman ratio"""
-        ratio = ((self.Dn + pseudocount) / (self.Ds + pseudocount)) / ((self.Pn + pseudocount) / (self.Ps) + pseudocount)
+        """Calculate the McDonald Kreitman ratio (Dn/Ds)/(Pn/Ps)"""
+        ratio = ((self.Dn + pseudocount) / (self.Ds + pseudocount)) / ((self.Pn + pseudocount) / (self.Ps + pseudocount))
         return(ratio)
     
     def alpha(self, pseudocount = 0):
-        """Calculate the Smith & Eyre-Walker alpha"""
-        alpha = 1 - (((self.Ds + pseudocount) * (self.Dn + pseudocount)) / ((self.Ps + pseudocount) * (self.Pn + pseudocount)))
+        """Calculate the Smith & Eyre-Walker alpha 1 - """
+        ni = self.neutrality_index(pseudocount = pseudocount, log = False)
+        alpha = 1 - ni
         return(alpha)
     
     def hg_test(self, pseudocount = 0):
@@ -152,7 +153,7 @@ class MKtest:
         
         return(res)
     def neutrality_index(self, pseudocount = 1, log = True):
-        """Calculate neutrality index. Following Li et al. (2008), we add a psedocount and return the -log10(NI)"""
+        """Calculate neutrality index (Pn/Dn)/(Ps/Ds). Following Li et al. (2008), we add a psedocount and return the -log10(NI)"""
         
         ni = ((self.Pn + pseudocount) / (self.Dn + pseudocount)) / ((self.Ps + pseudocount) / (self.Ds + pseudocount))
         
