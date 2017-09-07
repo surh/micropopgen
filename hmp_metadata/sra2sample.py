@@ -78,7 +78,7 @@ def concatenate_files(infiles, outfile):
     
     return(check)
 
-def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
+def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq",keep = False):
     if not os.path.isdir(outdir):
         print("\tCreating output directory {}".format(outdir))
         os.mkdir(outdir)
@@ -91,6 +91,11 @@ def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq"):
             concatenate_files(files, newfile)
             i += 1
             FILES.append(newfile)
+	    if not keep:
+	    	# Remove temp files
+	    	for f in files:
+			print("\tRemoving temporary file {}".format(f))
+			os.remove(f)
         except (ProcessError):
             raise ProcessError("Could not concatenate files from read {}".format(i))
     
@@ -124,7 +129,7 @@ def process_sample(sample,runs,indir,fastqdir,outdir,keep = False):
     
     # Proceed to concatenate
     try:
-        concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq.bz2")
+        concatenated_files = concatenate_run(run_fastq, outdir, sample, ".fastq.bz2", keep = args.keep_intermediate)
     except ProcessError as error:
         print("\tWARNING. Could not concatenate files from sample {}. SKIPPING")
         raise ProcessError("Could not concatenate files from sample {}".format(sample))
@@ -181,9 +186,11 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
                   "--outdir",outdir,
                   "--fastq_dir", fastqdir,
                   "--map", mapfile, "--run_col", '2',
-                  "--sample_col", '1', "--keep_intermediate",
+                  "--sample_col", '1',
                   "--header", "--failed", failedfile,
                   "--method", "serial"]
+	if keep:
+		option.append("--keep_intermediate")
         option = " ".join(option)
         
         command = bin + " " + option
