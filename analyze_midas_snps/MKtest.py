@@ -319,68 +319,9 @@ def process_snps_depth_file(args,Sites):
         
     return Counts
     
+def process_snp_freq_file(args,Counts,Groups,Samples):
+    """Process snp_freq.txt from MIDAS. Produces MK table"""
     
-    
-
-def confirm_midas_merge_files(args):
-    """Confirm files are present. No integrity check"""
-
-    # Check files exist in input directory
-    file_list = os.listdir(args.indir)
-    if 'snps_freq.txt' not in file_list:
-        raise FileNotFoundError("Could not find snps_freq.txt at {}".format(args.indir))
-    if 'snps_info.txt' not in file_list:
-        raise FileNotFoundError("Could not find snps_info.txt at {}".format(args.indir))
-    if 'snps_depth.txt' not in file_list:
-        raise FileNotFoundError("Could not find snps_depth.txt at {}".format(args.indir))
-    if not os.path.isfile(args.metadata_file):
-        raise FileNotFoundError("Could not find metadata file {}".format(args.metadata_file))
-
-if __name__ == "__main__":
-    
-    # Argparse
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    required = parser.add_argument_group("Required arguments")
-    required.add_argument("--indir", help = "Input directory", type = str,
-                          required = True)
-    required.add_argument("--metadata_file", help = "Mapping file for samples", type = str,
-                          required = True)
-    required.add_argument("--group1", help = "Group1 of comparison", type = str,
-                          required = True)
-    required.add_argument("--group2", help = "Group2 of comparison",
-                          required = True)
-        
-    parser.add_argument("--test", help = "Eventually specify test to perform",
-                        default = "G", type = str)
-    parser.add_argument("--outfile", help = "Output file with results",
-                   default = "mk_results.txt", type = str)
-    parser.add_argument("--min_count", help = "min depth at a position in a sample to consider that sample in that position",
-                        default = 1, type = int)
-    parser.add_argument("--nrows", help = "Number of gene positions to read",
-                        default = float('inf'), type = float)
-    parser.add_argument("--tables", help = "Output file for contingency tables",
-                        default = "mk_tables.txt", type = str)
-    parser.add_argument("--pseudocount", help = "Pseudocount value to use in contingency tables",
-                        default = 1, type = int)
-    
-    args = parser.parse_args()
-    
-    ######## Check files #################
-    confirm_midas_merge_files(args)
-
-    #### Read metadata ####
-    Groups = sutilspy.io.process_run_list(args.metadata_file,
-                                          1, 0, header = True)
-    Samples = sutilspy.io.process_run_list(args.metadata_file,
-                                           0, 1, header = True)
-    
-    ######## Read info #######
-    Genes, Sites = process_snp_info_file(args)
-    
-    ###### Chose sites based on depth in groups to compare #######
-    Counts = process_snps_depth_file(args, Sites)
-    
-    # Read frequencies and calculate 
     print(Groups)
     MK = {}
     with open(args.indir + '/snps_freq.txt') as freqs_fh:
@@ -465,13 +406,74 @@ if __name__ == "__main__":
 
             #print("==========================")
 
-
-
     freqs_fh.close()
     print("Number of sites: {}".format(str(len(Sites))))
     print("Number of genes: {}".format(str(len(Genes))))
     print("Sites with counts: {}".format(str(len(Counts))))
     print("Genes with MK: {}".format(str(len(MK))))
+    
+    return MK
+
+def confirm_midas_merge_files(args):
+    """Confirm files are present. No integrity check"""
+
+    # Check files exist in input directory
+    file_list = os.listdir(args.indir)
+    if 'snps_freq.txt' not in file_list:
+        raise FileNotFoundError("Could not find snps_freq.txt at {}".format(args.indir))
+    if 'snps_info.txt' not in file_list:
+        raise FileNotFoundError("Could not find snps_info.txt at {}".format(args.indir))
+    if 'snps_depth.txt' not in file_list:
+        raise FileNotFoundError("Could not find snps_depth.txt at {}".format(args.indir))
+    if not os.path.isfile(args.metadata_file):
+        raise FileNotFoundError("Could not find metadata file {}".format(args.metadata_file))
+
+if __name__ == "__main__":
+    
+    # Argparse
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    required = parser.add_argument_group("Required arguments")
+    required.add_argument("--indir", help = "Input directory", type = str,
+                          required = True)
+    required.add_argument("--metadata_file", help = "Mapping file for samples", type = str,
+                          required = True)
+    required.add_argument("--group1", help = "Group1 of comparison", type = str,
+                          required = True)
+    required.add_argument("--group2", help = "Group2 of comparison",
+                          required = True)
+        
+    parser.add_argument("--test", help = "Eventually specify test to perform",
+                        default = "G", type = str)
+    parser.add_argument("--outfile", help = "Output file with results",
+                   default = "mk_results.txt", type = str)
+    parser.add_argument("--min_count", help = "min depth at a position in a sample to consider that sample in that position",
+                        default = 1, type = int)
+    parser.add_argument("--nrows", help = "Number of gene positions to read",
+                        default = float('inf'), type = float)
+    parser.add_argument("--tables", help = "Output file for contingency tables",
+                        default = "mk_tables.txt", type = str)
+    parser.add_argument("--pseudocount", help = "Pseudocount value to use in contingency tables",
+                        default = 1, type = int)
+    
+    args = parser.parse_args()
+    
+    ######## Check files #################
+    confirm_midas_merge_files(args)
+
+    #### Read metadata ####
+    Groups = sutilspy.io.process_run_list(args.metadata_file,
+                                          1, 0, header = True)
+    Samples = sutilspy.io.process_run_list(args.metadata_file,
+                                           0, 1, header = True)
+    
+    ######## Read info #######
+    Genes, Sites = process_snp_info_file(args)
+    
+    ###### Chose sites based on depth in groups to compare #######
+    Counts = process_snps_depth_file(args, Sites)
+    
+    ####### Read frequencies and calculate #########
+    MK = process_snp_freq_file(args, Counts, Groups, Samples)
     
     ################ Test and results ########
     with open(args.outfile,mode='w') as fh, open(args.tables,mode='w') as th:
