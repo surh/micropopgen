@@ -70,7 +70,7 @@ class Gene:
         elif pos < self.start:
             self.start = pos
     
-    def print(self):
+    def info(self):
         print("===Gene===")
         print(">Gene id: {}".format(self.id))
         print(">Gene contig: {}".format(self.contig))
@@ -240,13 +240,13 @@ def process_snp_info_file(args):
                 Genes[gene].extend(row[pos_col])
                 #print(gene)
                 #print(Genes[gene])
-                #Genes[gene].print()
+                #Genes[gene].info()
 
             else:
                 # Define gene
                 Genes[gene] = Gene(gene_id=gene, contig = row[contig_col],
                                    start = row[pos_col], end = row[pos_col])
-                #Genes[gene].print()
+                #Genes[gene].info()
                 #print(Genes[gene])
 
 
@@ -256,6 +256,69 @@ def process_snp_info_file(args):
     print("Number of genes: {}".format(str(len(Genes))))
     
     return Genes, Sites
+    
+def process_snps_depth_file(args,Sites):
+    """Use depth to decide which samples to keep. It modifies Sites and returns Counts"""
+    
+    Counts = {}
+    with open(args.indir + '/snps_depth.txt') as depth_fh:
+        header = depth_fh.readline()
+        header = header.rstrip()
+        header = header.split('\t')
+
+        # Get sample and column indices
+        samples = header[1:]
+        indices = {}
+        for s in samples:
+            indices[s] = header.index(s)
+        print(indices)
+
+
+        depth_reader = csv.reader(depth_fh, delimiter = '\t')
+        i = 0
+        for row in depth_reader:
+            i += 1
+            if i > args.nrows:
+                break 
+            #print(row)
+
+            site_id = row[0]
+            #print(site_id)
+            if not site_id in Sites:
+                continue
+
+            # Get all counts
+            counts = row[1:]
+            counts = list(map(int,counts))
+            #print(counts)
+
+            counts = [int(c >= args.min_count) for c in counts]
+
+            # Get counts per group
+            samples1 = [int(counts[ indices[l] - 1 ]) for l in Groups[args.group1]]
+            samples2 = [int(counts[ indices[l] - 1 ]) for l in Groups[args.group2]]
+            samples1 = sum(samples1)
+            samples2 = sum(samples2)
+            #print(samples1)
+            #print(samples2)
+            if not (samples1 > 1 and samples2 > 1):
+                # delete
+                #print(site_id)
+                if site_id in Sites:
+                    del Sites[site_id]
+            else:
+                # NOTE: ASSUMING SAME ORDER IN SAMPLES BETWEEN SITES
+                Counts[site_id] = counts
+
+
+
+    depth_fh.close()
+    print("Number of sites: {}".format(str(len(Sites))))
+    print("Number of genes: {}".format(str(len(Genes))))
+    print("Sites with counts: {}".format(str(len(Counts))))
+        
+    return Counts
+    
     
     
 
@@ -314,65 +377,8 @@ if __name__ == "__main__":
     ######## Read info #######
     Genes, Sites = process_snp_info_file(args)
     
-    
-    
     ###### Chose sites based on depth in groups to compare #######
-    Counts = {}
-    with open(args.indir + '/snps_depth.txt') as depth_fh:
-        header = depth_fh.readline()
-        header = header.rstrip()
-        header = header.split('\t')
-
-        # Get sample and column indices
-        samples = header[1:]
-        indices = {}
-        for s in samples:
-            indices[s] = header.index(s)
-        print(indices)
-
-
-        depth_reader = csv.reader(depth_fh, delimiter = '\t')
-        i = 0
-        for row in depth_reader:
-            i += 1
-            if i > args.nrows:
-                break 
-            #print(row)
-
-            site_id = row[0]
-            #print(site_id)
-            if not site_id in Sites:
-                continue
-
-            # Get all counts
-            counts = row[1:]
-            counts = list(map(int,counts))
-            #print(counts)
-
-            counts = [int(c >= args.min_count) for c in counts]
-
-            # Get counts per group
-            samples1 = [int(counts[ indices[l] - 1 ]) for l in Groups[args.group1]]
-            samples2 = [int(counts[ indices[l] - 1 ]) for l in Groups[args.group2]]
-            samples1 = sum(samples1)
-            samples2 = sum(samples2)
-            #print(samples1)
-            #print(samples2)
-            if not ((samples1 > 0 and samples2 > 0) and (samples1 > 1 or samples2 > 1)):
-                # delete
-                #print(site_id)
-                if site_id in Sites:
-                    del Sites[site_id]
-            else:
-                # NOTE: ASSUMING SAME ORDER IN SAMPLES BETWEEN SITES
-                Counts[site_id] = counts
-
-
-
-    depth_fh.close()
-    print("Number of sites: {}".format(str(len(Sites))))
-    print("Number of genes: {}".format(str(len(Genes))))
-    print("Sites with counts: {}".format(str(len(Counts))))
+    Counts = process_snps_depth_file(args, Sites)
     
     # Read frequencies and calculate 
     print(Groups)
