@@ -91,11 +91,11 @@ def concatenate_run(file_sets,outdir,name_prefix, extension = ".fastq",keep = Fa
             concatenate_files(files, newfile)
             i += 1
             FILES.append(newfile)
-	    if not keep:
-	    	# Remove temp files
-	    	for f in files:
-			print("\tRemoving temporary file {}".format(f))
-			os.remove(f)
+            if not keep:
+                # Remove temp file
+                for f in files:
+                    print("\tRemoving temporary file {}".format(f))
+                    os.remove(f)
         except (ProcessError):
             raise ProcessError("Could not concatenate files from read {}".format(i))
     
@@ -189,8 +189,8 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
                   "--sample_col", '1',
                   "--header", "--failed", failedfile,
                   "--method", "serial"]
-	if keep:
-		option.append("--keep_intermediate")
+        if keep:
+            option.append("--keep_intermediate")
         option = " ".join(option)
         
         command = bin + " " + option
