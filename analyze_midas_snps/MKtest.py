@@ -273,7 +273,6 @@ def process_snps_depth_file(args,Sites):
             indices[s] = header.index(s)
         print(indices)
 
-
         depth_reader = csv.reader(depth_fh, delimiter = '\t')
         i = 0
         for row in depth_reader:
@@ -281,26 +280,32 @@ def process_snps_depth_file(args,Sites):
             if i > args.nrows:
                 break 
             #print(row)
-
+            
+            # Get site ID and check if it is in Sites (for MK this is
+            # equivalent to check if this a gene)
             site_id = row[0]
             #print(site_id)
             if not site_id in Sites:
                 continue
 
-            # Get all counts
+            # Get all counts and convert to integer
             counts = row[1:]
             counts = list(map(int,counts))
             #print(counts)
-
+            
+            # Convert count to presence/absence vector based on
+            # threshold of number of counts to use position in sample
             counts = [int(c >= args.min_count) for c in counts]
+            #print(counts)
 
             # Get counts per group
-            samples1 = [int(counts[ indices[l] - 1 ]) for l in Groups[args.group1]]
-            samples2 = [int(counts[ indices[l] - 1 ]) for l in Groups[args.group2]]
+            # GLITCH: Here it fails if map has extra samples not present in files
+            samples1 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group1]) & set(indices.keys())]
+            samples2 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group2]) & set(indices.keys())]
             samples1 = sum(samples1)
             samples2 = sum(samples2)
-            #print(samples1)
-            #print(samples2)
+            print(samples1)
+            print(samples2)
             if not (samples1 > 1 and samples2 > 1):
                 # delete
                 #print(site_id)
