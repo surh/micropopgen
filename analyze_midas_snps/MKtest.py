@@ -300,10 +300,10 @@ def process_snps_depth_file(args,Groups,Sites):
             # Get counts per group
             # GLITCH: Here it fails if map has extra samples not present in files
             #print(set(Groups[args.group1]) & set(indices.keys()))
-            print(args.group1)
-            print(Groups[args.group1])
-            print(indices.keys())
-            print(set(indices.keys()))
+            #print(args.group1)
+            #print(Groups[args.group1])
+            #print(indices.keys())
+            #print(set(indices.keys()))
             
             samples1 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group1]) & set(indices.keys())]
             samples2 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group2]) & set(indices.keys())]
@@ -312,7 +312,7 @@ def process_snps_depth_file(args,Groups,Sites):
             #print(samples1)
             #print(samples2)
             if not (samples1 > 1 and samples2 > 1):
-                print("\t====Group1:{},Group2:{},SiteID:{}====".format(samples1,samples2,site_id))
+                #print("\t====Group1:{},Group2:{},SiteID:{}====".format(samples1,samples2,site_id))
                 # delete
                 #print(site_id)
                 if site_id in Sites:
