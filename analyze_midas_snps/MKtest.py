@@ -304,8 +304,8 @@ def process_snps_depth_file(args,Sites):
             samples2 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group2]) & set(indices.keys())]
             samples1 = sum(samples1)
             samples2 = sum(samples2)
-            print(samples1)
-            print(samples2)
+            #print(samples1)
+            #print(samples2)
             if not (samples1 > 1 and samples2 > 1):
                 # delete
                 #print(site_id)
