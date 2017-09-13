@@ -296,12 +296,15 @@ def process_snps_depth_file(args,Groups,Sites):
             # Convert count to presence/absence vector based on
             # threshold of number of counts to use position in sample
             counts = [int(c >= args.min_count) for c in counts]
-            #print(counts)
-
+            
             # Get counts per group
             # GLITCH: Here it fails if map has extra samples not present in files
             #print(set(Groups[args.group1]) & set(indices.keys()))
+            print(args.group1)
             print(Groups[args.group1])
+            print(indices.keys())
+            print(set(indices.keys()))
+            
             samples1 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group1]) & set(indices.keys())]
             samples2 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group2]) & set(indices.keys())]
             samples1 = sum(samples1)
