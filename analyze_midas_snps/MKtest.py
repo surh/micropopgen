@@ -257,7 +257,7 @@ def process_snp_info_file(args):
     
     return Genes, Sites
     
-def process_snps_depth_file(args,Sites, Groups):
+def process_snps_depth_file(args,Groups,Sites):
     """Use depth to decide which samples to keep. It modifies Sites and returns Counts"""
     
     Counts = {}
@@ -300,6 +300,8 @@ def process_snps_depth_file(args,Sites, Groups):
 
             # Get counts per group
             # GLITCH: Here it fails if map has extra samples not present in files
+            #print(set(Groups[args.group1]) & set(indices.keys()))
+            print(Groups[args.group1])
             samples1 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group1]) & set(indices.keys())]
             samples2 = [int(counts[ indices[l] - 1 ]) for l in set(Groups[args.group2]) & set(indices.keys())]
             samples1 = sum(samples1)
@@ -476,7 +478,7 @@ if __name__ == "__main__":
     Genes, Sites = process_snp_info_file(args)
     
     ###### Chose sites based on depth in groups to compare #######
-    Counts = process_snps_depth_file(args, Sites, Groups)
+    Counts = process_snps_depth_file(args, Groups, Sites)
     
     ####### Read frequencies and calculate #########
     MK = process_snp_freq_file(args, Counts, Groups, Samples)
