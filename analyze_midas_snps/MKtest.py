@@ -257,7 +257,7 @@ def process_snp_info_file(args):
     
     return Genes, Sites
     
-def process_snps_depth_file(args,Sites):
+def process_snps_depth_file(args,Sites, Groups):
     """Use depth to decide which samples to keep. It modifies Sites and returns Counts"""
     
     Counts = {}
@@ -476,7 +476,7 @@ if __name__ == "__main__":
     Genes, Sites = process_snp_info_file(args)
     
     ###### Chose sites based on depth in groups to compare #######
-    Counts = process_snps_depth_file(args, Sites)
+    Counts = process_snps_depth_file(args, Sites, Groups)
     
     ####### Read frequencies and calculate #########
     MK = process_snp_freq_file(args, Counts, Groups, Samples)
