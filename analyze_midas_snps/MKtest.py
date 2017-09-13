@@ -307,6 +307,7 @@ def process_snps_depth_file(args,Sites):
             #print(samples1)
             #print(samples2)
             if not (samples1 > 1 and samples2 > 1):
+                print("\t====Group1:{},Group2:{},SiteID:{}====".format(samples1,samples2,site_id))
                 # delete
                 #print(site_id)
                 if site_id in Sites:
