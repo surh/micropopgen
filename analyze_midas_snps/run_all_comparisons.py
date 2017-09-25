@@ -28,7 +28,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
         
     # Read list of comparisons
-    comparisons = pd.read_csv(comparisons_file, sep="\t")
+    comparisons = pd.read_csv(args.comparisons_file, sep="\t")
     comparisons.head()
     
     # For every comparison
@@ -36,11 +36,15 @@ if __name__ == '__main__':
         #print(i)
         #print(r)
         
-        species_indir = ''.join([indir,'/',r['Species'], '/'])
+        species_indir = ''.join([args.indir,'/',
+                                 r['Species'],
+                                 '/'])
         #print(species_dir)
         
         # Create output directory
-        species_outdir = ''.join([outdir,'/',r['Species'],'/'])
+        species_outdir = ''.join([args.outdir,
+                                  '/',r['Species'],
+                                  '/'])
         try:
             os.mkdir(species_outdir)
             print("Creating output directory")
@@ -62,8 +66,8 @@ if __name__ == '__main__':
         species_err = ''.join([species_outdir,'/',
                                suffix,'.err'])
         
-        cmd = [mk_bin, '--indir', species_dir,
-              '--metadata_file', map_file,
+        cmd = [args.mk_bin, '--indir', species_dir,
+              '--metadata_file', args.map_file,
                '--group1', r['A'],
                '--group2', r['B'],
                '--outfile', species_outfile,
