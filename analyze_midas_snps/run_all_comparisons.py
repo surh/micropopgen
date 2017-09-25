@@ -66,8 +66,8 @@ if __name__ == '__main__':
         species_err = ''.join([species_outdir,'/',
                                suffix,'.err'])
         
-        group1 = ''.join("'",r['A'],"'")
-        group2 = ''.join("'",r['B'],"'")
+        group1 = ''.join(["'",r['A'],"'"])
+        group2 = ''.join(["'",r['B'],"'"])
         
         cmd = [args.mk_bin, '--indir', species_indir,
               '--metadata_file', args.map_file,
