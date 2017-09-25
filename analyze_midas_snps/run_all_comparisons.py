@@ -66,10 +66,13 @@ if __name__ == '__main__':
         species_err = ''.join([species_outdir,'/',
                                suffix,'.err'])
         
+        group1 = ''.join("'",r['A'],"'")
+        group2 = ''.join("'",r['B'],"'")
+        
         cmd = [args.mk_bin, '--indir', species_indir,
               '--metadata_file', args.map_file,
-               '--group1', r['A'],
-               '--group2', r['B'],
+               '--group1', group1,
+               '--group2', group2,
                '--outfile', species_outfile,
                '--tables', species_tables,
                '1>', species_log,
