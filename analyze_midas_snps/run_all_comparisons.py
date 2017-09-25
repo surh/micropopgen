@@ -66,7 +66,7 @@ if __name__ == '__main__':
         species_err = ''.join([species_outdir,'/',
                                suffix,'.err'])
         
-        cmd = [args.mk_bin, '--indir', species_dir,
+        cmd = [args.mk_bin, '--indir', species_indir,
               '--metadata_file', args.map_file,
                '--group1', r['A'],
                '--group2', r['B'],
