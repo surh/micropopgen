@@ -89,3 +89,4 @@ if __name__ == '__main__':
     
     # Create tables
     conn.commit()
+    conn.close()
