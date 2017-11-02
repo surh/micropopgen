@@ -8,6 +8,7 @@ import argparse
 import os
 
 def create_metagenomes_database(path):
+    """Create sqlite3 database"""
     
     # Create connection
     conn = sqlite3.connect(path)
@@ -58,8 +59,6 @@ def create_metagenomes_database(path):
     conn.commit()
     conn.close()
     
-
-
 if __name__ == '__main__':
     # Read arguments
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -95,5 +94,7 @@ if __name__ == '__main__':
         print("File already exists. Will do nothing")
         raise
     
+    # Create database. Eventually, might have some options depending on passed
+    # parameters
     create_metagenomes_database(args.outpath)
     
