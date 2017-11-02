@@ -7,43 +7,10 @@ import sqlite3
 import argparse
 import os
 
-if __name__ == '__main__':
-    # Read arguments
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    required = parser.add_argument_group("Required arguments")
-    required.add_argument("--outpath", help = "Path of the file to create", type = str,
-                          required = True)
-    parser.add_argument("--overwrite", help = "If passed, it will overwrite any existing file",
-                        action = "store_true")
-    args = parser.parse_args()
-    
-    # Check that path exists
-    head, tail = os.path.split(args.outpath)
-    try:
-        if not os.path.isdir(head):
-            raise NotADirectoryError
-    except:
-        print("Path provided for output does not exist")
-        raise
-    
-    # Check if file with same name exists
-    try:
-        fe = False
-        if os.path.isfile(args.outpath):
-            fe = True
-        if fe and not args.overwrite:
-            raise FileExistsError
-        elif fe and args.overwrite:
-            print("\tFile already existsts and it will be overwritten")
-            os.unlink(args.outpath)
-        elif not fe:
-            print("\tFile does not exists and will be created")
-    except:
-        print("File already exists. Will do nothing")
-        raise
+def create_metagenomes_database(path):
     
     # Create connection
-    conn = sqlite3.connect(args.outpath)
+    conn = sqlite3.connect(path)
     c = conn.cursor()
     
     # Create subject table
@@ -90,3 +57,43 @@ if __name__ == '__main__':
     # Create tables
     conn.commit()
     conn.close()
+    
+
+
+if __name__ == '__main__':
+    # Read arguments
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    required = parser.add_argument_group("Required arguments")
+    required.add_argument("--outpath", help = "Path of the file to create", type = str,
+                          required = True)
+    parser.add_argument("--overwrite", help = "If passed, it will overwrite any existing file",
+                        action = "store_true")
+    args = parser.parse_args()
+    
+    # Check that path exists
+    head, tail = os.path.split(args.outpath)
+    try:
+        if not os.path.isdir(head):
+            raise NotADirectoryError
+    except:
+        print("Path provided for output does not exist")
+        raise
+    
+    # Check if file with same name exists
+    try:
+        fe = False
+        if os.path.isfile(args.outpath):
+            fe = True
+        if fe and not args.overwrite:
+            raise FileExistsError
+        elif fe and args.overwrite:
+            print("\tFile already existsts and it will be overwritten")
+            os.unlink(args.outpath)
+        elif not fe:
+            print("\tFile does not exists and will be created")
+    except:
+        print("File already exists. Will do nothing")
+        raise
+    
+    create_metagenomes_database(args.outpath)
+    
