@@ -21,7 +21,8 @@ def create_metagenomes_database(path):
                     internal_id TEXT,
                     disease_state TEXT,
                     population TEXT,
-                    project TEXT)'''
+                    project TEXT,
+                    unique (internal_id))'''
     c.execute(create_table)
     
     # Create Sample table
@@ -35,7 +36,8 @@ def create_metagenomes_database(path):
                     host_species TEXT,
                     replicate INTEGER,
                     FOREIGN KEY (subject_id)
-                            REFERENCES subject(subject_id)
+                            REFERENCES subject(subject_id),
+                    unique (SRS)
                     )
                     '''
     c.execute(create_table)
@@ -51,7 +53,8 @@ def create_metagenomes_database(path):
                     FOREIGN KEY (subject_id)
                         REFERENCES subject(subject_id),
                     FOREIGN KEY (sample_id)
-                        REFERENCES sample(sample_id)
+                        REFERENCES sample(sample_id),
+                    unique (SRR)
                     )'''
     c.execute(create_table)
     
