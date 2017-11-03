@@ -44,7 +44,7 @@ def create_metagenomes_database(path):
     
     # Create Run table
     create_table = '''CREATE TABLE run
-                    (run_id TEXT PRIMARY KEY,
+                    (run_id INTEGER PRIMARY KEY,
                     sample_id INTEGER,
                     subject_id INTEGER,
                     platform TEXT,
