@@ -114,3 +114,9 @@ if __name__ == '__main__':
             elif args.failure == 'continue':
                 failed.append(s)
                 print("\tContinuing")
+
+    # Write failed samples
+    if len(failed) > 0:
+        sutilspy.io.write_table(outfile=args.failed, rows=failed,
+                                header=None, delimiter="\t",
+                                verbose=False)
