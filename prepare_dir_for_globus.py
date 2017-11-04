@@ -108,7 +108,7 @@ if __name__ == '__main__':
                          outdir=args.outdir, checks=True)
         except:
             print("Sample {} failed".format(s))
-            if args.failure == 'clean':
+            if args.failure == 'clear':
                 print("Cleaning and aborting")
                 shutil.rmtree(path=args.outdir)
             elif args.failure == 'continue':
