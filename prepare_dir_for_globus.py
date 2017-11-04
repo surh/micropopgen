@@ -3,23 +3,59 @@
 import argparse
 import os
 import sutilspy
+import shutil
 
 
-def check_sample(sample, path, extension='.fastq.bz2'):
-    """Check whether the files for a given sample are present"""
-    # Create file names
-    r1_file = ''.join([path, '/', sample, '_read1', extension])
-    r2_file = ''.join([path, '/', sample, '_read2', extension])
+def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
+    """Check whether the files for a given sample are present,
+    and if the output directory exists"""
 
     # Check that files exist
     try:
         if not os.path.isfile(r1_file):
             raise FileNotFoundError
+    except:
+        print("""ERROR: File {} is missing""".format(r1_file))
+        raise
+
+    try:
         if not os.path.isfile(r2_file):
             raise FileNotFoundError
     except:
-        print("""ERROR: At least one of the files for
-              sample {} is missing""".format(sample))
+        print("""File {} is missing""".format(r2_file))
+        raise
+
+    # Check that output directory is present
+    try:
+        if not os.path.isdir(path):
+            raise ValueError
+    except:
+        print("""ERROR: Output directory missing""")
+        raise
+
+
+def create_links(sample, indir, outdir, extension='.fastq.bz2',
+                 checks=True):
+    """Create symbolic links for files from sample"""
+    # Create file names
+    r1_file = ''.join([indir, '/', sample, '_read1', extension])
+    r2_file = ''.join([indir, '/', sample, '_read2', extension])
+
+    # Run checks
+    try:
+        if checks:
+            check_sample(r1_file=r1_file, r2_file=r2_file, path=outdir)
+    except:
+        print("Sample {} failed checks".format(sample))
+        raise
+
+    # Create links
+    try:
+        os.symlink(src=r1_file, dst=outdir)
+        os.symlink(src=r1_file, dst=outdir)
+    except:
+        print("""ERROR:Could not create symbolic links
+              for sample {}""".format(sample))
         raise
 
 
@@ -40,6 +76,12 @@ if __name__ == '__main__':
     parser.add_argument("--overwrite", help="""Flag indicating that any
                         existing file must be overwritten""",
                         action="store_true")
+    parser.add_argument("--failure", help="""What to do upon failure of
+                        a sample. Remove everythin (clear).
+                        Keep going (continue)""", default='clear',
+                        choices=['clear', 'continue'])
+    parser.add_argument("--failed", help="""Filename where to store failed
+                        samples""", default="failed.txt")
 
     args = parser.parse_args()
 
@@ -51,6 +93,24 @@ if __name__ == '__main__':
         print("ERROR: Failed reading sample list")
         raise
 
+    # Create output directory
+    try:
+        os.mkdir(args.outdir)
+    except:
+        print("ERROR: Could not create {}".format(args.outdir))
+        raise
+
     # Check every sample
+    failed = []
     for s in samples:
-        check_sample(s, args.indir)
+        try:
+            create_links(sample=s, indir=args.indir,
+                         outdir=args.outdir, checks=True)
+        except:
+            print("Sample {} failed".format(s))
+            if args.failure == 'clean':
+                print("Cleaning and aborting")
+                shutil.rmtree(path=args.outdir)
+            elif args.failure == 'continue':
+                failed.append(s)
+                print("\tContinuing")
