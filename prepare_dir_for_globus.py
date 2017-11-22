@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 print("Cleaning and aborting")
                 shutil.rmtree(path=args.outdir)
             elif args.failure == 'continue':
-                failed.append(s)
+                failed.append([s])
                 print("\tContinuing")
 
     # Write failed samples
