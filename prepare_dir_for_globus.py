@@ -121,7 +121,7 @@ if __name__ == '__main__':
     failed = []
     for s in samples:
         try:
-            print("".join(">", s))
+            print(''.join([">", s]))
             create_links(sample=s, indir=args.indir,
                          outdir=args.outdir, checks=True)
         except:
