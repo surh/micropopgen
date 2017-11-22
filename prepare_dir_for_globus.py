@@ -46,13 +46,13 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
         if checks:
             check_sample(r1_file=r1_file, r2_file=r2_file, path=outdir)
     except:
+        print(1:)
         print("\tSample {} failed checks".format(sample))
         raise
 
     # Create links
     try:
-        print(r1_file)
-        print(outdir)
+        print(2:)
         os.symlink(src=r1_file, dst=outdir)
         os.symlink(src=r1_file, dst=outdir)
     except:
