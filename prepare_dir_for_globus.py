@@ -27,6 +27,8 @@ def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
 
     # Check that output directory is present
     try:
+        print("ISDIR")
+        print(os.path.isdir(path))
         if not os.path.isdir(path):
             raise ValueError
     except:
