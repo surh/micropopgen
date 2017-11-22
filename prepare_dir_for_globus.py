@@ -51,8 +51,8 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
 
     # Create links
     try:
-        print("\tCreating symbolic links")
         print(r1_file)
+        print(outdir)
         os.symlink(src=r1_file, dst=outdir)
         os.symlink(src=r1_file, dst=outdir)
     except:
