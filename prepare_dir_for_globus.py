@@ -12,7 +12,7 @@ def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
 
     # Check that files exist
     try:
-        print("===============Checking file 1")
+        print("=====Checking file 1")
         if not os.path.isfile(r1_file):
             raise FileNotFoundError
     except:
@@ -20,7 +20,7 @@ def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
         raise
 
     try:
-        print("===============Checking file 2")
+        print("=====Checking file 2")
         if not os.path.isfile(r2_file):
             raise FileNotFoundError
     except:
@@ -29,7 +29,7 @@ def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
 
     # Check that output directory is present
     try:
-        print("===============Checking outdir")
+        print("=====Checking outdir")
         print("ISDIR")
         print(path)
         print(os.path.isdir(path))
@@ -49,7 +49,7 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
 
     # Run checks
     try:
-        print("========Checking files")
+        print("===Checking files")
         if checks:
             check_sample(r1_file=r1_file, r2_file=r2_file, path=outdir)
     except:
@@ -60,7 +60,7 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
     # Create links
     try:
         print(2)
-        print("========Creating symbolic links")
+        print("===Creating symbolic links")
         os.symlink(src=r1_file, dst=outdir)
         os.symlink(src=r1_file, dst=outdir)
     except:
@@ -129,6 +129,7 @@ if __name__ == '__main__':
             if args.failure == 'clear':
                 print("Cleaning and aborting")
                 shutil.rmtree(path=args.outdir)
+                raise
             elif args.failure == 'continue':
                 failed.append([s])
                 print("\tContinuing")
