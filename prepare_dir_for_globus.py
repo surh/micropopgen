@@ -46,7 +46,7 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
         if checks:
             check_sample(r1_file=r1_file, r2_file=r2_file, path=outdir)
     except:
-        print("Sample {} failed checks".format(sample))
+        print("\tSample {} failed checks".format(sample))
         raise
 
     # Create links
@@ -84,22 +84,22 @@ if __name__ == '__main__':
     parser.add_argument("--failed", help="""Filename where to store failed
                         samples""", default="failed.txt")
 
-    print("\tReading arguments")
+    print("Reading arguments")
     args = parser.parse_args()
 
     # Read list of samples
     try:
-        print("\tReading sample list...")
+        print("Reading sample list...")
         samples = sutilspy.io.return_column(args.samples, 1, header=False)
         n = str(len(samples))
-        print("\t{} samples read".format(n))
+        print("{} samples read".format(n))
     except:
         print("ERROR: Failed reading sample list")
         raise
 
     # Create output directory
     try:
-        print("\tCreating output directory")
+        print("Creating output directory")
         os.mkdir(args.outdir)
     except:
         print("ERROR: Could not create {}".format(args.outdir))
