@@ -57,8 +57,13 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
     try:
         print("===Creating symbolic links")
         print(''.join([outdir, '/', os.path.basename(r1_file)]))
-        os.symlink(src=r1_file, dst=''.join([outdir, os.basename(r1_file)]))
-        os.symlink(src=r2_file, dst=''.join([outdir, os.basename(r2_file)]))
+        print("###")
+        os.symlink(src=r1_file, dst=''.join([outdir,
+                                             '/',
+                                             os.path.basename(r1_file)]))
+        os.symlink(src=r2_file, dst=''.join([outdir,
+                                             '/',
+                                             os.path.basename(r2_file)]))
     except:
         print(("ERROR:Could not create symbolic links "
                "for sample {}").format(sample))
