@@ -30,7 +30,7 @@ def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
         if not os.path.isdir(path):
             raise ValueError
     except:
-        print("""ERROR: Output directory missing""")
+        print("""ERROR: Output directory ({}) missing""".format(path))
         raise
 
 
