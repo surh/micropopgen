@@ -30,8 +30,6 @@ def check_sample(r1_file, r2_file, path, extension='.fastq.bz2'):
     # Check that output directory is present
     try:
         print("=====Checking outdir")
-        print("ISDIR")
-        print(path)
         print(os.path.isdir(path))
         if not os.path.isdir(path):
             raise ValueError
@@ -53,13 +51,11 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
         if checks:
             check_sample(r1_file=r1_file, r2_file=r2_file, path=outdir)
     except:
-        print(1)
         print("\tSample {} failed checks".format(sample))
         raise
 
     # Create links
     try:
-        print(2)
         print("===Creating symbolic links")
         print(''.join([outdir, '/', os.basename(r1_file)]))
         os.symlink(src=r1_file, dst=''.join([outdir, os.basename(r1_file)]))
