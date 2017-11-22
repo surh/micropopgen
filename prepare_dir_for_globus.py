@@ -123,6 +123,7 @@ if __name__ == '__main__':
 
     # Write failed samples
     if len(failed) > 0:
+        print(failed)
         sutilspy.io.write_table(outfile=args.failed, rows=failed,
                                 header=None, delimiter="\t",
                                 verbose=False)
