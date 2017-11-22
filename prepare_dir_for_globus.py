@@ -51,6 +51,8 @@ def create_links(sample, indir, outdir, extension='.fastq.bz2',
 
     # Create links
     try:
+        print("\tCreating symbolic links")
+        print(r1_file)
         os.symlink(src=r1_file, dst=outdir)
         os.symlink(src=r1_file, dst=outdir)
     except:
@@ -102,7 +104,7 @@ if __name__ == '__main__':
         print("Creating output directory")
         os.mkdir(args.outdir)
     except:
-        print("ERROR: Could not create {}".format(args.outdir))
+        print("ERROR: Could not create output directory ({})".format(args.outdir))
         raise
 
     # Check every sample
@@ -123,7 +125,7 @@ if __name__ == '__main__':
 
     # Write failed samples
     if len(failed) > 0:
-        print(failed)
+        # print(failed)
         sutilspy.io.write_table(outfile=args.failed, rows=failed,
                                 header=None, delimiter="\t",
                                 verbose=False)
