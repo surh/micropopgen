@@ -1,9 +1,10 @@
 # Copyright (C) 2017 Sur Herrera Paredes
 import pandas as pd
 import pybedtools as bed
-from shutil import copyfile
+from shutil import copyfile, copyfileobj
 import os
 import argparse
+import gzip
 
 
 def _create_annotation_dataframe(annotations):
@@ -15,29 +16,6 @@ def _create_annotation_dataframe(annotations):
         d2['Type'] = k
         # print(d2)
         d = d.append(d2)
-    return(d)
-
-
-def split_gene_annotations(functions, sep1=';',
-                           sep2=':', sep3=',',
-                           append_which=False):
-    """Take annotation string from MIDAS database and expand it
-    into a table of Annotation<->Gene"""
-
-    # Split strings and create dictionary
-    by_type = functions.split(sep=sep1)
-    annotations = {}
-    for t in by_type:
-        db, annots = t.split(sep=sep2)
-        annots = annots.split(sep=sep3)
-
-        if append_which is True:
-            annots = [sep2.join([db, i]) for i in annots]
-
-        annotations[db] = annots
-
-    # Get dataframe from dictionary
-    d = _create_annotation_dataframe(annotations)
     return(d)
 
 
@@ -108,6 +86,24 @@ def get_fna(Feat, fasta_file, genome, args):
                "for genome ({})").format(genome))
         raise
 
+    # We need to decompress the fasta file
+    if args.compression == 'gzip':
+        newfile = ''.join([args.outdir, '/', genome, '.decompress.fasta'])
+        try:
+            with gzip.open(fasta_file, 'rb') as f_in, open(newfile, 'wb') as f_out:
+                copyfileobj(fsrc=f_in, fdst=f_out)
+                fasta_file = newfile
+            f_in.close()  # not sure if this is really closing the file
+            f_out.close()
+        except:
+            print("ERROR: decompression of fasta file failed")
+            raise OSError
+    elif args.compression == 'none':
+        pass
+    else:
+        print("ERROR: unrecognized compression")
+        raise ValueError
+
     # Get BED format dataframe
     Bed = Feat[['scaffold_id', 'start', 'end', 'gene_id',
                 'gene_type', 'strand']].copy()
@@ -129,6 +125,15 @@ def get_fna(Feat, fasta_file, genome, args):
     # Write results
     outfile = ''.join([args.outdir, '/', genome, '.CDS.fna'])
     copyfile(src=Bed.seqfn, dst=outfile)
+
+    # Clean if decompression. Eventually might use tempfile
+    if args.compression != 'none':
+        # Clean decompressed file
+        os.unlink(fasta_file)
+
+        # Clean index file
+        newfile = ''.join([fasta_file, '.fai'])
+        os.unlink(newfile)
 
 
 def get_sample_dirs(args):
@@ -208,6 +213,9 @@ def process_arguments():
                                              "existing files with repeated "
                                              "names."),
                         action="store_true", default=False)
+    parser.add_argument("--compression", help=("Which compression to expect "
+                                               "for feature and fasta files."),
+                        type=str, choices=['none', 'gzip'], default='gzip')
     parser.add_argument("--just_ID", help=("If passed the annotation ID "
                                            "allone will be returned. "
                                            "Alternativeley, the annotation "
@@ -249,6 +257,29 @@ def process_arguments():
     return args
 
 
+def split_gene_annotations(functions, sep1=';',
+                           sep2=':', sep3=',',
+                           append_which=False):
+    """Take annotation string from MIDAS database and expand it
+    into a table of Annotation<->Gene"""
+
+    # Split strings and create dictionary
+    by_type = functions.split(sep=sep1)
+    annotations = {}
+    for t in by_type:
+        db, annots = t.split(sep=sep2)
+        annots = annots.split(sep=sep3)
+
+        if append_which is True:
+            annots = [sep2.join([db, i]) for i in annots]
+
+        annotations[db] = annots
+
+    # Get dataframe from dictionary
+    d = _create_annotation_dataframe(annotations)
+    return(d)
+
+
 if __name__ == "__main__":
     """Main sscript body"""
 
@@ -283,6 +314,16 @@ if __name__ == "__main__":
         # Get file names
         feat_file = ''.join([d, '/genome.features'])
         fasta_file = ''.join([d, '/genome.fna'])
+
+        if args.compression == 'gzip':
+            feat_file = ''.join([feat_file, '.gz'])
+            fasta_file = ''.join([fasta_file, '.gz'])
+        elif args.compression == 'none':
+            pass
+        else:
+            print("ERROR: Unknown compression type passed")
+            raise ValueError
+
         print(feat_file)
         print(fasta_file)
 
