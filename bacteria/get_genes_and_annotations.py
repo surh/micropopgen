@@ -252,14 +252,6 @@ if __name__ == "__main__":
     # Read arguments
     args = process_arguments()
 
-    # Parameters
-    # infile = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.features"
-    # fasta = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.fna"
-    # which = "GO"
-    # outdir = "/home/sur/micropopgen/exp/2017/today3/out/"
-    # prefix = 'Zymomonas_mobilis_61858'
-    # append_which = True
-
     # Prepare output
     print("Preparing output directory...")
     try:
