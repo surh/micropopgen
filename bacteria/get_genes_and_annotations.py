@@ -170,13 +170,31 @@ if __name__ == "__main__":
     # prefix = 'Zymomonas_mobilis_61858'
     # append_which = True
 
+    # Prepare output
+    try:
+        if os.path.isdir(args.outdir) and (args.overwrite is True):
+            print(("Using already existing output "
+                   "directory ({}).").format(args.outdir))
+        elif os.path.isdir(args.outdir) and (args.overwrite is False):
+            print(("ERROR: The output directory "
+                   "already exists").format(args.outdir))
+            raise ValueError
+        elif not os.path.isdir(args.outdir):
+                os.mkdir(args.outdir)
+    except:
+        print(("Creation of output directory ({}) "
+               "failed.").format(args.outdir))
+        raise
 
-
-
+    for d in args.dir:
+        print(d)
     # Read feature table
-    os.mkdir(outdir)
-    Feat = pd.read_csv(infile,sep="\t")
+    Feat = pd.read_csv(infile, sep="\t")
     Feat = Feat.head(n=10)
+
+
+    os.mkdir(outdir)
+
     # Feat.head()
     # split_gene_annotations(functions=Feat['functions'][0])
 
