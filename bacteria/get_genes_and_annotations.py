@@ -126,6 +126,15 @@ def get_fna(Feat, fasta_file, genome, args):
     outfile = ''.join([args.outdir, '/', genome, '.CDS.fna'])
     copyfile(src=Bed.seqfn, dst=outfile)
 
+    # Clean if decompression. Eventually might use tempfile
+    if args.compression != 'none':
+        # Clean decompressed file
+        os.unlink(fasta_file)
+
+        # Clean index file
+        newfile = ''.join([fasta_file, '.fai'])
+        os.unlink(newfile)
+
 
 def get_sample_dirs(args):
     """Gets list of subdirectories withina directory, and checks that
