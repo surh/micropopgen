@@ -286,6 +286,16 @@ if __name__ == "__main__":
         # Get file names
         feat_file = ''.join([d, '/genome.features'])
         fasta_file = ''.join([d, '/genome.fna'])
+
+        if args.compression == 'gzip':
+            feat_file = ''.join([feat_file, '.gz'])
+            fasta_file = ''.join([fasta_file, '.gz'])
+        elif args.compression == 'none':
+            pass
+        else:
+            print("ERROR: Unknown compression type passed")
+            raise ValueError
+
         print(feat_file)
         print(fasta_file)
 
