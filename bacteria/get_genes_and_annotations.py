@@ -171,6 +171,7 @@ if __name__ == "__main__":
     # append_which = True
 
     # Prepare output
+    print("Preparing output directory...")
     try:
         if os.path.isdir(args.outdir) and (args.overwrite is True):
             print(("Using already existing output "
@@ -186,121 +187,122 @@ if __name__ == "__main__":
                "failed.").format(args.outdir))
         raise
 
-    for d in args.dir:
+    for d in args.dirs:
+
+        # Get genome name
         print(d)
-    # Read feature table
-    Feat = pd.read_csv(infile, sep="\t")
-    Feat = Feat.head(n=10)
+        genome = os.path.normpath(d)
+        genome = os.path.basename(genome)
+        print(genome)
+
+        # Get file names
+        feat_file = ''.join([d, '/genome.features'])
+        fasta_file = ''.join([d, '/genome.fna'])
+        print(feat_file)
+        print(fasta_file)
+
+        if 'annotation' in args.actions:
+            # Check annotation files
+            try:
+                if os.path.isfile(feat_file):
+                    # Read feature table
+                    Feat = pd.read_csv(feat_file, sep="\t")
+                    Feat = Feat.head(n=10)
+                else:
+                    print("ERROR: Could not find feature file")
+                    raise FileNotFoundError
+            except:
+                print(("ERROR: Could not obtain feature file "
+                       "for genome ({})").format(genome))
+                raise
 
 
-    os.mkdir(outdir)
-
-    # Feat.head()
-    # split_gene_annotations(functions=Feat['functions'][0])
-
-
-    # In[ ]:
-
-
-    # Gett annotations
-    ngenes = 0
-    ncds = 0
-    nannot = 0
-    nwhich = 0
-    Res = pd.DataFrame(columns=['Annotation','Type','Gene'])
-    for i, r in Feat.iterrows():
-        g = r['gene_id']
-        a = r['functions']
-        t = r['gene_type']
-        ngenes = ngenes + 1
-        # print(a)
-        # print("============")
-
-        # Keep only CDS
-        if t != 'CDS':
-            continue
-        ncds = ncds + 1
-        # Skip unannotated genes
-        if pd.isnull(a):
-            continue
-        nannot = nannot + 1
-
-        d = split_gene_annotations(functions=a,
-                                   append_which=append_which)
-        d['Gene'] = g
-
-        # Select annotation
-        if not pd.isnull(which):
-            d = d.loc[ d.Type == which, :]
-
-        # Append only if it has rows
-        if len(d.index) > 0:
-            nwhich = nwhich + 1
-            Res = Res.append(d)
-
-    Res = Res.drop(['Type'], axis = 1)
-
-
-
-    # In[ ]:
-
-
-    print(ngenes,ncds,nannot,nwhich)
-
-
-    # In[ ]:
-
-
-    Res
-
-
-    # In[ ]:
-
-
-    # Get BED format dataframe
-    Bed = Feat[ ['scaffold_id', 'start', 'end', 'gene_id', 'gene_type', 'strand']].copy()
-    Bed.reset_index(drop=True)
-    print(Bed)
-    Bed.loc[ Bed.strand == '+', 'start'] = Bed.loc[ Bed.strand == '+', 'start'] - 1
-    Bed.loc[ Bed.strand == '-', 'start'] = Bed.loc[ Bed.strand == '-', 'start'] - 1
-    Bed = Bed.loc[ Bed.gene_type == 'CDS', ]
-    Bed
-
-
-    # In[ ]:
-
-
-    (Bed.end - Bed.start)/3
-
-
-    # In[ ]:
-
-
-    # create BedTool and obtain sequences
-    Bed = bed.BedTool.from_dataframe(Bed)
-    Bed.sequence(fi=fasta, s=True, name=True)
-
-
-    # In[ ]:
-
-
-    # Show results
-    print(open(Bed.seqfn).read())
-
-
-    # In[ ]:
-
-
-    Bed.seqfn
-
-
-    # In[ ]:
-
-
-    outfile = ''.join([outdir,'/',prefix,'.cds.fna'])
-
-
-    # In[ ]:
-
-
-    copyfile(src=Bed.seqfn,dst=outfile)
+    # Get annotations
+    # ngenes = 0
+    # ncds = 0
+    # nannot = 0
+    # nwhich = 0
+    # Res = pd.DataFrame(columns=['Annotation','Type','Gene'])
+    # for i, r in Feat.iterrows():
+    #     g = r['gene_id']
+    #     a = r['functions']
+    #     t = r['gene_type']
+    #     ngenes = ngenes + 1
+    #     # print(a)
+    #     # print("============")
+    #
+    #     # Keep only CDS
+    #     if t != 'CDS':
+    #         continue
+    #     ncds = ncds + 1
+    #     # Skip unannotated genes
+    #     if pd.isnull(a):
+    #         continue
+    #     nannot = nannot + 1
+    #
+    #     d = split_gene_annotations(functions=a,
+    #                                append_which=append_which)
+    #     d['Gene'] = g
+    #
+    #     # Select annotation
+    #     if not pd.isnull(which):
+    #         d = d.loc[ d.Type == which, :]
+    #
+    #     # Append only if it has rows
+    #     if len(d.index) > 0:
+    #         nwhich = nwhich + 1
+    #         Res = Res.append(d)
+    #
+    # Res = Res.drop(['Type'], axis = 1)
+    #
+    #
+    # print(ngenes,ncds,nannot,nwhich)
+    #
+    #
+    #
+    # Res
+    #
+    #
+    #
+    #
+    # # Get BED format dataframe
+    # Bed = Feat[ ['scaffold_id', 'start', 'end', 'gene_id', 'gene_type', 'strand']].copy()
+    # Bed.reset_index(drop=True)
+    # print(Bed)
+    # Bed.loc[ Bed.strand == '+', 'start'] = Bed.loc[ Bed.strand == '+', 'start'] - 1
+    # Bed.loc[ Bed.strand == '-', 'start'] = Bed.loc[ Bed.strand == '-', 'start'] - 1
+    # Bed = Bed.loc[ Bed.gene_type == 'CDS', ]
+    # Bed
+    #
+    #
+    # (Bed.end - Bed.start)/3
+    #
+    #
+    # # create BedTool and obtain sequences
+    # Bed = bed.BedTool.from_dataframe(Bed)
+    # Bed.sequence(fi=fasta, s=True, name=True)
+    #
+    #
+    # # In[ ]:
+    #
+    #
+    # # Show results
+    # print(open(Bed.seqfn).read())
+    #
+    #
+    # # In[ ]:
+    #
+    #
+    # Bed.seqfn
+    #
+    #
+    # # In[ ]:
+    #
+    #
+    # outfile = ''.join([outdir,'/',prefix,'.cds.fna'])
+    #
+    #
+    # # In[ ]:
+    #
+    #
+    # copyfile(src=Bed.seqfn,dst=outfile)
