@@ -1,9 +1,10 @@
 # Copyright (C) 2017 Sur Herrera Paredes
 import pandas as pd
 import pybedtools as bed
-from shutil import copyfile
+from shutil import copyfile, copyfileobj
 import os
 import argparse
+import gzip
 
 
 def _create_annotation_dataframe(annotations):
@@ -84,6 +85,24 @@ def get_fna(Feat, fasta_file, genome, args):
         print(("ERROR: Could not find fasta file "
                "for genome ({})").format(genome))
         raise
+
+    # We need to decompress the fasta file
+    if args.compression == 'gzip':
+        newfile = ''.join([args.outdir, '/', genome, '.decompress.fasta'])
+        try:
+            with gzip.open(fasta_file, 'rb') as f_in, open(newfile, 'wb') as f_out:
+                copyfileobj(fsrc=f_in, fdst=f_out)
+                fasta_file = newfile
+            f_in.close()  # not sure if this is really closing the file
+            f_out.close()
+        except:
+            print("ERROR: decompression of fasta file failed")
+            raise OSError
+    elif args.compression == 'none':
+        pass
+    else:
+        print("ERROR: unrecognized compression")
+        raise ValueError
 
     # Get BED format dataframe
     Bed = Feat[['scaffold_id', 'start', 'end', 'gene_id',
