@@ -96,14 +96,55 @@ def process_arguments():
                                            "database ID will be pre-pended "
                                            "to the annotation ID."),
                         default=False, action="store_true")
+    parser.add_argument("--notdirs", help=("Indicates what to do in case "
+                                           "that a 'multi' directory is "
+                                           "passed, and it contains some "
+                                           "non directory entries"),
+                        choices=['ignore', 'fail'],
+                        default='ignore')
 
     # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
 
     # Processing goes here if needed
+    # Prepare list of directories
+    if args.type == 'multi':
+        args.dirs = get_sample_dirs(args)
+    elif args.type == 'single':
+        args.dirs = [args.indir]
+    else:
+        print("ERROR: Incorrect type of directory passed")
+        raise ValueError
 
     return args
+
+def get_sample_dirs(args):
+    """Gets list of subdirectories withina directory, and checks that
+    there are no non-directory entries"""
+
+    files = os.listdir(args.indir)
+
+    dirs = []
+    not_dirs = []
+    for f in files:
+        path = "".join([args.indir, "/", f])
+        if os.path.isdir(path):
+            dirs.append(path)
+        else:
+            not_dirs.append(path)
+
+    if args.notdirs == 'fail':
+        try:
+            if len(not_dirs) > 0:
+                raise ValueError
+        except:
+            print(("ERROR: The passed directory ({}) contains non-directory "
+                   "entries").format(args.indir))
+            raise
+
+    return dirs
+
 
 
 if __name__ == "__main__":
@@ -111,6 +152,7 @@ if __name__ == "__main__":
 
     # Read arguments
     args = process_arguments()
+
 
     # Parameters
     infile = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.features"
