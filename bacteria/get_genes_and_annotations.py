@@ -221,6 +221,10 @@ def process_arguments():
                                            "non directory entries"),
                         choices=['ignore', 'fail'],
                         default='ignore')
+    parser.add_argument("--ngenes", help=("Useful for debugging. The "
+                                          "number of genes of each genome "
+                                          "to be processed "),
+                        default=0, type=int)
 
     # Read arguments
     print("Reading arguments")
@@ -288,7 +292,8 @@ if __name__ == "__main__":
             if os.path.isfile(feat_file):
                 # Read feature table
                 Feat = pd.read_csv(feat_file, sep="\t")
-                Feat = Feat.head(n=10)
+                if args.ngenes > 0:
+                    Feat = Feat.head(n=args.ngenes)
             else:
                 print("ERROR: Could not find feature file")
                 raise FileNotFoundError
