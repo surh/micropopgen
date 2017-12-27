@@ -256,7 +256,7 @@ if __name__ == "__main__":
                     Res = Res.append(d)
 
             # Remove type if only one is being kept
-            if pd.isnull(args.which):
+            if not pd.isnull(args.which):
                 Res = Res.drop(['Type'], axis=1)
 
             print("ngenes ncds nannot nwhich")
