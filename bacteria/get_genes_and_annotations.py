@@ -126,6 +126,9 @@ def process_arguments():
     if args.actions == 'all':
         args.actions = ['annotation', 'fna']
 
+    # Append annotation type?
+    args.append_which = not args.just_ID
+
     return args
 
 
@@ -216,54 +219,56 @@ if __name__ == "__main__":
                        "for genome ({})").format(genome))
                 raise
 
+            # Get annotations
+            ngenes = 0
+            ncds = 0
+            nannot = 0
+            nwhich = 0
+            Res = pd.DataFrame(columns=['Annotation', 'Type', 'Gene'])
+            for i, r in Feat.iterrows():
+                g = r['gene_id']
+                a = r['functions']
+                t = r['gene_type']
+                ngenes = ngenes + 1
 
-    # Get annotations
-    # ngenes = 0
-    # ncds = 0
-    # nannot = 0
-    # nwhich = 0
-    # Res = pd.DataFrame(columns=['Annotation','Type','Gene'])
-    # for i, r in Feat.iterrows():
-    #     g = r['gene_id']
-    #     a = r['functions']
-    #     t = r['gene_type']
-    #     ngenes = ngenes + 1
-    #     # print(a)
-    #     # print("============")
-    #
-    #     # Keep only CDS
-    #     if t != 'CDS':
-    #         continue
-    #     ncds = ncds + 1
-    #     # Skip unannotated genes
-    #     if pd.isnull(a):
-    #         continue
-    #     nannot = nannot + 1
-    #
-    #     d = split_gene_annotations(functions=a,
-    #                                append_which=append_which)
-    #     d['Gene'] = g
-    #
-    #     # Select annotation
-    #     if not pd.isnull(which):
-    #         d = d.loc[ d.Type == which, :]
-    #
-    #     # Append only if it has rows
-    #     if len(d.index) > 0:
-    #         nwhich = nwhich + 1
-    #         Res = Res.append(d)
-    #
-    # Res = Res.drop(['Type'], axis = 1)
-    #
-    #
-    # print(ngenes,ncds,nannot,nwhich)
-    #
-    #
-    #
-    # Res
-    #
-    #
-    #
+                # Keep only CDS
+                if t != 'CDS':
+                    continue
+                ncds = ncds + 1
+
+                # Skip unannotated genes
+                if pd.isnull(a):
+                    continue
+                nannot = nannot + 1
+
+                # Get annotation
+                d = split_gene_annotations(functions=a,
+                                           append_which=args.append_which)
+                d['Gene'] = g
+
+                # Select annotation
+                if not pd.isnull(args.which):
+                    d = d.loc[d.Type == args.which, :]
+
+                # Append only if it has rows
+                if len(d.index) > 0:
+                    nwhich = nwhich + 1
+                    Res = Res.append(d)
+
+            # Remove type if only one is being kept
+            if pd.isnull(args.which):
+                Res = Res.drop(['Type'], axis=1)
+
+            print("ngenes ncds nannot nwhich")
+            print(ngenes, ncds, nannot, nwhich)
+
+            # Write results
+            outfile = ''.join([args.outdir, '/', genome, '.',
+                               args.which, '.txt'])
+            print(outfile)
+            Res.to_csv(outfile, sep="\t", index=False, header=True)
+
+
     #
     # # Get BED format dataframe
     # Bed = Feat[ ['scaffold_id', 'start', 'end', 'gene_id', 'gene_type', 'strand']].copy()
