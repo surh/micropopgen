@@ -131,7 +131,6 @@ def get_fna(Feat, fasta_file, genome, args):
     copyfile(src=Bed.seqfn, dst=outfile)
 
 
-
 def get_sample_dirs(args):
     """Gets list of subdirectories withina directory, and checks that
     there are no non-directory entries"""
