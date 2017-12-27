@@ -6,6 +6,7 @@ import os
 import argparse
 # import numpy as np
 
+
 def split_gene_annotations(functions, sep1=';',
                            sep2=':', sep3=',',
                            append_which=False):
@@ -20,7 +21,7 @@ def split_gene_annotations(functions, sep1=';',
         annots = annots.split(sep=sep3)
 
         if append_which is True:
-            annots = [sep2.join([db,i]) for i in annots]
+            annots = [sep2.join([db, i]) for i in annots]
 
         annotations[db] = annots
 
@@ -28,14 +29,15 @@ def split_gene_annotations(functions, sep1=';',
     d = _create_annotation_dataframe(annotations)
     return(d)
 
+
 def _create_annotation_dataframe(annotations):
     """Expands annotation of one gene"""
 
     d = pd.DataFrame()
-    for k,a in annotations.items():
-        d2 = pd.DataFrame(data = a, columns=['Annotation'])
+    for k, a in annotations.items():
+        d2 = pd.DataFrame(data=a, columns=['Annotation'])
         d2['Type'] = k
-        #print(d2)
+        # print(d2)
         d = d.append(d2)
     return(d)
 
@@ -204,20 +206,21 @@ if __name__ == "__main__":
         print(feat_file)
         print(fasta_file)
 
+        # Check annotation files. This is required in any case.
+        try:
+            if os.path.isfile(feat_file):
+                # Read feature table
+                Feat = pd.read_csv(feat_file, sep="\t")
+                Feat = Feat.head(n=10)
+            else:
+                print("ERROR: Could not find feature file")
+                raise FileNotFoundError
+        except:
+            print(("ERROR: Could not obtain feature file "
+                   "for genome ({})").format(genome))
+            raise
+
         if 'annotation' in args.actions:
-            # Check annotation files
-            try:
-                if os.path.isfile(feat_file):
-                    # Read feature table
-                    Feat = pd.read_csv(feat_file, sep="\t")
-                    Feat = Feat.head(n=10)
-                else:
-                    print("ERROR: Could not find feature file")
-                    raise FileNotFoundError
-            except:
-                print(("ERROR: Could not obtain feature file "
-                       "for genome ({})").format(genome))
-                raise
 
             # Get annotations
             ngenes = 0
@@ -268,46 +271,36 @@ if __name__ == "__main__":
             print(outfile)
             Res.to_csv(outfile, sep="\t", index=False, header=True)
 
+        if 'fna' in args.actions:
 
-    #
-    # # Get BED format dataframe
-    # Bed = Feat[ ['scaffold_id', 'start', 'end', 'gene_id', 'gene_type', 'strand']].copy()
-    # Bed.reset_index(drop=True)
-    # print(Bed)
-    # Bed.loc[ Bed.strand == '+', 'start'] = Bed.loc[ Bed.strand == '+', 'start'] - 1
-    # Bed.loc[ Bed.strand == '-', 'start'] = Bed.loc[ Bed.strand == '-', 'start'] - 1
-    # Bed = Bed.loc[ Bed.gene_type == 'CDS', ]
-    # Bed
-    #
-    #
-    # (Bed.end - Bed.start)/3
-    #
-    #
-    # # create BedTool and obtain sequences
-    # Bed = bed.BedTool.from_dataframe(Bed)
-    # Bed.sequence(fi=fasta, s=True, name=True)
-    #
-    #
-    # # In[ ]:
-    #
-    #
-    # # Show results
-    # print(open(Bed.seqfn).read())
-    #
-    #
-    # # In[ ]:
-    #
-    #
-    # Bed.seqfn
-    #
-    #
-    # # In[ ]:
-    #
-    #
-    # outfile = ''.join([outdir,'/',prefix,'.cds.fna'])
-    #
-    #
-    # # In[ ]:
-    #
-    #
-    # copyfile(src=Bed.seqfn,dst=outfile)
+            # Check fasta file
+            try:
+                if not os.path.isfile(fasta_file):
+                    print("ERROR: Could not find fasta file")
+                    raise FileNotFoundError
+            except:
+                print(("ERROR: Could not find fasta file "
+                       "for genome ({})").format(genome))
+                raise
+
+            # Get BED format dataframe
+            Bed = Feat[['scaffold_id', 'start', 'end', 'gene_id',
+                        'gene_type', 'strand']].copy()
+            Bed.reset_index(drop=True)
+
+            # Fix indices
+            Bed.loc[Bed.strand == '+', 'start'] = Bed.loc[Bed.strand == '+',
+                                                          'start'] - 1
+            Bed.loc[Bed.strand == '-', 'start'] = Bed.loc[Bed.strand == '-',
+                                                          'start'] - 1
+
+            # Get only CDS
+            Bed = Bed.loc[Bed.gene_type == 'CDS', ]
+
+            # create BedTool and obtain sequences
+            Bed = bed.BedTool.from_dataframe(Bed)
+            Bed.sequence(fi=fasta_file, s=True, name=True)
+
+            # Write results
+            outfile = ''.join([args.outdir, '/', genome, '.CDS.fna'])
+            copyfile(src=Bed.seqfn, dst=outfile)
