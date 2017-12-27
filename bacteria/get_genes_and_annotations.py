@@ -78,6 +78,11 @@ def process_arguments():
                                           "sub-directories"),
                           choices=['single', 'multi'],
                           required=True)
+    required.add_argument("--actions", help=("Indicates which information "
+                                             "to extract."),
+                          choices=['annotation', 'fna', 'all'],
+                          default='all',
+                          type=str)
     parser.add_argument("--which", help=("Indicates which annotation to "
                                          "extract. Eventually an 'all' "
                                          "option will be provided"),
@@ -117,7 +122,12 @@ def process_arguments():
         print("ERROR: Incorrect type of directory passed")
         raise ValueError
 
+    # Get list of actions
+    if args.actions == 'all':
+        args.actions = ['annotation', 'fna']
+
     return args
+
 
 def get_sample_dirs(args):
     """Gets list of subdirectories withina directory, and checks that
@@ -146,24 +156,21 @@ def get_sample_dirs(args):
     return dirs
 
 
-
 if __name__ == "__main__":
     """Main sscript body"""
 
     # Read arguments
     args = process_arguments()
 
-
     # Parameters
-    infile = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.features"
-    fasta = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.fna"
-    which = "GO"
-    outdir = "/home/sur/micropopgen/exp/2017/today3/out/"
-    prefix = 'Zymomonas_mobilis_61858'
-    append_which = True
+    # infile = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.features"
+    # fasta = "/home/sur/micropopgen/exp/2017/today3/Zymomonas_mobilis_61858/genome.fna"
+    # which = "GO"
+    # outdir = "/home/sur/micropopgen/exp/2017/today3/out/"
+    # prefix = 'Zymomonas_mobilis_61858'
+    # append_which = True
 
 
-    # In[ ]:
 
 
     # Read feature table
