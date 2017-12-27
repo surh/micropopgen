@@ -18,29 +18,6 @@ def _create_annotation_dataframe(annotations):
     return(d)
 
 
-def split_gene_annotations(functions, sep1=';',
-                           sep2=':', sep3=',',
-                           append_which=False):
-    """Take annotation string from MIDAS database and expand it
-    into a table of Annotation<->Gene"""
-
-    # Split strings and create dictionary
-    by_type = functions.split(sep=sep1)
-    annotations = {}
-    for t in by_type:
-        db, annots = t.split(sep=sep2)
-        annots = annots.split(sep=sep3)
-
-        if append_which is True:
-            annots = [sep2.join([db, i]) for i in annots]
-
-        annotations[db] = annots
-
-    # Get dataframe from dictionary
-    d = _create_annotation_dataframe(annotations)
-    return(d)
-
-
 def get_annotations(Feat, genome, args):
     """Get annotations for a genome"""
 
@@ -247,6 +224,29 @@ def process_arguments():
     args.append_which = not args.just_ID
 
     return args
+
+
+def split_gene_annotations(functions, sep1=';',
+                           sep2=':', sep3=',',
+                           append_which=False):
+    """Take annotation string from MIDAS database and expand it
+    into a table of Annotation<->Gene"""
+
+    # Split strings and create dictionary
+    by_type = functions.split(sep=sep1)
+    annotations = {}
+    for t in by_type:
+        db, annots = t.split(sep=sep2)
+        annots = annots.split(sep=sep3)
+
+        if append_which is True:
+            annots = [sep2.join([db, i]) for i in annots]
+
+        annotations[db] = annots
+
+    # Get dataframe from dictionary
+    d = _create_annotation_dataframe(annotations)
+    return(d)
 
 
 if __name__ == "__main__":
