@@ -185,6 +185,9 @@ def process_arguments():
                                              "existing files with repeated "
                                              "names."),
                         action="store_true", default=False)
+    parser.add_argument("--compression", help=("Which compression to expect "
+                                               "for feature and fasta files."),
+                        type=str, choices=['none', 'gzip'], default='gzip')
     parser.add_argument("--just_ID", help=("If passed the annotation ID "
                                            "allone will be returned. "
                                            "Alternativeley, the annotation "
