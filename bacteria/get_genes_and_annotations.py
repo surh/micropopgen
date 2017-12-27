@@ -4,7 +4,18 @@ import pybedtools as bed
 from shutil import copyfile
 import os
 import argparse
-# import numpy as np
+
+
+def _create_annotation_dataframe(annotations):
+    """Expands annotation of one gene"""
+
+    d = pd.DataFrame()
+    for k, a in annotations.items():
+        d2 = pd.DataFrame(data=a, columns=['Annotation'])
+        d2['Type'] = k
+        # print(d2)
+        d = d.append(d2)
+    return(d)
 
 
 def split_gene_annotations(functions, sep1=';',
@@ -30,21 +41,122 @@ def split_gene_annotations(functions, sep1=';',
     return(d)
 
 
-def _create_annotation_dataframe(annotations):
-    """Expands annotation of one gene"""
+def get_annotations(Feat, genome, args):
+    """Get annotations for a genome"""
 
-    d = pd.DataFrame()
-    for k, a in annotations.items():
-        d2 = pd.DataFrame(data=a, columns=['Annotation'])
-        d2['Type'] = k
-        # print(d2)
-        d = d.append(d2)
-    return(d)
+    # Get annotations
+    ngenes = 0
+    ncds = 0
+    nannot = 0
+    nwhich = 0
+    Res = pd.DataFrame(columns=['Annotation', 'Type', 'Gene'])
+    for i, r in Feat.iterrows():
+        g = r['gene_id']
+        a = r['functions']
+        t = r['gene_type']
+        ngenes = ngenes + 1
+
+        # Keep only CDS
+        if t != 'CDS':
+            continue
+        ncds = ncds + 1
+
+        # Skip unannotated genes
+        if pd.isnull(a):
+            continue
+        nannot = nannot + 1
+
+        # Get annotation
+        d = split_gene_annotations(functions=a,
+                                   append_which=args.append_which)
+        d['Gene'] = g
+
+        # Select annotation
+        if not pd.isnull(args.which):
+            d = d.loc[d.Type == args.which, :]
+
+        # Append only if it has rows
+        if len(d.index) > 0:
+            nwhich = nwhich + 1
+            Res = Res.append(d)
+
+    # Remove type if only one is being kept
+    if not pd.isnull(args.which):
+        Res = Res.drop(['Type'], axis=1)
+
+    print("ngenes ncds nannot nwhich")
+    print(ngenes, ncds, nannot, nwhich)
+
+    # Write results
+    outfile = ''.join([args.outdir, '/', genome, '.',
+                       args.which, '.txt'])
+    print(outfile)
+    Res.to_csv(outfile, sep="\t", index=False, header=True)
 
 
-def get_fna(features, fasta, outdir, prefix):
+def get_fna(Feat, fasta_file, genome, args):
     """Uses pybedtools to generate a fna file. A file with the nucleotide
     sequences of all CDS"""
+
+    # Check fasta file
+    try:
+        if not os.path.isfile(fasta_file):
+            print("ERROR: Could not find fasta file")
+            raise FileNotFoundError
+    except:
+        print(("ERROR: Could not find fasta file "
+               "for genome ({})").format(genome))
+        raise
+
+    # Get BED format dataframe
+    Bed = Feat[['scaffold_id', 'start', 'end', 'gene_id',
+                'gene_type', 'strand']].copy()
+    Bed.reset_index(drop=True)
+
+    # Fix indices
+    Bed.loc[Bed.strand == '+', 'start'] = Bed.loc[Bed.strand == '+',
+                                                  'start'] - 1
+    Bed.loc[Bed.strand == '-', 'start'] = Bed.loc[Bed.strand == '-',
+                                                  'start'] - 1
+
+    # Get only CDS
+    Bed = Bed.loc[Bed.gene_type == 'CDS', ]
+
+    # create BedTool and obtain sequences
+    Bed = bed.BedTool.from_dataframe(Bed)
+    Bed.sequence(fi=fasta_file, s=True, name=True)
+
+    # Write results
+    outfile = ''.join([args.outdir, '/', genome, '.CDS.fna'])
+    copyfile(src=Bed.seqfn, dst=outfile)
+
+
+
+def get_sample_dirs(args):
+    """Gets list of subdirectories withina directory, and checks that
+    there are no non-directory entries"""
+
+    files = os.listdir(args.indir)
+
+    dirs = []
+    not_dirs = []
+    for f in files:
+        path = "".join([args.indir, "/", f])
+        if os.path.isdir(path):
+            dirs.append(path)
+        else:
+            not_dirs.append(path)
+
+    if args.notdirs == 'fail':
+        try:
+            if len(not_dirs) > 0:
+                raise ValueError
+        except:
+            print(("ERROR: The passed directory ({}) contains non-directory "
+                   "entries").format(args.indir))
+            raise
+
+    return dirs
 
 
 def process_arguments():
@@ -134,33 +246,6 @@ def process_arguments():
     return args
 
 
-def get_sample_dirs(args):
-    """Gets list of subdirectories withina directory, and checks that
-    there are no non-directory entries"""
-
-    files = os.listdir(args.indir)
-
-    dirs = []
-    not_dirs = []
-    for f in files:
-        path = "".join([args.indir, "/", f])
-        if os.path.isdir(path):
-            dirs.append(path)
-        else:
-            not_dirs.append(path)
-
-    if args.notdirs == 'fail':
-        try:
-            if len(not_dirs) > 0:
-                raise ValueError
-        except:
-            print(("ERROR: The passed directory ({}) contains non-directory "
-                   "entries").format(args.indir))
-            raise
-
-    return dirs
-
-
 if __name__ == "__main__":
     """Main sscript body"""
 
@@ -220,87 +305,10 @@ if __name__ == "__main__":
                    "for genome ({})").format(genome))
             raise
 
+        # Get annotations
         if 'annotation' in args.actions:
+            get_annotations(Feat, genome, args)
 
-            # Get annotations
-            ngenes = 0
-            ncds = 0
-            nannot = 0
-            nwhich = 0
-            Res = pd.DataFrame(columns=['Annotation', 'Type', 'Gene'])
-            for i, r in Feat.iterrows():
-                g = r['gene_id']
-                a = r['functions']
-                t = r['gene_type']
-                ngenes = ngenes + 1
-
-                # Keep only CDS
-                if t != 'CDS':
-                    continue
-                ncds = ncds + 1
-
-                # Skip unannotated genes
-                if pd.isnull(a):
-                    continue
-                nannot = nannot + 1
-
-                # Get annotation
-                d = split_gene_annotations(functions=a,
-                                           append_which=args.append_which)
-                d['Gene'] = g
-
-                # Select annotation
-                if not pd.isnull(args.which):
-                    d = d.loc[d.Type == args.which, :]
-
-                # Append only if it has rows
-                if len(d.index) > 0:
-                    nwhich = nwhich + 1
-                    Res = Res.append(d)
-
-            # Remove type if only one is being kept
-            if not pd.isnull(args.which):
-                Res = Res.drop(['Type'], axis=1)
-
-            print("ngenes ncds nannot nwhich")
-            print(ngenes, ncds, nannot, nwhich)
-
-            # Write results
-            outfile = ''.join([args.outdir, '/', genome, '.',
-                               args.which, '.txt'])
-            print(outfile)
-            Res.to_csv(outfile, sep="\t", index=False, header=True)
-
+        # Get CDS fna
         if 'fna' in args.actions:
-
-            # Check fasta file
-            try:
-                if not os.path.isfile(fasta_file):
-                    print("ERROR: Could not find fasta file")
-                    raise FileNotFoundError
-            except:
-                print(("ERROR: Could not find fasta file "
-                       "for genome ({})").format(genome))
-                raise
-
-            # Get BED format dataframe
-            Bed = Feat[['scaffold_id', 'start', 'end', 'gene_id',
-                        'gene_type', 'strand']].copy()
-            Bed.reset_index(drop=True)
-
-            # Fix indices
-            Bed.loc[Bed.strand == '+', 'start'] = Bed.loc[Bed.strand == '+',
-                                                          'start'] - 1
-            Bed.loc[Bed.strand == '-', 'start'] = Bed.loc[Bed.strand == '-',
-                                                          'start'] - 1
-
-            # Get only CDS
-            Bed = Bed.loc[Bed.gene_type == 'CDS', ]
-
-            # create BedTool and obtain sequences
-            Bed = bed.BedTool.from_dataframe(Bed)
-            Bed.sequence(fi=fasta_file, s=True, name=True)
-
-            # Write results
-            outfile = ''.join([args.outdir, '/', genome, '.CDS.fna'])
-            copyfile(src=Bed.seqfn, dst=outfile)
+            get_fna(Feat, fasta_file, genome, args)
