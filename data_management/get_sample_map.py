@@ -43,20 +43,26 @@ def query_database(samples, db):
     c = conn.cursor()
 
     # Create subject table
-    # s = ('SRS011061','SRS011084')
-    query_db = 'SELECT SRS, body_site FROM sample WHERE SRS=?'
-    c.execute(query_db, samples)
-    res = c.fetchall()
+    dat = []
+    notfound = []
+    for s in samples:
+        query_db = 'SELECT SRS, body_site FROM sample WHERE SRS=?'
+        c.execute(query_db, (s,))
+        res = c.fetchall()
+        if(len(res) > 0):
+            dat.append(res)
+        else:
+            notfound.append([s])
 
-    # conn.commit()
-    # conn.close()
+        res = []
 
-    return res
+    return dat, notfound
 
 
 if __name__ == "__main__":
     args = process_arguments()
     samples = read_samples(args.samples)
-    print(samples)
-    dat = query_database(samples, args.db)
+    # print(samples)
+    dat, notfound = query_database(samples, args.db)
     print(dat)
+    print(notfound)
