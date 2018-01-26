@@ -33,7 +33,8 @@ def process_arguments():
 def read_samples(f):
     dat = pd.read_csv(f, header=None)
     samples = dat.loc[:, 0]
-    return samples
+    samples = [tuple(x) for x in [samples]]
+    return samples[0]
 
 
 def query_database(samples, db):
@@ -42,12 +43,13 @@ def query_database(samples, db):
     c = conn.cursor()
 
     # Create subject table
-    create_table = '''SELECT (SRS, body_site) FROM sample
-                    where SRS in ?'''
-    res = c.execute(create_table, samples)
+    # s = ('SRS011061','SRS011084')
+    query_db = 'SELECT SRS, body_site FROM sample WHERE SRS=?'
+    c.execute(query_db, samples)
+    res = c.fetchall()
 
-    conn.commit()
-    conn.close()
+    # conn.commit()
+    # conn.close()
 
     return res
 
