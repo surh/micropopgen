@@ -30,18 +30,31 @@ def process_arguments():
     return args
 
 
-def read_samples(file):
-    samples = []
-    with open(file) as f:
-        for l in f.readline():
-            samples.append(l)
-
+def read_samples(f):
+    dat = pd.read_csv(f, header=None)
+    samples = dat.loc[:, 0]
     return samples
 
 
-def query_database(args)
+def query_database(samples, db):
+    # Create connection
+    conn = sqlite3.connect(db)
+    c = conn.cursor()
+
+    # Create subject table
+    create_table = '''SELECT (SRS, body_site) FROM sample
+                    where SRS in ?'''
+    res = c.execute(create_table, samples)
+
+    conn.commit()
+    conn.close()
+
+    return res
+
 
 if __name__ == "__main__":
     args = process_arguments()
     samples = read_samples(args.samples)
+    print(samples)
     dat = query_database(samples, args.db)
+    print(dat)
