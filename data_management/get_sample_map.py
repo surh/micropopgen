@@ -20,6 +20,8 @@ def process_arguments():
                                              "one per line"),
                           required=True, type=str)
     required.add_argument("--db", help=("sqlite3 database"))
+    required.add_argument("--outfile", help=("Outfile name"),
+                          type=str, default='map.txt')
 
     # Read arguments
     print("Reading arguments")
@@ -59,10 +61,20 @@ def query_database(samples, db):
     return dat, notfound
 
 
+def write_output(dat, outfile):
+    with open(outfile, 'w') as o:
+        for l in dat:
+            # print(l)
+            s = "\t".join(l[0]) + "\n"
+            # print(s)
+            o.write(s)
+
+
 if __name__ == "__main__":
     args = process_arguments()
     samples = read_samples(args.samples)
     # print(samples)
     dat, notfound = query_database(samples, args.db)
-    print(dat)
+    # print(dat)
     print(notfound)
+    write_output(dat, args.outfile)
