@@ -1,8 +1,18 @@
 library(AMOR)
-tab <- read.am("~/micropopgen/exp/2017/2017-08-07.abundances/merge.species/coverage.txt")
+
+# covfile <- commandArgs(trailingOnly = TRUE)[1]
+# mapfile <- commandArgs(trailingOnly = TRUE)[2]
+# covfile <- "coverage.txt"
+# mapfile <- "map_for_comp.txt"
+covfile <- opts[1]
+mapfile <- opts[2]
+
+# tab <- read.am("~/micropopgen/exp/2017/2017-08-07.abundances/merge.species/coverage.txt")
+tab <- read.am(covfile)
 tab
 
-map <- read.table("full_map.txt", header = TRUE, sep ="\t")
+# map <- read.table("full_map.txt", header = TRUE, sep ="\t")
+map <- read.table(mapfile, header = TRUE, sep ="\t")
 head(map)
 row.names(map) <- as.character(map$ID)
 
