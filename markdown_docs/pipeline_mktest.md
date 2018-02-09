@@ -22,3 +22,9 @@ group (e.g. body site) to which a sample belongs.
 ```bash
 ~/micropopgen/src/rsutiles/stitch_file.r ~/micropopgen/src/micropopgen/midas/analyze_midas_snps/find_comparisons.r coverage.txt map.txt 3
 ```
+5. Run midas/analyze_midas_snps/run_all_comparisons.py on the list of comparisons
+previously generated. For example:
+
+```bash
+~/micropopgen/src/micropopgen/midas/analyze_midas_snps/run_all_comparisons.py --comparisons_file comparisons.txt --indir /godot/hmp/midas/merge/2018-02-07.merge.snps.d1/ --map_file ../map.txt --mk_bin /home/sur/micropopgen/src/micropopgen/midas/analyze_midas_snps/MKtest.py --outdir mktest/
+```
