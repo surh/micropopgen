@@ -28,3 +28,11 @@ previously generated. For example:
 ```bash
 ~/micropopgen/src/micropopgen/midas/analyze_midas_snps/run_all_comparisons.py --comparisons_file comparisons.txt --indir /godot/hmp/midas/merge/2018-02-07.merge.snps.d1/ --map_file ../map.txt --mk_bin /home/sur/micropopgen/src/micropopgen/midas/analyze_midas_snps/MKtest.py --outdir mktest/
 ```
+
+6. Run summarize_mk_results.py in the output directory from the previous script.
+For example:
+
+```bash
+cd mktest/
+~/micropopgen/src/micropopgen/midas/analyze_midas_snps/summarize_mk_results.py
+```
