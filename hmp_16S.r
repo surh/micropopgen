@@ -1,6 +1,15 @@
 library(AMOR)
 
 ########## FUNCTIONS #################
+#' Format HMMCP phylotype taxonomy for AMIR
+#' 
+#' @param x A character vector, one element per taxa
+#' @param split.char A character string indicating the field
+#' delimiter character
+#' 
+#' @return A character vector
+#' 
+#' @author Sur Herrera Paredes
 phylotype2rdp <- function(x, split.char = ';'){
   for(i in 1:length(x)){
     x[i] <- gsub(pattern = "\\(\\d+\\)", replacement = "", x = x[i], perl = TRUE)
@@ -28,25 +37,27 @@ phylotype2rdp2 <- function(x, split.char = ';'){
   
 }
 ###################################
+# Count table
 Tab <- read.table(file = "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.counts.bz2",
                   sep = "\t", row.names = 1, header = TRUE)
+Tab <- t(Tab)
 dim(Tab)
 Tab[1:5,1:5]
 
+# Mapping file
 Map <- read.table(file = "~/micropopgen/data/hmp_16S/HMMCP/pds.metadata.bz2",
                    sep = "\t", header = TRUE)
 row.names(Map) <- paste(Map$nap_id, Map$dataset, sep = ".")
 head(Map)
 
+# Taxonomy
 Tax <- read.table(file = "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.lookup.bz2",
-                  sep = "\t", header = TRUE)
+                  sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+colnames(Tax) <- c("ID", "Taxonomy")
+Tax$Taxonomy <- phylotype2rdp(Tax$Taxonomy)
+Tax$ID <- paste("X", Tax$ID, sep = "")
+row.names(Tax) <- Tax$ID
 head(Tax)
-
-# Proces taxonomy file
-colnames(Tax) <- c("ID","Taxonomy")
-
-
-
 
 # x <- as.character(Tax$Taxonomy[1:200])
 # x
@@ -73,8 +84,41 @@ colnames(Tax) <- c("ID","Taxonomy")
 # }
 # dat
 
+# Create dataset
+to_remove <- c("positive_control.PPS", "positive_control.may1",
+               "positive_gd.PPS", "positive_mock.PPS", 
+             "water_blank.PPS", "water_blank.may1")
+Tab <- Tab[ , setdiff(colnames(Tab), to_remove) ]
+
+setdiff(colnames(Tab), row.names(Map))
+setdiff(row.names(Tab), row.names(Tax))
+
+Map <- Map[ colnames(Tab), ]
+Tax <- Tax[ row.names(Tab), ]
+Dat <- create_dataset(Tab = Tab, Map = Map, Tax = Tax)
+Dat
+
+# Subset sites
+Dat <- subset(Dat, body_site %in% c("Buccal mucosa", "Supragingival plaque", "Tongue dorsum", "Stool"),
+              clean = TRUE, drop = TRUE)
 
 
+#' Calculate taxon prevalence
+#' 
+#' Calculates the prevalence of each
+#' taxon overall or by some grouping factor.
+#' 
+#' @param Dat a dataset object
+#' @param thres Minimum number of reads for a taxon
+#' in a sample to be counted as present.
+#' @param group A grouping variable
+#' 
+#' @author Sur Herrera Paredes
+#' 
+calculate_prevalence <- function(Dat, thres = 1, group = NULL){
+  if(class(Dat) != "Dataset")
+    stop("ERROR: A Dataset object must be passed", call. = TRUE )
+  
+}
 
 
-Dat <- create_dataset(Tab = t(Tab))
