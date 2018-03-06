@@ -80,22 +80,6 @@ calculate_prevalence <- function(Dat, thres = 1, group = NULL){
   
   return(Res)
 }
-###################################
-
-# Mapping file is the same everywhere
-Map <- read.table(file = "~/micropopgen/data/hmp_16S/HMMCP/pds.metadata.bz2",
-                  sep = "\t", header = TRUE)
-row.names(Map) <- paste(Map$nap_id, Map$dataset, sep = ".")
-# head(Map)
-
-files <- data.frame(Name = c("hmmcp.v13.hq.otu",
-                             "hmmcp.v13.hq.phylotype"),
-                    counts = c("~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.otu.counts.bz2",
-                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.counts.bz2"),
-                    taxonomy = c("~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.otu.lookup.bz2",
-                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.lookup.bz2"),
-                    stringsAsFactors = FALSE)
-files
 
 #' Formats input form HMMCP 16S files
 #' 
@@ -139,7 +123,7 @@ format_input <- function(name, counts_file, taxonomy_file, Map = Map,
     stop("ERROR1")
   if(length( setdiff(row.names(Tab), row.names(Tax))) > 0)
     stop("ERROR2")
- 
+  
   Map <- Map[ colnames(Tab), ]
   Tax <- Tax[ row.names(Tab), ]
   Dat <- create_dataset(Tab = Tab, Map = Map, Tax = Tax)
@@ -148,43 +132,55 @@ format_input <- function(name, counts_file, taxonomy_file, Map = Map,
     Dat <- collapse_by_taxonomy(Dat = Dat, Group = NULL,
                                 level = collapse_level, sepchar = ";", FUN = sum)
   }
- 
+  
   return(Dat)
 }
+###################################
 
+# Mapping file is the same everywhere
+Map <- read.table(file = "~/micropopgen/data/hmp_16S/HMMCP/pds.metadata.bz2",
+                  sep = "\t", header = TRUE)
+row.names(Map) <- paste(Map$nap_id, Map$dataset, sep = ".")
+# head(Map)
 
-i <- 1
-Dat <- format_input(name = files$Name[i], counts_file = files$counts[i], 
-                    taxonomy_file = files$taxonomy[i], Map = Map, collapse_level = 7)
-# Subset sites
-Dat <- subset(Dat, body_site %in% c("Buccal mucosa", "Supragingival plaque", "Tongue dorsum", "Stool"),
-              clean = TRUE, drop = TRUE)
+files <- data.frame(Name = c("hmmcp.v13.hq.otu",
+                             "hmmcp.v13.hq.phylotype"),
+                    counts = c("~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.otu.counts.bz2",
+                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.counts.bz2"),
+                    taxonomy = c("~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.otu.lookup.bz2",
+                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.lookup.bz2"),
+                    stringsAsFactors = FALSE)
+files
 
-prev <- calculate_prevalence(Dat = Dat, thres = 1, group = "body_site")
-prev$Taxonomy <- Dat$Tax[ as.character(prev$Taxon), "Taxonomy"]
-head(prev)
-
-# Sort
-prev <- prev[ order(prev$Group, prev$Proportion , decreasing = TRUE), ]
-prev$Taxon <- factor(prev$Taxon, unique(prev$Taxon))
-
-# Plot
-p1 <- ggplot(prev, aes(x = Taxon, y = Proportion, group = Group, col = Group )) +
-  facet_wrap(~ Group, ncol = 1) +
-  geom_line() +
-  theme(axis.text.x = element_blank()) +
-  theme_blackbox
-p1
-filename <- paste(files$Name[i], ".prevalence_by_site.svg", sep = "")
-ggsave(filename, p1, width = 4, height = 8)
-
-
-
-filename <- paste(files$Name[i], ".topprev.txt", sep = "")
-write.table(subset(prev, Proportion >= 0.75), file = filename,
-            sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
-
-
+for(i in 1:nrow(files)){
+  Dat <- format_input(name = files$Name[i], counts_file = files$counts[i], 
+                      taxonomy_file = files$taxonomy[i], Map = Map, collapse_level = 7)
+  # Subset sites
+  Dat <- subset(Dat, body_site %in% c("Buccal mucosa", "Supragingival plaque", "Tongue dorsum", "Stool"),
+                clean = TRUE, drop = TRUE)
+  
+  prev <- calculate_prevalence(Dat = Dat, thres = 1, group = "body_site")
+  head(prev)
+  
+  # Sort
+  prev <- prev[ order(prev$Group, prev$Proportion , decreasing = TRUE), ]
+  prev$Taxon <- factor(prev$Taxon, unique(prev$Taxon))
+  
+  # Plot
+  p1 <- ggplot(prev, aes(x = Taxon, y = Proportion, group = Group, col = Group )) +
+    facet_wrap(~ Group, ncol = 1) +
+    geom_line() +
+    theme(axis.text.x = element_blank()) +
+    theme_blackbox
+  p1
+  filename <- paste(files$Name[i], ".prevalence_by_site.svg", sep = "")
+  ggsave(filename, p1, width = 4, height = 8)
+  
+  filename <- paste(files$Name[i], ".topprev.txt", sep = "")
+  write.table(subset(prev, Proportion >= 0.75), file = filename,
+              sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+  
+}
 
 
 # x <- as.character(Tax$Taxonomy[1:200])
