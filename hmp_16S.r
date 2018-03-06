@@ -36,6 +36,50 @@ phylotype2rdp2 <- function(x, split.char = ';'){
   })
   
 }
+
+#' Calculate taxon prevalence
+#' 
+#' Calculates the prevalence of each
+#' taxon overall or by some grouping factor.
+#' 
+#' @param Dat a dataset object
+#' @param thres Minimum number of reads for a taxon
+#' in a sample to be counted as present.
+#' @param group A grouping variable
+#' 
+#' @author Sur Herrera Paredes
+#' 
+#' @importFrom reshape2 melt
+calculate_prevalence <- function(Dat, thres = 1, group = NULL){
+  if(class(Dat) != "Dataset")
+    stop("ERROR: A Dataset object must be passed", call. = TRUE )
+  
+  if(is.null(group)){
+    group <- rep("All", length.out = ncol(Dat.bin$Tab))
+    group_n <- table(group)
+    varnames <- c("Group", "Taxon")
+  }else{
+    group <- Dat$Map[ , group ]
+    group_n <- table(group)
+    varnames <- c("Taxon", "Group")
+  }
+  
+  Dat.bin <- create_dataset(Tab = 1*(Dat$Tab >= thres), Map = Dat$Map, Tax = Dat$Tax)
+  Dat.bin <- pool_samples.default(Tab = Dat.bin$Tab, groups = group, FUN = sum)
+  
+  # res <- data.frame(Taxon = row.names(Dat$Tab), Count = rowSums(Dat$Tab >= thres))
+  # res$Proportion <- res$Count / ncol(Dat$Tab)
+  
+  Res <- reshape2::melt(Dat.bin$Tab, varnames = varnames, value.name = "Count")
+  Res <- Res[ , c("Taxon", "Group", "Count") ]
+  
+  if(length(group_n) == 1)
+    Res$Group <- "All"
+  
+  Res$Proportion <- as.vector(Res$Count / group_n[ as.character(Res$Group) ])
+  
+  return(Res)
+}
 ###################################
 # Count table
 Tab <- read.table(file = "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.counts.bz2",
@@ -102,49 +146,11 @@ Dat
 Dat <- subset(Dat, body_site %in% c("Buccal mucosa", "Supragingival plaque", "Tongue dorsum", "Stool"),
               clean = TRUE, drop = TRUE)
 
+prev <- calculate_prevalence(Dat = Dat, thres = 1, group = "body_site")
+head(prev)
 
-#' Calculate taxon prevalence
-#' 
-#' Calculates the prevalence of each
-#' taxon overall or by some grouping factor.
-#' 
-#' @param Dat a dataset object
-#' @param thres Minimum number of reads for a taxon
-#' in a sample to be counted as present.
-#' @param group A grouping variable
-#' 
-#' @author Sur Herrera Paredes
-#' 
-#' @importFrom reshape2 melt
-calculate_prevalence <- function(Dat, thres = 1, group = NULL){
-  if(class(Dat) != "Dataset")
-    stop("ERROR: A Dataset object must be passed", call. = TRUE )
-  
-  if(is.null(group)){
-    group <- rep("All", length.out = ncol(Dat.bin$Tab))
-    group_n <- table(group)
-    varnames <- c("Group", "Taxon")
-  }else{
-    group <- Dat$Map[ , group ]
-    group_n <- table(group)
-    varnames <- c("Taxon", "Group")
-  }
-  
-  Dat.bin <- create_dataset(Tab = 1*(Dat$Tab >= thres), Map = Dat$Map, Tax = Dat$Tax)
-  Dat.bin <- pool_samples.default(Tab = Dat.bin$Tab, groups = group, FUN = sum)
-  
-  # res <- data.frame(Taxon = row.names(Dat$Tab), Count = rowSums(Dat$Tab >= thres))
-  # res$Proportion <- res$Count / ncol(Dat$Tab)
-  
-  Res <- reshape2::melt(Dat.bin$Tab, varnames = varnames, value.name = "Count")
-  Res <- Res[ , c("Taxon", "Group", "Count") ]
-  
-  if(length(group_n) == 1)
-    Res$Group <- "All"
-  
-  Res$Proportion <- as.vector(Res$Count / group_n[ as.character(Res$Group) ])
-  
-  return(Res)
-}
+
+
+p1 <- ggplot(prev, aes())
 
 
