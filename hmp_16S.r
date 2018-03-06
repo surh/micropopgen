@@ -144,11 +144,23 @@ row.names(Map) <- paste(Map$nap_id, Map$dataset, sep = ".")
 # head(Map)
 
 files <- data.frame(Name = c("hmmcp.v13.hq.otu",
-                             "hmmcp.v13.hq.phylotype"),
+                             "hmmcp.v13.hq.phylotype",
+                             "hmmcp.v35.hq.otu",
+                             "hmmcp.v35.hq.phylotype",
+                             "hmmcp.v69.hq.otu",
+                             "hmmcp.v69.hq.phylotype"),
                     counts = c("~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.otu.counts.bz2",
-                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.counts.bz2"),
+                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.counts.bz2",
+                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v35.hq.otu.counts.bz2",
+                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v35.hq.phylotype.counts.bz2",
+                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v69.hq.otu.counts.bz2",
+                               "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v69.hq.phylotype.counts.bz2"),
                     taxonomy = c("~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.otu.lookup.bz2",
-                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.lookup.bz2"),
+                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v13.hq.phylotype.lookup.bz2",
+                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v35.hq.otu.lookup.bz2",
+                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v35.hq.phylotype.lookup.bz2",
+                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v69.hq.otu.lookup.bz2",
+                                 "~/micropopgen/data/hmp_16S/HMMCP/hmp1.v69.hq.phylotype.lookup.bz2"),
                     stringsAsFactors = FALSE)
 files
 
@@ -174,9 +186,11 @@ for(i in 1:nrow(files)){
     theme_blackbox
   p1
   filename <- paste(files$Name[i], ".prevalence_by_site.svg", sep = "")
+  cat(filename, "\n")
   ggsave(filename, p1, width = 4, height = 8)
   
   filename <- paste(files$Name[i], ".topprev.txt", sep = "")
+  cat(filename, "\n")
   write.table(subset(prev, Proportion >= 0.75), file = filename,
               sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
   
