@@ -149,8 +149,18 @@ Dat <- subset(Dat, body_site %in% c("Buccal mucosa", "Supragingival plaque", "To
 prev <- calculate_prevalence(Dat = Dat, thres = 1, group = "body_site")
 head(prev)
 
+prev <- prev[ order(prev$Group, prev$Proportion , decreasing = TRUE), ]
+prev$Taxon <- factor(prev$Taxon, unique(prev$Taxon))
 
+p1 <- ggplot(prev, aes(x = Taxon, y = Proportion, group = Group, col = Group )) +
+  facet_wrap(~ Group, ncol = 1) +
+  geom_line() +
+  theme_blackbox
+p1
+ggsave("prevalence_by_site.svg", p1, width = 4, height = 8)
 
-p1 <- ggplot(prev, aes())
+prev$Taxonomy <- Dat$Tax[ as.character(prev$Taxon), "Taxonomy"]
+write.table(subset(prev, Proportion >= 0.75), file = "hmmcp.v13.hq.phylotype.topprev.txt",
+            sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
 
 
