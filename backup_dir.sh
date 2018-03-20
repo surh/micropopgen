@@ -30,4 +30,12 @@ fi
 # echo -e $outfile
 
 # compress
+echo "==========="
+date
+echo "==========="
+
 tar -cvvjf $outfile $indir
+
+echo "==========="
+date
+echo "==========="
