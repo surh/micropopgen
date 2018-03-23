@@ -145,7 +145,7 @@ if __name__ == "__main__":
     fasta_files = os.listdir(args.indir)
     fasta_files = list(filter(lambda f: f.endswith(args.fasta_suffix),
                               fasta_files))
-    print(fasta_files)
+    # print(fasta_files)
 
     # Make directories
     if os.path.isdir(args.logs):
