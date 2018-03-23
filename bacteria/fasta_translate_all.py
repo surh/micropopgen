@@ -112,6 +112,7 @@ def transeq_file(filename, transeq='transeq',
 
     # Build fyrd filenames
     job_name = '.'.join(['transeq', basename])
+    print(job_name)
 
     print("\tCreating fyrd.Job")
     midas_job = fyrd.Job(command,
@@ -137,3 +138,19 @@ if __name__ == "__main__":
     fasta_files = list(filter(lambda f: f.endswith(args.fasta_suffix),
                               fasta_files))
     print(fasta_files)
+
+    # Make directories
+    if os.path.isdir(args.logs):
+        raise FileExistsError("Directory for fyrd logs ({}) "
+                              "already exists".format([args.logs]))
+    else:
+        os.mkdir(args.logs)
+    if os.path.isdir(args.scripts):
+        raise FileExistsError("Directory for fyrd scripts ({}) "
+                              "already exists".format([args.scripts]))
+    else:
+        os.mkdir(args.scripts)
+
+    for f in fasta_files:
+        transeq_file(filename=f, indir=args.indir,
+                     outdir=args.outdir, args=args)
