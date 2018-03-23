@@ -33,7 +33,26 @@ def process_arguments():
     parser.add_argument("--transeq", help=("Binary executable of transeq "
                                            "tool of the EMBOSS package"),
                         type=str, default='transeq')
-    # Read arguments
+    parser.add_argument("--logs", help=("Directory where to write logfiles "
+                                        "from fyrd."),
+                        type=str, default='logs/')
+    parser.add_argument("--scripts", help=("Directory where to write scripts "
+                                           "from fyrd."),
+                        type=str, default='scripts/')
+    parser.add_argument("--maxjobs", help=("Maximum number of fyrd jobs "
+                                           "running simultaneously"),
+                        type=int, default='500')
+    parser.add_argument("--queue", help=("Queue (partition) to use for "
+                                         "submitting jobs"),
+                        type=str)
+    parser.add_argument("--memory", help=("Amunt of memory to reserve per "
+                                          "job"),
+                        type=str, default="300mb")
+    parser.add_argument("--time", help=("Amunt of time to reserve per "
+                                        "job"),
+                        type=str, default="1:00:00")
+
+# Read arguments
     print("Reading arguments")
     args = parser.parse_args()
 
@@ -64,6 +83,46 @@ def which(program):
                 return exe_file
 
     return None
+
+
+def strip_right(text, suffix):
+    # tip from http://stackoverflow.com/questions/1038824
+    if not text.endswith(suffix):
+        return text
+    # else
+    return text[:len(text)-len(suffix)]
+
+
+def transeq_file(filename, transeq='transeq',
+                 indir='', outdir='', args):
+    """Use fyrd to run transeq on a given file"""
+
+    # Get basename
+    basename = strip_right(filename, args.fasta_suffix)
+
+    # Build transeq filenames
+    infile = '/'.join([indir, filename])
+    outfile = '/'.join([outdir, basename])
+    outfile = ''.join([outfile, args.out_suffix])
+
+    # Build transeq command
+    command = ' '.join([transeq,
+                        "-sequence", infile,
+                        '-outseq', outfile])
+
+    # Build fyrd filenames
+    job_name = '.'.join(['transeq', basename])
+
+    print("\tCreating fyrd.Job")
+    midas_job = fyrd.Job(command,
+                         runpath=os.getcwd(), outpath=args.logdir,
+                         scriptpath=args.scripts,
+                         clean_files=False, clean_outputs=False,
+                         mem=args.memory, name=job_name,
+                         outfile=job_name + ".log",
+                         errfile=job_name + sample + ".err",
+                         partition=args.queue,
+                         nodes=1, cores=1, time=args.time)
 
 
 if __name__ == "__main__":
