@@ -115,15 +115,15 @@ def transeq_file(filename, args, transeq='transeq',
     print(job_name)
 
     print("\tCreating fyrd.Job")
-    midas_job = fyrd.Job(command,
-                         runpath=os.getcwd(), outpath=args.logs,
-                         scriptpath=args.scripts,
-                         clean_files=False, clean_outputs=False,
-                         mem=args.memory, name=job_name,
-                         outfile=job_name + ".log",
-                         errfile=job_name + ".err",
-                         partition=args.queue,
-                         nodes=1, cores=1, time=args.time)
+    fyrd_job = fyrd.Job(command,
+                        runpath=os.getcwd(), outpath=args.logs,
+                        scriptpath=args.scripts,
+                        clean_files=False, clean_outputs=False,
+                        mem=args.memory, name=job_name,
+                        outfile=job_name + ".log",
+                        errfile=job_name + ".err",
+                        partition=args.queue,
+                        nodes=1, cores=1, time=args.time)
 
 
 if __name__ == "__main__":
