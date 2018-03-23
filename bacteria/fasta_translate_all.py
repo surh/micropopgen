@@ -150,7 +150,10 @@ if __name__ == "__main__":
                               "already exists".format([args.scripts]))
     else:
         os.mkdir(args.scripts)
+    if not os.path.isdir(args.outdir):
+        os.mkdir(args.outdir)
 
     for f in fasta_files:
+        print(f)
         transeq_file(filename=f, indir=args.indir,
                      outdir=args.outdir, args=args)
