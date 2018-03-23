@@ -116,7 +116,7 @@ def transeq_file(filename, args, transeq='transeq',
 
     print("\tCreating fyrd.Job")
     midas_job = fyrd.Job(command,
-                         runpath=os.getcwd(), outpath=args.logdir,
+                         runpath=os.getcwd(), outpath=args.logs,
                          scriptpath=args.scripts,
                          clean_files=False, clean_outputs=False,
                          mem=args.memory, name=job_name,
