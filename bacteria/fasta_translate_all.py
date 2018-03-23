@@ -52,11 +52,16 @@ def process_arguments():
                                         "job"),
                         type=str, default="1:00:00")
 
-# Read arguments
+    # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
 
     # Processing goes here if needed
+    # Check if exectuable exists
+    if which(args.transeq) is None:
+        raise FileNotFoundError("Executable for transeq not found")
+    else:
+        args.traseq = which(args.transeq)
 
     return args
 
@@ -133,10 +138,6 @@ def transeq_file(filename, args, transeq='transeq',
 
 if __name__ == "__main__":
     args = process_arguments()
-
-    # Check if exectuable exists
-    if which(args.transeq) is None:
-        raise FileNotFoundError("Executable for transeq not found")
 
     # Get list of fasta files from indir
     fasta_files = os.listdir(args.indir)
