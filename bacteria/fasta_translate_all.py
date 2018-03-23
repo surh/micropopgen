@@ -61,7 +61,7 @@ def process_arguments():
     if which(args.transeq) is None:
         raise FileNotFoundError("Executable for transeq not found")
     else:
-        args.traseq = which(args.transeq)
+        args.transeq = which(args.transeq)
 
     return args
 
