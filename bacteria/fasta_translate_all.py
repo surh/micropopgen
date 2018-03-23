@@ -121,7 +121,7 @@ def transeq_file(filename, args, transeq='transeq',
                          clean_files=False, clean_outputs=False,
                          mem=args.memory, name=job_name,
                          outfile=job_name + ".log",
-                         errfile=job_name + sample + ".err",
+                         errfile=job_name + ".err",
                          partition=args.queue,
                          nodes=1, cores=1, time=args.time)
 
