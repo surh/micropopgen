@@ -23,16 +23,13 @@ def process_arguments():
     required.add_argument("--outdir", help=("Directory where to write output "
                                             "files"),
                           required=True, type=str)
-    required.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
-                                                  "indir"),
-                          required=True, type=str, default='.fna')
-    required.add_argument("--out_suffix", help=("Suffix of output files"),
-                          required=True, type=str, default='.faa')
-    # Define other arguments
-    # parser.add_argument("--", help=(""),
-    #                     type=str,
-    #                     default="")
 
+    # Define other arguments
+    parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
+                                                "indir"),
+                        type=str, default='.fna')
+    parser.add_argument("--out_suffix", help=("Suffix of output files"),
+                        type=str, default='.faa')
     # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
