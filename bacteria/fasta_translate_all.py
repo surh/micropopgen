@@ -30,6 +30,9 @@ def process_arguments():
                         type=str, default='.fna')
     parser.add_argument("--out_suffix", help=("Suffix of output files"),
                         type=str, default='.faa')
+    parser.add_argument("--transeq", help=("Binary executable of transeq "
+                                           "tool of the EMBOSS package"),
+                        type=str, default='transeq')
     # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
@@ -39,9 +42,38 @@ def process_arguments():
     return args
 
 
+def which(program):
+    """Check if executable exists"""
+
+    # From https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    # Under MIT license
+
+    def is_exe(fpath):
+        """Check if path is executable"""
+
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
+    # Check if exectuable exists
+    if which(args.transeq) is None:
+        raise FileNotFoundError("Executable for transeq not found")
+
+    # Get list of fasta files from indir
     fasta_files = os.listdir(args.indir)
     fasta_files = list(filter(lambda f: f.endswith(args.fasta_suffix),
                               fasta_files))
