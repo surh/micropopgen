@@ -93,8 +93,8 @@ def strip_right(text, suffix):
     return text[:len(text)-len(suffix)]
 
 
-def transeq_file(filename, transeq='transeq',
-                 indir='', outdir='', args):
+def transeq_file(filename, args, transeq='transeq',
+                 indir='', outdir=''):
     """Use fyrd to run transeq on a given file"""
 
     # Get basename
@@ -155,5 +155,6 @@ if __name__ == "__main__":
 
     for f in fasta_files:
         print(f)
-        transeq_file(filename=f, indir=args.indir,
-                     outdir=args.outdir, args=args)
+        transeq_file(filename=f,  args=args,
+                     indir=args.indir,
+                     outdir=args.outdir,)
