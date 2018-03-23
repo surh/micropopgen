@@ -64,7 +64,8 @@ def process_arguments():
 def which(program):
     """Check if executable exists"""
 
-    # From https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    # From:
+    # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
     # Under MIT license
 
     def is_exe(fpath):
@@ -125,6 +126,10 @@ def transeq_file(filename, args, transeq='transeq',
                         partition=args.queue,
                         nodes=1, cores=1, time=args.time)
 
+    # Submit joobs
+    print("\tSubmitting job")
+    fyrd_job.submit(max_jobs=args.maxjobs)
+
 
 if __name__ == "__main__":
     args = process_arguments()
@@ -153,8 +158,9 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outdir):
         os.mkdir(args.outdir)
 
+    # Submit jobs
     for f in fasta_files:
         print(f)
         transeq_file(filename=f,  args=args,
                      indir=args.indir,
-                     outdir=args.outdir,)
+                     outdir=args.outdir)
