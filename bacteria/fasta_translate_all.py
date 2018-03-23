@@ -63,6 +63,8 @@ def process_arguments():
     else:
         args.transeq = which(args.transeq)
 
+    print(args.transeq)
+
     return args
 
 
@@ -162,6 +164,6 @@ if __name__ == "__main__":
     # Submit jobs
     for f in fasta_files:
         print(f)
-        transeq_file(filename=f,  args=args,
-                     indir=args.indir,
-                     outdir=args.outdir)
+        # transeq_file(filename=f,  args=args,
+        #              indir=args.indir,
+        #              outdir=args.outdir)
