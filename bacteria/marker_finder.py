@@ -38,9 +38,9 @@ def process_arguments():
     required.add_argument("--outdir", help=("Directory where to write output "
                                             "files"),
                           required=True, type=str)
-    required.add_argubment("--db", help=("Database of hmm profiles for maker "
-                                         "sequences"),
-                           required=True, type=str)
+    required.add_argument("--db", help=("Database of hmm profiles for maker "
+                                        "sequences"),
+                          required=True, type=str)
 
     # Define other arguments
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
