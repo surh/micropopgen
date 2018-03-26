@@ -95,6 +95,7 @@ def which(program):
 
 def strip_right(text, suffix):
     # tip from http://stackoverflow.com/questions/1038824
+    # MIT License
     if not text.endswith(suffix):
         return text
     # else
