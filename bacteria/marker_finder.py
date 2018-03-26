@@ -79,9 +79,7 @@ def process_arguments():
     if which(args.hmmscan) is None:
         raise FileNotFoundError("Executable for hmmscan not found")
     else:
-        args.transeq = which(args.hmmscan)
-
-    # print(args.transeq)
+        args.hmmscan = which(args.hmmscan)
 
     return args
 
@@ -127,12 +125,12 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     # Get basename
     basename = strip_right(filename, args.fasta_suffix)
 
-    # Build transeq filenames
+    # Build hmmscan filenames
     infile = '/'.join([indir, filename])
     outfile = '/'.join([outdir, basename])
     outfile = ''.join([outfile, args.out_suffix])
 
-    # Build transeq command
+    # Build hmmscan command
     command = ' '.join([hmmscan,
                         "-Z", str(5000),
                         "-E", str(1e-3),
@@ -187,6 +185,6 @@ if __name__ == "__main__":
     for f in fasta_files:
         print(f)
         hmmscan_file(filename=f, db=args.db, args=args,
-                     transeq=args.transeq,
+                     hmmscan=args.hmmscan,
                      indir=args.indir,
                      outdir=args.outdir)
