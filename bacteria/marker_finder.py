@@ -22,6 +22,7 @@ import os
 from Bio import SearchIO
 import time
 
+
 def process_arguments():
     # Read arguments
     parser_format = argparse.ArgumentDefaultsHelpFormatter
@@ -206,6 +207,7 @@ if __name__ == "__main__":
     print("===hits===")
     for f, j in hmm_files.items():
         print(f)
-        job = fyrd.Job(get_hmm_hits(f), depends=j, runpath=os.getcwd())
-        time.sleep(15)
+        # job = fyrd.Job(get_hmm_hits(f), depends=j, runpath=os.getcwd())
+        job = fyrd.Job(' '.join(['ls -l', f]), depends=j, runpath=os.getcwd())
+        # time.sleep(15)
         job.submit(max_jobs=args.maxjobs)
