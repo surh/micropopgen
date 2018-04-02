@@ -158,7 +158,7 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     print("\tSubmitting job")
     fyrd_job.submit(max_jobs=args.maxjobs)
 
-    return outfile
+    return outfile, fyrd_job
 
 
 def get_hmm_hits(hmmfile):
@@ -166,7 +166,6 @@ def get_hmm_hits(hmmfile):
 
     hmmsearch = SearchIO.read(hmmfile, 'hmmer3-text')
     print("==Read==")
-
 
 
 if __name__ == "__main__":
@@ -192,12 +191,17 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outdir):
         os.mkdir(args.outdir)
 
-    # Submit jobs
+    # Submit hmmscan jobs
+    hmm_files = dict()
     for f in fasta_files:
-        hmmfile = hmmscan_file(filename=f, db=args.db, args=args,
-                               hmmscan=args.hmmscan,
-                               indir=args.indir,
-                               outdir=args.outdir)
-        get_hmm_hits(hmmfile=hmmfile)
-
+        hmmfile, job = hmmscan_file(filename=f, db=args.db, args=args,
+                                    hmmscan=args.hmmscan,
+                                    indir=args.indir,
+                                    outdir=args.outdir)
+        hmm_files['hmmscan_file'] = job
         print(f)
+
+    # Submit hits_job
+    for f, j in hmm_files.items():
+        job = fyrd.Job(get_hmm_hits(f), depends=j)
+        job.submit(max_jobs=args.maxjobs)
