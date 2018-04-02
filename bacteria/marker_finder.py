@@ -19,7 +19,7 @@
 import fyrd
 import argparse
 import os
-import SearchIO from Bio
+from Bio import SearchIO
 
 
 def process_arguments():
