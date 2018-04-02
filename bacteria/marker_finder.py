@@ -199,7 +199,7 @@ if __name__ == "__main__":
                                     hmmscan=args.hmmscan,
                                     indir=args.indir,
                                     outdir=args.outdir)
-        hmm_files['hmmscan_file'] = job
+        hmm_files[hmmfile] = job
         print(f)
 
     # Submit hits_job
