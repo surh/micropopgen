@@ -192,6 +192,7 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Submit hmmscan jobs
+    print("===hmmscan===")
     hmm_files = dict()
     for f in fasta_files:
         hmmfile, job = hmmscan_file(filename=f, db=args.db, args=args,
@@ -202,6 +203,8 @@ if __name__ == "__main__":
         print(f)
 
     # Submit hits_job
+    print("===hits===")
     for f, j in hmm_files.items():
+        print(f)
         job = fyrd.Job(get_hmm_hits(f), depends=j)
         job.submit(max_jobs=args.maxjobs)
