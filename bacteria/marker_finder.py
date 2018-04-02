@@ -19,6 +19,7 @@
 import fyrd
 import argparse
 import os
+import SearchIO from Bio
 
 
 def process_arguments():
@@ -157,6 +158,16 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     print("\tSubmitting job")
     fyrd_job.submit(max_jobs=args.maxjobs)
 
+    return outfile
+
+
+def get_hmm_hits(hmmfile):
+    """Read HMMER files and get hits"""
+
+    hmmsearch = SearchIO.read(hmmfile, 'hmmer3-text')
+    print("==Read==")
+
+
 
 if __name__ == "__main__":
     args = process_arguments()
@@ -183,8 +194,10 @@ if __name__ == "__main__":
 
     # Submit jobs
     for f in fasta_files:
+        hmmfile = hmmscan_file(filename=f, db=args.db, args=args,
+                               hmmscan=args.hmmscan,
+                               indir=args.indir,
+                               outdir=args.outdir)
+        get_hmm_hits(hmmfile=hmmfile)
+
         print(f)
-        hmmscan_file(filename=f, db=args.db, args=args,
-                     hmmscan=args.hmmscan,
-                     indir=args.indir,
-                     outdir=args.outdir)
