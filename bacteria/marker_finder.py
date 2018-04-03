@@ -189,7 +189,7 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile):
         for hit in query:
             hit_span, query_span = hit_and_query_span(hit)
             query_cov = query_span / queries[query.id][1]
-            hit_cov = hit_span / db[hit.id][1]
+            hit_cov = hit_span / db[hit.id]
             print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
 
 
