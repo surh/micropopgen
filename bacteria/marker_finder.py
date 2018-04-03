@@ -56,6 +56,8 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
             query_cov = query_span / queries[query.id][1]
             hit_cov = hit_span / db[hit.id]
             # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
+
+            # Only keep to hit that spans more than 70% of query and target
             if query_cov > 0.7 and hit_cov > 0.7:
                 hmm_hits[hit.id].append(query.id)
                 break
@@ -352,6 +354,10 @@ if __name__ == "__main__":
     # Submit hits_job
     print("===hits===")
     time.sleep(10)
+    marker_tab = []
     for f, o in hmm_files.items():
         print(f)
-        submit_get_hmm_hits(hmmfile=f, job=o[0], fasta_file=o[1], args=args)
+        tab = submit_get_hmm_hits(hmmfile=f, job=o[0],
+                                  fasta_file=o[1], args=args)
+        marker_tab.append(tab)
+    print(marker_tab)
