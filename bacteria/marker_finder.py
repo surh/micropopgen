@@ -338,7 +338,9 @@ def write_summary(tab, args, name='summary.txt'):
                 out.write("\t".join(['strain'] + markers) + "\n")
                 i = i + 1
 
-            counts = [tab[strain][m] for m in markers]
+            counts = tab[strain]
+            print(counts)
+            counts = [counts[m] for m in markers]
             out.write("\t".join([strain] + counts) + "\n")
     out.close()
 
