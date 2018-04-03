@@ -53,6 +53,7 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
     if not os.path.isfile(hmmfile):
         raise("hmmfile does not exist")
 
+    print("\tFinding hits")
     # Find hits and save tophit for every query
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
