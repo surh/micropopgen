@@ -165,11 +165,11 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
 def get_hmm_hits(hmmfile):
     """Read HMMER files and get hits"""
 
-    # hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
+    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
-    # for query in hmmsearch:
-    #     for hit in query:
-    #         hit_span, query_span = hit_and_query_span(hit)
+    for query in hmmsearch:
+        for hit in query:
+            hit_span, query_span = hit_and_query_span(hit)
 
 
 def hit_and_query_span(hit):
@@ -223,7 +223,7 @@ if __name__ == "__main__":
     # time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        job = fyrd.Job(get_hmm_hits,f, depends=o, runpath=os.getcwd())
+        job = fyrd.Job(get_hmm_hits, f, depends=o, runpath=os.getcwd())
         # job = fyrd.Job(' '.join(['ls -l', f]), depends=o[0],
         #                runpath=os.getcwd())
         # time.sleep(15)
