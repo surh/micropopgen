@@ -229,7 +229,7 @@ def fasta_seq_lenghts(fasta_file, split=False):
             key = s.description.split()[1]
         else:
             key = s.id
-        Sequences[key] = [s.seq, len(s.seq)]
+        Sequences[key] = [str(s.seq), len(s.seq)]
 
     return Sequences
 
