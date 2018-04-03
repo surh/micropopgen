@@ -331,7 +331,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                        runpath=os.getcwd(),
                        outpath=args.logs,
                        syspaths=[os.path.dirname(__file__)],
-                       imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span']
+                       imports=["from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span"],
                        scriptpath=args.scripts)
         res = job.submit(max_jobs=args.maxjobs)
 
