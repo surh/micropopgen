@@ -45,6 +45,12 @@ def process_arguments():
                           required=True, type=str)
 
     # Define other arguments
+    parser.add_argument("--markers_pep", help=("Location of fasta file of "
+                                               "marker genes. If left empty "
+                                               "it will default to "
+                                               "'markers.pep' in the same "
+                                               "directory as --db."),
+                        type=str, default='')
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
                                                 "indir"),
                         type=str, default='.faa')
@@ -82,6 +88,13 @@ def process_arguments():
         raise FileNotFoundError("Executable for hmmscan not found")
     else:
         args.hmmscan = which(args.hmmscan)
+
+    # Check if markers.pep is passed and exists, if not
+    # set default and check if exists
+    if args.markers_pep == '':
+        "/".join([os.path.dirname(args.db), 'markers.pep'])
+    if not os.path.isfile(args.markers_pep):
+        raise FileExistsError("Markers fasta does not exist")
 
     return args
 
