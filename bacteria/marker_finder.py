@@ -69,7 +69,7 @@ def hit_and_query_span(hit):
     return(hit_span, query_span)
 
 
-def hmmscan_file(filename, db, args, job_name=None, outpath='./logs/',
+def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
                  scriptpath='./scripts/', partition='',
                  time='00:30:00', hmmscan='hmmscan',
                  indir='', outdir='', fasta_suffix='.faa',
