@@ -94,7 +94,7 @@ def process_arguments():
     if args.markers_pep == '':
         "/".join([os.path.dirname(args.db), 'markers.fas'])
     if not os.path.isfile(args.markers_pep):
-        raise FileExistsError("Markers fasta does not exist")
+        raise FileExistsError("Markers fasta ({}) does not exist".format(args.markers_pep))
 
     return args
 
