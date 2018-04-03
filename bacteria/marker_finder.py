@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2018 Sur Herrera Paredes
+# This file is based on the MarkerScanner.pl script of the AMPHORA
+# pipeline by Martin Wu.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +19,8 @@
 import fyrd
 import argparse
 import os
+from Bio import SearchIO, SeqIO
+import time
 
 
 def process_arguments():
@@ -26,9 +30,9 @@ def process_arguments():
     required = parser.add_argument_group("Required arguments")
 
     # Define description
-    parser.description = ("Uses EMBOSS' transeq to translate all fasta "
-                          "sequences in all fasta files in a directory.\n"
-                          "Currently only handles standard genetic code.")
+    parser.description = ("Uses HMMER hmmscan search all protein fasta "
+                          "sequences in all fasta files in a directory, "
+                          "against a database of profiles o marker genes")
 
     # Define required arguments
     required.add_argument("--indir", help=("Directory where fasta files are"),
@@ -36,16 +40,25 @@ def process_arguments():
     required.add_argument("--outdir", help=("Directory where to write output "
                                             "files"),
                           required=True, type=str)
+    required.add_argument("--db", help=("Database of hmm profiles for maker "
+                                        "sequences"),
+                          required=True, type=str)
 
     # Define other arguments
+    parser.add_argument("--markers_pep", help=("Location of fasta file of "
+                                               "marker genes. If left empty "
+                                               "it will default to "
+                                               "'markers.fas' in the same "
+                                               "directory as --db."),
+                        type=str, default='')
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
                                                 "indir"),
-                        type=str, default='.fna')
-    parser.add_argument("--out_suffix", help=("Suffix of output files"),
                         type=str, default='.faa')
-    parser.add_argument("--transeq", help=("Binary executable of transeq "
-                                           "tool of the EMBOSS package"),
-                        type=str, default='transeq')
+    parser.add_argument("--out_suffix", help=("Suffix of output files"),
+                        type=str, default='.hmms')
+    parser.add_argument("--hmmscan", help=("Binary executable of hmmscan "
+                                           "tool of the HMMER package"),
+                        type=str, default='hmmscan')
     parser.add_argument("--logs", help=("Directory where to write logfiles "
                                         "from fyrd."),
                         type=str, default='logs/')
@@ -71,18 +84,23 @@ def process_arguments():
 
     # Processing goes here if needed
     # Check if exectuable exists
-    if which(args.transeq) is None:
-        raise FileNotFoundError("Executable for transeq not found")
+    if which(args.hmmscan) is None:
+        raise FileNotFoundError("Executable for hmmscan not found")
     else:
-        args.transeq = which(args.transeq)
+        args.hmmscan = which(args.hmmscan)
 
-    # print(args.transeq)
+    # Check if markers.pep is passed and exists, if not
+    # set default and check if exists
+    if args.markers_pep == '':
+        args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
+    if not os.path.isfile(args.markers_pep):
+        raise FileExistsError("Markers fasta ({}) does not exist".format(args.markers_pep))
 
     return args
 
 
 def which(program):
-    """Check if executable exists"""
+    """Check if executable exists. Returns path of executable."""
 
     # From:
     # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
@@ -115,25 +133,28 @@ def strip_right(text, suffix):
     return text[:len(text)-len(suffix)]
 
 
-def transeq_file(filename, args, transeq='transeq',
+def hmmscan_file(filename, db, args, hmmscan='hmmscan',
                  indir='', outdir=''):
-    """Use fyrd to run transeq on a given file"""
+    """Use fyrd to run hmmscan on a given file"""
 
     # Get basename
     basename = strip_right(filename, args.fasta_suffix)
 
-    # Build transeq filenames
+    # Build hmmscan filenames
     infile = '/'.join([indir, filename])
     outfile = '/'.join([outdir, basename])
     outfile = ''.join([outfile, args.out_suffix])
 
-    # Build transeq command
-    command = ' '.join([transeq,
-                        "-sequence", infile,
-                        '-outseq', outfile])
+    # Build hmmscan command
+    command = ' '.join([hmmscan,
+                        "-Z", str(5000),
+                        "-E", str(1e-3),
+                        db,
+                        infile,
+                        ">", outfile])
 
     # Build fyrd filenames
-    job_name = '.'.join(['transeq', basename])
+    job_name = '.'.join(['hmmscan', basename])
     print(job_name)
 
     print("\tCreating fyrd.Job")
@@ -150,6 +171,83 @@ def transeq_file(filename, args, transeq='transeq',
     # Submit joobs
     print("\tSubmitting job")
     fyrd_job.submit(max_jobs=args.maxjobs)
+
+    return outfile, fyrd_job
+
+
+def get_hmm_hits(hmmfile, query_fasta, dbfile):
+    """Read HMMER files and get hits"""
+
+    # Read query fasta
+    queries = fasta_seq_lenghts(query_fasta)
+    # db = fasta_seq_lenghts(db_fasta, split=True)
+    db = read_marker_list(dbfile)
+
+    # Find hits and save tophit for every query
+    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
+    print("==Read==")
+    hmm_hits = {k: [] for k in db}
+    for query in hmmsearch:
+        for hit in query:
+            hit_span, query_span = hit_and_query_span(hit)
+            query_cov = query_span / queries[query.id][1]
+            hit_cov = hit_span / db[hit.id]
+            # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
+            if query_cov > 0.7 and hit_cov > 0.7:
+                hmm_hits[hit.id].append(query.id)
+                break
+
+    print(hmm_hits)
+    # Write file per marker
+    for marker in hmm_hits:
+        print(marker)
+        marker_file = strip_right(hmmfile, '.hmms')
+        marker_file = marker_file + '.' + marker + '.faa'
+        with open(marker_file, mode='w') as out:
+            for hit in hmm_hits[marker]:
+                out.write(">" + hmmfile + "\n")
+                out.write(queries[hit][0] + "\n")
+
+
+def hit_and_query_span(hit):
+    """Calculate total hit and query span"""
+
+    hit_span = 0
+    query_span = 0
+    for hsp in hit.fragments:
+        query_span = query_span + hsp.query_span
+        hit_span = hit_span + hsp.hit_span
+
+    return(hit_span, query_span)
+
+
+def fasta_seq_lenghts(fasta_file, split=False):
+    """Read sequences in fasta file and obtain sequence lengths"""
+
+    fasta = SeqIO.parse(fasta_file, 'fasta')
+    Sequences = dict()
+    for s in fasta:
+        if split:
+            key = s.description.split()[1]
+        else:
+            key = s.id
+        Sequences[key] = [str(s.seq), len(s.seq)]
+
+    return Sequences
+
+
+def read_marker_list(infile):
+    """Read hmm profiles file and return length of profiles"""
+
+    hmm_lenghts = dict()
+    with open(infile) as fh:
+        for l in fh:
+            if l.startswith('NAME'):
+                name = l.split()[1]
+            elif l.startswith('LENG'):
+                hmm_lenghts[name] = int(l.split()[1])
+
+    return hmm_lenghts
 
 
 if __name__ == "__main__":
@@ -175,10 +273,26 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outdir):
         os.mkdir(args.outdir)
 
-    # Submit jobs
+    # Submit hmmscan jobs
+    print("===hmmscan===")
+    hmm_files = dict()
     for f in fasta_files:
+        hmmfile, job = hmmscan_file(filename=f, db=args.db, args=args,
+                                    hmmscan=args.hmmscan,
+                                    indir=args.indir,
+                                    outdir=args.outdir)
+        hmm_files[hmmfile] = [job, f]
         print(f)
-        transeq_file(filename=f,  args=args,
-                     transeq=args.transeq,
-                     indir=args.indir,
-                     outdir=args.outdir)
+
+    # Submit hits_job
+    print("===hits===")
+    time.sleep(10)
+    for f, o in hmm_files.items():
+        print(f)
+        get_hmm_hits(f, query_fasta=''.join([args.indir, '/', o[1]]),
+                     dbfile=args.db)
+        # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
+        #                depends=o[0], runpath=os.getcwd(),
+        #                outpath=args.logs,
+        #                scriptpath=args.scripts)
+        # job.submit(max_jobs=args.maxjobs)
