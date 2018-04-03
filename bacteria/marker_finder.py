@@ -418,7 +418,10 @@ if __name__ == "__main__":
     marker_tab = []
     for j in jobs:
         # print(j)
-        marker_tab.append(j[list(j.keys())[0]].get())
+        strain = list(j.keys())[0]
+        job = j[strain]
+        res = job.get()
+        marker_tab.append({strain: res})
 
     print(marker_tab)
     # Print summary
