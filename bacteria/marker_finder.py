@@ -417,6 +417,7 @@ if __name__ == "__main__":
     # Collect fyrd results
     marker_tab = []
     for j in jobs:
+        print(j)
         marker_tab.append(j.get())
 
     # Print summary
