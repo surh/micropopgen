@@ -334,6 +334,7 @@ def write_summary(tab, args, name='summary.txt'):
         i = 0
         for strain in tab:
             # For first line print the header
+            print(strain)
             if i == 0:
                 markers = list(tab[strain].keys())
                 print(markers)
