@@ -175,11 +175,12 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     return outfile, fyrd_job
 
 
-def get_hmm_hits(hmmfile, query_fasta):
+def get_hmm_hits(hmmfile, query_fasta, db_fasta):
     """Read HMMER files and get hits"""
 
     # Read query fasta
     queries = fasta_seq_lenghts(query_fasta)
+    db = fasta_seq_lenghts(db_fasta)
 
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
@@ -187,7 +188,8 @@ def get_hmm_hits(hmmfile, query_fasta):
         for hit in query:
             hit_span, query_span = hit_and_query_span(hit)
             query_cov = query_span / queries[query.id][1]
-            print("\t{}:{}".format(query.id, query_cov))
+            hit_cov = hit_span / db[hit.id][1]
+            print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
 
 
 def hit_and_query_span(hit):
@@ -252,7 +254,8 @@ if __name__ == "__main__":
     time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        get_hmm_hits(f, ''.join([args.indir, '/', o[1]]))
+        get_hmm_hits(f, query_fasta=''.join([args.indir, '/', o[1]]),
+                     db_fasta=args.markers_pep)
         # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
         #                depends=o[0], runpath=os.getcwd(),
         #                outpath=args.logs,
