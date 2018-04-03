@@ -174,7 +174,7 @@ def get_hmm_hits(hmmfile, query_fasta):
         for hit in query:
             hit_span, query_span = hit_and_query_span(hit)
             query_cov = query_span / queries[query.id][1]
-            print("\t{}:{}".format([query.id, query_cov]))
+            print("\t{}:{}".format(query.id, query_cov))
 
 
 def hit_and_query_span(hit):
