@@ -67,7 +67,7 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
         # print(marker)
         # marker_file = strip_right(hmmfile, '.hmms')
         # marker_file = marker_file + '.' + marker + '.faa'
-        marker_file = outdir + '/' + name + '.faa'
+        marker_file = outdir + '/' + name + '.' + marker + '.faa'
         with open(marker_file, mode='w') as out:
             i = 0
             for hit in hmm_hits[marker]:
