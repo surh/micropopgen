@@ -45,10 +45,10 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile):
                 hmm_hits[hit.id].append(query.id)
                 break
 
-    print(hmm_hits)
+    # print(hmm_hits)
     # Write file per marker
     for marker in hmm_hits:
-        print(marker)
+        # print(marker)
         marker_file = strip_right(hmmfile, '.hmms')
         marker_file = marker_file + '.' + marker + '.faa'
         with open(marker_file, mode='w') as out:
