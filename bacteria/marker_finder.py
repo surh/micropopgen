@@ -23,6 +23,109 @@ from Bio import SearchIO, SeqIO
 import time
 
 
+def get_hmm_hits(hmmfile, query_fasta, dbfile):
+    """Read HMMER files and get hits"""
+
+    # Read query fasta
+    queries = fasta_seq_lenghts(query_fasta)
+    # db = fasta_seq_lenghts(db_fasta, split=True)
+    db = read_marker_list(dbfile)
+
+    # Find hits and save tophit for every query
+    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
+    print("==Read==")
+    hmm_hits = {k: [] for k in db}
+    for query in hmmsearch:
+        for hit in query:
+            hit_span, query_span = hit_and_query_span(hit)
+            query_cov = query_span / queries[query.id][1]
+            hit_cov = hit_span / db[hit.id]
+            # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
+            if query_cov > 0.7 and hit_cov > 0.7:
+                hmm_hits[hit.id].append(query.id)
+                break
+
+    print(hmm_hits)
+    # Write file per marker
+    for marker in hmm_hits:
+        print(marker)
+        marker_file = strip_right(hmmfile, '.hmms')
+        marker_file = marker_file + '.' + marker + '.faa'
+        with open(marker_file, mode='w') as out:
+            for hit in hmm_hits[marker]:
+                out.write(">" + hmmfile + "\n")
+                out.write(queries[hit][0] + "\n")
+
+
+def hit_and_query_span(hit):
+    """Calculate total hit and query span"""
+
+    hit_span = 0
+    query_span = 0
+    for hsp in hit.fragments:
+        query_span = query_span + hsp.query_span
+        hit_span = hit_span + hsp.hit_span
+
+    return(hit_span, query_span)
+
+
+def hmmscan_file(filename, db, args, hmmscan='hmmscan',
+                 indir='', outdir=''):
+    """Use fyrd to run hmmscan on a given file"""
+
+    # Get basename
+    basename = strip_right(filename, args.fasta_suffix)
+
+    # Build hmmscan filenames
+    infile = '/'.join([indir, filename])
+    outfile = '/'.join([outdir, basename])
+    outfile = ''.join([outfile, args.out_suffix])
+
+    # Build hmmscan command
+    command = ' '.join([hmmscan,
+                        "-Z", str(5000),
+                        "-E", str(1e-3),
+                        db,
+                        infile,
+                        ">", outfile])
+
+    # Build fyrd filenames
+    job_name = '.'.join(['hmmscan', basename])
+    print(job_name)
+
+    print("\tCreating fyrd.Job")
+    fyrd_job = fyrd.Job(command,
+                        runpath=os.getcwd(), outpath=args.logs,
+                        scriptpath=args.scripts,
+                        clean_files=False, clean_outputs=False,
+                        mem=args.memory, name=job_name,
+                        outfile=job_name + ".log",
+                        errfile=job_name + ".err",
+                        partition=args.queue,
+                        nodes=1, cores=1, time=args.time)
+
+    # Submit joobs
+    print("\tSubmitting job")
+    fyrd_job.submit(max_jobs=args.maxjobs)
+
+    return outfile, fyrd_job
+
+
+def fasta_seq_lenghts(fasta_file, split=False):
+    """Read sequences in fasta file and obtain sequence lengths"""
+
+    fasta = SeqIO.parse(fasta_file, 'fasta')
+    Sequences = dict()
+    for s in fasta:
+        if split:
+            key = s.description.split()[1]
+        else:
+            key = s.id
+        Sequences[key] = [str(s.seq), len(s.seq)]
+
+    return Sequences
+
+
 def process_arguments():
     # Read arguments
     parser_format = argparse.ArgumentDefaultsHelpFormatter
@@ -99,6 +202,29 @@ def process_arguments():
     return args
 
 
+def read_marker_list(infile):
+    """Read hmm profiles file and return length of profiles"""
+
+    hmm_lenghts = dict()
+    with open(infile) as fh:
+        for l in fh:
+            if l.startswith('NAME'):
+                name = l.split()[1]
+            elif l.startswith('LENG'):
+                hmm_lenghts[name] = int(l.split()[1])
+
+    return hmm_lenghts
+
+
+def strip_right(text, suffix):
+    # tip from http://stackoverflow.com/questions/1038824
+    # MIT License
+    if not text.endswith(suffix):
+        return text
+    # else
+    return text[:len(text)-len(suffix)]
+
+
 def which(program):
     """Check if executable exists. Returns path of executable."""
 
@@ -122,132 +248,6 @@ def which(program):
                 return exe_file
 
     return None
-
-
-def strip_right(text, suffix):
-    # tip from http://stackoverflow.com/questions/1038824
-    # MIT License
-    if not text.endswith(suffix):
-        return text
-    # else
-    return text[:len(text)-len(suffix)]
-
-
-def hmmscan_file(filename, db, args, hmmscan='hmmscan',
-                 indir='', outdir=''):
-    """Use fyrd to run hmmscan on a given file"""
-
-    # Get basename
-    basename = strip_right(filename, args.fasta_suffix)
-
-    # Build hmmscan filenames
-    infile = '/'.join([indir, filename])
-    outfile = '/'.join([outdir, basename])
-    outfile = ''.join([outfile, args.out_suffix])
-
-    # Build hmmscan command
-    command = ' '.join([hmmscan,
-                        "-Z", str(5000),
-                        "-E", str(1e-3),
-                        db,
-                        infile,
-                        ">", outfile])
-
-    # Build fyrd filenames
-    job_name = '.'.join(['hmmscan', basename])
-    print(job_name)
-
-    print("\tCreating fyrd.Job")
-    fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=args.logs,
-                        scriptpath=args.scripts,
-                        clean_files=False, clean_outputs=False,
-                        mem=args.memory, name=job_name,
-                        outfile=job_name + ".log",
-                        errfile=job_name + ".err",
-                        partition=args.queue,
-                        nodes=1, cores=1, time=args.time)
-
-    # Submit joobs
-    print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=args.maxjobs)
-
-    return outfile, fyrd_job
-
-
-def get_hmm_hits(hmmfile, query_fasta, dbfile):
-    """Read HMMER files and get hits"""
-
-    # Read query fasta
-    queries = fasta_seq_lenghts(query_fasta)
-    # db = fasta_seq_lenghts(db_fasta, split=True)
-    db = read_marker_list(dbfile)
-
-    # Find hits and save tophit for every query
-    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
-    print("==Read==")
-    hmm_hits = {k: [] for k in db}
-    for query in hmmsearch:
-        for hit in query:
-            hit_span, query_span = hit_and_query_span(hit)
-            query_cov = query_span / queries[query.id][1]
-            hit_cov = hit_span / db[hit.id]
-            # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
-            if query_cov > 0.7 and hit_cov > 0.7:
-                hmm_hits[hit.id].append(query.id)
-                break
-
-    print(hmm_hits)
-    # Write file per marker
-    for marker in hmm_hits:
-        print(marker)
-        marker_file = strip_right(hmmfile, '.hmms')
-        marker_file = marker_file + '.' + marker + '.faa'
-        with open(marker_file, mode='w') as out:
-            for hit in hmm_hits[marker]:
-                out.write(">" + hmmfile + "\n")
-                out.write(queries[hit][0] + "\n")
-
-
-def hit_and_query_span(hit):
-    """Calculate total hit and query span"""
-
-    hit_span = 0
-    query_span = 0
-    for hsp in hit.fragments:
-        query_span = query_span + hsp.query_span
-        hit_span = hit_span + hsp.hit_span
-
-    return(hit_span, query_span)
-
-
-def fasta_seq_lenghts(fasta_file, split=False):
-    """Read sequences in fasta file and obtain sequence lengths"""
-
-    fasta = SeqIO.parse(fasta_file, 'fasta')
-    Sequences = dict()
-    for s in fasta:
-        if split:
-            key = s.description.split()[1]
-        else:
-            key = s.id
-        Sequences[key] = [str(s.seq), len(s.seq)]
-
-    return Sequences
-
-
-def read_marker_list(infile):
-    """Read hmm profiles file and return length of profiles"""
-
-    hmm_lenghts = dict()
-    with open(infile) as fh:
-        for l in fh:
-            if l.startswith('NAME'):
-                name = l.split()[1]
-            elif l.startswith('LENG'):
-                hmm_lenghts[name] = int(l.split()[1])
-
-    return hmm_lenghts
 
 
 if __name__ == "__main__":
