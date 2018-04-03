@@ -223,8 +223,7 @@ if __name__ == "__main__":
     # time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        job = fyrd.Job(get_hmm_hits(f), depends=o,
-                       runpath=os.getcwd())
+        job = fyrd.Job(get_hmm_hits(f), depends=o, runpath=os.getcwd())
         # job = fyrd.Job(' '.join(['ls -l', f]), depends=o[0],
         #                runpath=os.getcwd())
         # time.sleep(15)
