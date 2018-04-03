@@ -418,7 +418,7 @@ if __name__ == "__main__":
     marker_tab = []
     for j in jobs:
         print(j)
-        marker_tab.append(j.get())
+        marker_tab.append(j[list(j.keys())[0]].get())
 
     # Print summary
     if not args.nosummary:
