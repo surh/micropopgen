@@ -332,18 +332,18 @@ def write_summary(tab, args, name='summary.txt'):
     print(summary_file)
     with open(summary_file, mode='w') as out:
         i = 0
-        for strain in tab:
+        for strain, marker_counts in tab.items():
             # For first line print the header
             print(strain)
             if i == 0:
-                markers = list(tab[strain].keys())
+                markers = list(marker_counts.keys())
                 print(markers)
                 out.write("\t".join(['strain'] + markers) + "\n")
                 i = i + 1
 
-            counts = tab[strain]
-            print(counts)
-            counts = [counts[m] for m in markers]
+            # counts = tab[strain]
+            # print(counts)
+            counts = [marker_counts[m] for m in markers]
             out.write("\t".join([strain] + counts) + "\n")
     out.close()
 
