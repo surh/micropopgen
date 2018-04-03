@@ -423,7 +423,7 @@ if __name__ == "__main__":
         res = job.get()
         marker_tab.append({strain: res})
 
-    print(marker_tab)
+    # print(marker_tab)
     # Print summary
     if not args.nosummary:
         print("Writing summary of markers")
