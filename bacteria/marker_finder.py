@@ -204,7 +204,7 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile):
         marker_file = strip_right(hmmfile, '.hmms')
         marker_file = marker_file + '.' + marker + '.faa'
         with open(marker_file, mode='w') as out:
-            for hit in marker:
+            for hit in hmm_hits[marker]:
                 out.write(">" + hmmfile + "\n")
                 out.write(queries[hit][0] + "\n")
 
