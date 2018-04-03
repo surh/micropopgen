@@ -170,12 +170,6 @@ def process_arguments():
                           required=True, type=str)
 
     # Define other arguments
-    # parser.add_argument("--markers_pep", help=("Location of fasta file of "
-    #                                            "marker genes. If left empty "
-    #                                            "it will default to "
-    #                                            "'markers.fas' in the same "
-    #                                            "directory as --db."),
-    #                     type=str, default='')
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
                                                 "indir"),
                         type=str, default='.faa')
@@ -202,6 +196,11 @@ def process_arguments():
     parser.add_argument("--time", help=("Amunt of time to reserve per "
                                         "job"),
                         type=str, default="1:00:00")
+    parser.add_argument("--mode", help=("bash of fyrd for second step"),
+                        default='fyrd', choices=['bash', 'fyrd'],
+                        type=str)
+    parser.add_argument("--nosummary", help=("Don't print a summary"),
+                        action="store_true")
 
     # Read arguments
     print("Reading arguments")
@@ -319,19 +318,21 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
     if not os.path.isfile(fasta_file):
         raise FileNotFoundError("Fasta file not found")
 
-    res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
-                       dbfile=args.db, name=strain_name,
-                       outdir=markersdir)
-    # job = fyrd.Job(get_hmm_hits, hmmfile,
-    #                {'query_fasta': fasta_file,
-    #                 'dbfile': args.db,
-    #                 'name': strain_name,
-    #                 'outdir': markersdir},
-    #                depends=job,
-    #                runpath=os.getcwd(),
-    #                outpath=args.logs,
-    #                scriptpath=args.scripts)
-    # res = job.submit(max_jobs=args.maxjobs)
+    if args.mode == 'bash':
+        res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+                           dbfile=args.db, name=strain_name,
+                           outdir=markersdir)
+    elif args.mode == 'fyrd':
+        job = fyrd.Job(get_hmm_hits, hmmfile,
+                       {'query_fasta': fasta_file,
+                        'dbfile': args.db,
+                        'name': strain_name,
+                        'outdir': markersdir},
+                       depends=job,
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       scriptpath=args.scripts)
+        res = job.submit(max_jobs=args.maxjobs)
 
     Res = {strain_name: res}
 
@@ -362,7 +363,6 @@ def write_summary(tab, args, name='summary.txt'):
                 out.write("\t".join(['strain'] + markers) + "\n")
                 i = i + 1
 
-            # counts = tab[strain]
             # print(counts)
             counts = [str(marker_counts[m]) for m in markers]
             out.write("\t".join([strain] + counts) + "\n")
@@ -412,5 +412,6 @@ if __name__ == "__main__":
                                   fasta_file=o[1], args=args)
         marker_tab.append(tab)
     # print(marker_tab)
-    print("Writing summary of markers")
-    write_summary(tab=marker_tab, args=args)
+    if not args.nosummary:
+        print("Writing summary of markers")
+        write_summary(tab=marker_tab, args=args)
