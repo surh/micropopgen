@@ -186,7 +186,7 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile):
     # Find hits and save tophit for every query
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
-    hmm_hits = {k: [] for k in db.keys}
+    hmm_hits = {k: [] for k in db}
     for query in hmmsearch:
         for hit in query:
             hit_span, query_span = hit_and_query_span(hit)
