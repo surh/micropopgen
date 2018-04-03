@@ -330,8 +330,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                        depends=job,
                        runpath=os.getcwd(),
                        outpath=args.logs,
-                       scriptpath=args.scripts,
-                       clean=False)
+                       scriptpath=args.scripts)
         job.submit(max_jobs=args.maxjobs)
         res = job.get_output()
 
