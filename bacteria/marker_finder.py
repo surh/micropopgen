@@ -43,9 +43,6 @@ def fasta_seq_lenghts(fasta_file, split=False):
 
 def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
     """Read HMMER files and get hits"""
-    import sys
-    sys.path.append(os.path.dirname(__file__))
-    from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span
 
     # Read query fasta
     queries = fasta_seq_lenghts(query_fasta)
@@ -333,6 +330,8 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                        depends=job,
                        runpath=os.getcwd(),
                        outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span']
                        scriptpath=args.scripts)
         res = job.submit(max_jobs=args.maxjobs)
 
