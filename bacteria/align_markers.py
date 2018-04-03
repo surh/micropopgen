@@ -47,6 +47,10 @@ def process_arguments():
     parser.add_argument("--marker_suffix", help=("Suffix of files with "
                                                  "sequences"),
                         type=str, default='.faa')
+    parser.add_argument("--which_markers", help=("A file of markers to use. "
+                                                 "if nothing is passed, then "
+                                                 "all markers will be used"),
+                        type=str, default='')
 
     # Read arguments
     print("Reading arguments")
@@ -55,6 +59,25 @@ def process_arguments():
     # Processing goes here if needed
 
     return args
+
+
+def concatenate_marker_files(indir, suffix):
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+    fasta_files = [strip_right(f, suffix) for f in fasta_files]
+
+    print(fasta_files)
+
+
+def strip_right(text, suffix):
+    # tip from http://stackoverflow.com/questions/1038824
+    # MIT License
+    if not text.endswith(suffix):
+        return text
+    # else
+    return text[:len(text)-len(suffix)]
 
 
 if __name__ == "__main__":
@@ -69,3 +92,15 @@ if __name__ == "__main__":
         raise FileExistsError("Outdir already exists")
     else:
         os.mkdir(args.outdir)
+
+    # Concatenate fasta per marker
+    concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix)
+
+
+    # Align fasta files per marker
+
+
+    # Filter alignment per marker
+
+
+    # Concatenate overall alignment
