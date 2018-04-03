@@ -20,7 +20,7 @@ import fyrd
 import argparse
 import os
 from Bio import SearchIO, SeqIO
-import time
+# import time
 
 
 def fasta_seq_lenghts(fasta_file, split=False):
@@ -331,11 +331,11 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                        runpath=os.getcwd(),
                        outpath=args.logs,
                        syspaths=[os.path.dirname(__file__)],
-                       imports=["from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span"],
+                       imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span'],
                        scriptpath=args.scripts)
         res = job.submit(max_jobs=args.maxjobs)
 
-    Res = {strain_name: res.get()}
+    Res = {strain_name: res}
 
     return Res
 
@@ -405,14 +405,21 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    time.sleep(10)
-    marker_tab = []
+    # time.sleep(10)
+    jobs = []
     for f, o in hmm_files.items():
         print(f)
-        tab = submit_get_hmm_hits(hmmfile=f, job=o[0],
-                                  fasta_file=o[1], args=args)
-        marker_tab.append(tab)
+        j = submit_get_hmm_hits(hmmfile=f, job=o[0],
+                                fasta_file=o[1], args=args)
+        jobs.append(j)
     # print(marker_tab)
+
+    # Collect fyrd results
+    marker_tab = []
+    for j in jobs:
+        marker_tab.append(j.get())
+
+    # Print summary
     if not args.nosummary:
         print("Writing summary of markers")
         write_summary(tab=marker_tab, args=args)
