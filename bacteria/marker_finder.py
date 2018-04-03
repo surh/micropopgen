@@ -307,15 +307,21 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
     if not os.path.isfile(fasta_file):
         raise FileNotFoundError("Fasta file not found")
 
-    res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
-                       dbfile=args.db, name=strain_name,
-                       outdir=markersdir)
+    # res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+    #                    dbfile=args.db, name=strain_name,
+    #                    outdir=markersdir)
+    job = fyrd.Job(get_hmm_hits, hmmfile,
+                   {'query_fasta': fasta_file,
+                    'dbfile': args.db,
+                    'name': strain_name,
+                    'outdir': markersdir},
+                   depends=job,
+                   runpath=os.getcwd(),
+                   outpath=args.logs,
+                   scriptpath=args.scripts)
+    res = job.submit(max_jobs=args.maxjobs)
+
     Res = {strain_name: res}
-    # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
-    #                depends=o[0], runpath=os.getcwd(),
-    #                outpath=args.logs,
-    #                scriptpath=args.scripts)
-    # job.submit(max_jobs=args.maxjobs)
 
     return Res
 
@@ -386,7 +392,7 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    time.sleep(10)
+    # time.sleep(10)
     marker_tab = []
     for f, o in hmm_files.items():
         print(f)
