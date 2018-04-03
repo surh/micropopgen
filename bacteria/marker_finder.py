@@ -329,18 +329,18 @@ def write_summary(tab, args, name='summary.txt'):
         raise FileNotFoundError("Markers directory not found")
 
     summary_file = markersdir + '/' + name
-    print(summary_file)
+    # print(summary_file)
     with open(summary_file, mode='w') as out:
         i = 0
         for c in tab:
             # For first line print the header
             strain = list(c.keys())[0]
             marker_counts = c[strain]
-            print(strain)
-            print(marker_counts)
+            # print(strain)
+            # print(marker_counts)
             if i == 0:
+                # print(markers)
                 markers = list(marker_counts.keys())
-                print(markers)
                 out.write("\t".join(['strain'] + markers) + "\n")
                 i = i + 1
 
