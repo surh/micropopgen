@@ -320,6 +320,31 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
     return Res
 
 
+def write_summary(tab, args, name='summary.txt'):
+    """Write file with summary of found markers"""
+
+    # Creat subdirectory for fasta files
+    markersdir = args.outdir + '/' + 'markers/'
+    if not os.path.isdir(markersdir):
+        raise FileNotFoundError("Markers directory not found")
+
+    summary_file = markersdir + '/' + name
+    with open(summary_file, mode='w') as out:
+        i = 0
+        for strain in tab:
+            # For first line print the header
+            if i == 0:
+                markers = strain.keys()
+                out.write("\t".join(['strain'] + markers) + "\n")
+                i = i + 1
+
+            counts = [tab[strain][m] for m in markers]
+            out.write("\t".join([strain] + counts) + "\n")
+    out.close()
+
+    return summary_file
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
@@ -360,4 +385,6 @@ if __name__ == "__main__":
         tab = submit_get_hmm_hits(hmmfile=f, job=o[0],
                                   fasta_file=o[1], args=args)
         marker_tab.append(tab)
-    print(marker_tab)
+    # print(marker_tab)
+    print("Writing summary of markers")
+    write_summary(tab=marker_tab, args=args)
