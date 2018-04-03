@@ -19,7 +19,7 @@
 import fyrd
 import argparse
 import os
-from Bio import SearchIO
+from Bio import SearchIO, SeqIO
 import time
 
 
@@ -192,7 +192,7 @@ def hit_and_query_span(hit):
 def fasta_seq_lenghts(fasta_file):
     """Read sequences in fasta file and obtain sequence lengths"""
 
-    fasta = SearchIO.parse(fasta_file, 'fasta')
+    fasta = SeqIO.parse(fasta_file, 'fasta')
     Sequences = dict()
     for s in fasta:
         Sequences[s.id] = [s.seq, len(s.seq)]
