@@ -220,7 +220,7 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    time.sleep(10)
+    # time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
         job = fyrd.Job(get_hmm_hits(f), depends=o,
