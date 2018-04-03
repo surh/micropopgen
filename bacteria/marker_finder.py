@@ -162,7 +162,7 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     return outfile, fyrd_job
 
 
-def get_hmm_hits(hmmfile):
+def get_hmm_hits(hmmfile, fasta_file):
     """Read HMMER files and get hits"""
 
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
