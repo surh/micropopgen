@@ -275,7 +275,7 @@ def submit_hmmscan_file(f, args, name=None):
                                           fasta_suffix=args.fasta_suffix,
                                           out_suffix=args.out_suffix,
                                           memory=args.memory,
-                                          maxjobs=args.maxjob,
+                                          maxjobs=args.maxjobs,
                                           job_name=name)
 
     return hmmfile, job
