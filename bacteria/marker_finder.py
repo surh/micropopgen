@@ -175,12 +175,13 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     return outfile, fyrd_job
 
 
-def get_hmm_hits(hmmfile, query_fasta, db_fasta):
+def get_hmm_hits(hmmfile, query_fasta, dbfile):
     """Read HMMER files and get hits"""
 
     # Read query fasta
     queries = fasta_seq_lenghts(query_fasta)
-    db = fasta_seq_lenghts(db_fasta, split=True)
+    # db = fasta_seq_lenghts(db_fasta, split=True)
+    db = read_marker_list(dbfile)
 
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
@@ -217,6 +218,20 @@ def fasta_seq_lenghts(fasta_file, split=False):
         Sequences[key] = [s.seq, len(s.seq)]
 
     return Sequences
+
+
+def read_marker_list(infile):
+    """Read hmm profiles file and return length of profiles"""
+
+    hmm_lenghts = dict()
+    with open(infile) as fh:
+        for l in fh:
+            if l.startswith('NAME'):
+                name = l.split()[1]
+            elif l.startswith('LENG'):
+                hmm_lenghts[name] = int(l.split()[1])
+
+    return hmm_lenghts
 
 
 if __name__ == "__main__":
@@ -259,7 +274,7 @@ if __name__ == "__main__":
     for f, o in hmm_files.items():
         print(f)
         get_hmm_hits(f, query_fasta=''.join([args.indir, '/', o[1]]),
-                     db_fasta=args.markers_pep)
+                     db_fasta=args.db)
         # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
         #                depends=o[0], runpath=os.getcwd(),
         #                outpath=args.logs,
