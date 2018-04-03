@@ -69,17 +69,21 @@ def hit_and_query_span(hit):
     return(hit_span, query_span)
 
 
-def hmmscan_file(filename, db, args, hmmscan='hmmscan',
-                 indir='', outdir=''):
+def hmmscan_file(filename, db, args, job_name=None, outpath='./logs/',
+                 scriptpath='./scripts/', partition='',
+                 time='00:30:00', hmmscan='hmmscan',
+                 indir='', outdir='', fasta_suffix='.faa',
+                 out_suffix='.hmms', memory='300mb',
+                 maxjobs=1000):
     """Use fyrd to run hmmscan on a given file"""
 
     # Get basename
-    basename = strip_right(filename, args.fasta_suffix)
+    basename = strip_right(filename, fasta_suffix)
 
     # Build hmmscan filenames
     infile = '/'.join([indir, filename])
     outfile = '/'.join([outdir, basename])
-    outfile = ''.join([outfile, args.out_suffix])
+    outfile = ''.join([outfile, out_suffix])
 
     # Build hmmscan command
     command = ' '.join([hmmscan,
@@ -90,25 +94,26 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
                         ">", outfile])
 
     # Build fyrd filenames
-    job_name = '.'.join(['hmmscan', basename])
+    if job_name is None:
+        job_name = '.'.join(['hmmscan', basename])
     print(job_name)
 
     print("\tCreating fyrd.Job")
     fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=args.logs,
-                        scriptpath=args.scripts,
+                        runpath=os.getcwd(), outpath=outpath,
+                        scriptpath=scriptpath,
                         clean_files=False, clean_outputs=False,
-                        mem=args.memory, name=job_name,
+                        mem=memory, name=job_name,
                         outfile=job_name + ".log",
                         errfile=job_name + ".err",
                         partition=args.queue,
-                        nodes=1, cores=1, time=args.time)
+                        nodes=1, cores=1, time=time)
 
     # Submit joobs
     print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=args.maxjobs)
+    fyrd_job.submit(max_jobs=maxjobs)
 
-    return outfile, fyrd_job
+    return job_name, outfile, fyrd_job
 
 
 def fasta_seq_lenghts(fasta_file, split=False):
@@ -148,12 +153,12 @@ def process_arguments():
                           required=True, type=str)
 
     # Define other arguments
-    parser.add_argument("--markers_pep", help=("Location of fasta file of "
-                                               "marker genes. If left empty "
-                                               "it will default to "
-                                               "'markers.fas' in the same "
-                                               "directory as --db."),
-                        type=str, default='')
+    # parser.add_argument("--markers_pep", help=("Location of fasta file of "
+    #                                            "marker genes. If left empty "
+    #                                            "it will default to "
+    #                                            "'markers.fas' in the same "
+    #                                            "directory as --db."),
+    #                     type=str, default='')
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
                                                 "indir"),
                         type=str, default='.faa')
@@ -194,10 +199,10 @@ def process_arguments():
 
     # Check if markers.pep is passed and exists, if not
     # set default and check if exists
-    if args.markers_pep == '':
-        args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
-    if not os.path.isfile(args.markers_pep):
-        raise FileExistsError("Markers fasta ({}) does not exist".format(args.markers_pep))
+    # if args.markers_pep == '':
+    #     args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
+    # if not os.path.isfile(args.markers_pep):
+    #     raise FileExistsError("Markers fasta does not exist")
 
     return args
 
@@ -250,6 +255,32 @@ def which(program):
     return None
 
 
+def submit_hmmscan_file(f, args, name=None):
+    """Create a job for rinnung hmmscan and submit it"""
+
+    # Creat subdirectory for hmmscan files
+    hmmscandir = args.outdir + '/' + 'hmms/'
+    if not os.path.isdir(hmmscandir):
+        os.mkdir(hmmscandir)
+
+    job_name, hmmfile, job = hmmscan_file(filename=f,
+                                          db=args.db,
+                                          outpath=args.logs,
+                                          scriptpath=args.scripts,
+                                          partition=args.queue,
+                                          time=args.time,
+                                          hmmscan=args.hmmscan,
+                                          indir=args.indir,
+                                          outdir=hmmscandir,
+                                          fasta_suffix=args.fasta_suffix,
+                                          out_suffix=args.out_suffix,
+                                          memory=args.memory,
+                                          maxjobs=args.maxjob,
+                                          job_name=name)
+
+    return hmmfile, job
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
@@ -277,10 +308,7 @@ if __name__ == "__main__":
     print("===hmmscan===")
     hmm_files = dict()
     for f in fasta_files:
-        hmmfile, job = hmmscan_file(filename=f, db=args.db, args=args,
-                                    hmmscan=args.hmmscan,
-                                    indir=args.indir,
-                                    outdir=args.outdir)
+        hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
         hmm_files[hmmfile] = [job, f]
         print(f)
 
