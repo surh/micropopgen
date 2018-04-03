@@ -48,7 +48,7 @@ def process_arguments():
     parser.add_argument("--markers_pep", help=("Location of fasta file of "
                                                "marker genes. If left empty "
                                                "it will default to "
-                                               "'markers.pep' in the same "
+                                               "'markers.fas' in the same "
                                                "directory as --db."),
                         type=str, default='')
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
@@ -92,7 +92,7 @@ def process_arguments():
     # Check if markers.pep is passed and exists, if not
     # set default and check if exists
     if args.markers_pep == '':
-        "/".join([os.path.dirname(args.db), 'markers.pep'])
+        "/".join([os.path.dirname(args.db), 'markers.fas'])
     if not os.path.isfile(args.markers_pep):
         raise FileExistsError("Markers fasta does not exist")
 
