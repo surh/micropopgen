@@ -334,7 +334,7 @@ def write_summary(tab, args, name='summary.txt'):
         for strain in tab:
             # For first line print the header
             if i == 0:
-                markers = strain.keys()
+                markers = list(strain.keys())
                 out.write("\t".join(['strain'] + markers) + "\n")
                 i = i + 1
 
