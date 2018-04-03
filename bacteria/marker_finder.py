@@ -20,7 +20,7 @@ import fyrd
 import argparse
 import os
 from Bio import SearchIO
-# import time
+import time
 
 
 def process_arguments():
@@ -236,11 +236,12 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    # time.sleep(10)
+    time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
-                       depends=o[0], runpath=os.getcwd(),
-                       outpath=args.logs,
-                       scriptpath=args.scripts)
-        job.submit(max_jobs=args.maxjobs)
+        get_hmm_hits(f, o[1])
+        # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
+        #                depends=o[0], runpath=os.getcwd(),
+        #                outpath=args.logs,
+        #                scriptpath=args.scripts)
+        # job.submit(max_jobs=args.maxjobs)
