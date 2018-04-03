@@ -180,7 +180,7 @@ def get_hmm_hits(hmmfile, query_fasta, db_fasta):
 
     # Read query fasta
     queries = fasta_seq_lenghts(query_fasta)
-    db = fasta_seq_lenghts(db_fasta)
+    db = fasta_seq_lenghts(db_fasta, split=True)
 
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
@@ -204,13 +204,17 @@ def hit_and_query_span(hit):
     return(hit_span, query_span)
 
 
-def fasta_seq_lenghts(fasta_file):
+def fasta_seq_lenghts(fasta_file, split=False):
     """Read sequences in fasta file and obtain sequence lengths"""
 
     fasta = SeqIO.parse(fasta_file, 'fasta')
     Sequences = dict()
     for s in fasta:
-        Sequences[s.id] = [s.seq, len(s.seq)]
+        if split:
+            key = s.description.split()[1]
+        else:
+            key = s.id
+        Sequences[key] = [s.seq, len(s.seq)]
 
     return Sequences
 
