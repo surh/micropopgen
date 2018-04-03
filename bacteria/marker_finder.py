@@ -20,7 +20,7 @@ import fyrd
 import argparse
 import os
 from Bio import SearchIO
-import time
+# import time
 
 
 def process_arguments():
@@ -162,14 +162,19 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     return outfile, fyrd_job
 
 
-def get_hmm_hits(hmmfile):
+def get_hmm_hits(hmmfile, query_fasta):
     """Read HMMER files and get hits"""
+
+    # Read query fasta
+    queries = fasta_seq_lenghts(query_fasta)
 
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
     for query in hmmsearch:
         for hit in query:
             hit_span, query_span = hit_and_query_span(hit)
+            query_cov = query_span / queries[query.id][1]
+            print("\t{}:{}".format([query.id, query_cov]))
 
 
 def hit_and_query_span(hit):
@@ -182,6 +187,17 @@ def hit_and_query_span(hit):
         hit_span = hit_span + hsp.hit_span
 
     return(hit_span, query_span)
+
+
+def fasta_seq_lenghts(fasta_file):
+    """Read sequences in fasta file and obtain sequence lengths"""
+
+    fasta = SearchIO.parse(fasta_file, 'fasta')
+    Sequences = dict()
+    for s in fasta:
+        Sequences[s.id] = [s.seq, len(s.seq)]
+
+    return Sequences
 
 
 if __name__ == "__main__":
@@ -215,7 +231,7 @@ if __name__ == "__main__":
                                     hmmscan=args.hmmscan,
                                     indir=args.indir,
                                     outdir=args.outdir)
-        hmm_files[hmmfile] = [job]
+        hmm_files[hmmfile] = [job, f]
         print(f)
 
     # Submit hits_job
@@ -223,8 +239,8 @@ if __name__ == "__main__":
     # time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        job = fyrd.Job(get_hmm_hits, f, depends=o, runpath=os.getcwd())
-        # job = fyrd.Job(' '.join(['ls -l', f]), depends=o[0],
-        #                runpath=os.getcwd())
-        # time.sleep(15)
+        job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
+                       depends=o[0], runpath=os.getcwd(),
+                       outpath=args.logs,
+                       scriptpath=args.scripts)
         job.submit(max_jobs=args.maxjobs)
