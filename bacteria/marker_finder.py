@@ -165,8 +165,23 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
 def get_hmm_hits(hmmfile):
     """Read HMMER files and get hits"""
 
-    hmmsearch = SearchIO.read(hmmfile, 'hmmer3-text')
+    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
+    for query in hmmsearch:
+        for hit in query:
+            hit_span, query_span = hit_and_query_span(hit)
+
+
+def hit_and_query_span(hit):
+    """Calculate total hit and query span"""
+
+    hit_span = 0
+    query_span = 0
+    for hsp in hit.fragments:
+        query_span = query_span + hsp.query_span
+        hit_span = hit_span + hsp.hit_span
+
+    return(hit_span, query_span)
 
 
 if __name__ == "__main__":
@@ -200,14 +215,16 @@ if __name__ == "__main__":
                                     hmmscan=args.hmmscan,
                                     indir=args.indir,
                                     outdir=args.outdir)
-        hmm_files[hmmfile] = job
+        hmm_files[hmmfile] = [job, f]
         print(f)
 
     # Submit hits_job
     print("===hits===")
-    for f, j in hmm_files.items():
+    for f, o in hmm_files.items():
         print(f)
-        # job = fyrd.Job(get_hmm_hits(f), depends=j, runpath=os.getcwd())
-        job = fyrd.Job(' '.join(['ls -l', f]), depends=j, runpath=os.getcwd())
+        job = fyrd.Job(get_hmm_hits(f, o[1]), depends=o[0],
+                       runpath=os.getcwd())
+        # job = fyrd.Job(' '.join(['ls -l', f]), depends=o[0],
+        #                runpath=os.getcwd())
         # time.sleep(15)
         job.submit(max_jobs=args.maxjobs)
