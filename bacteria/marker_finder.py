@@ -26,6 +26,9 @@ import time
 def fasta_seq_lenghts(fasta_file, split=False):
     """Read sequences in fasta file and obtain sequence lengths"""
 
+    if not os.path.isfile(fasta_file):
+        raise FileNotFoundError("Fasta file not found")
+
     fasta = SeqIO.parse(fasta_file, 'fasta')
     Sequences = dict()
     for s in fasta:
@@ -45,6 +48,10 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
     queries = fasta_seq_lenghts(query_fasta)
     # db = fasta_seq_lenghts(db_fasta, split=True)
     db = read_marker_list(dbfile)
+
+    # Check file FileExistsError
+    if not os.path.isfile(hmmfile):
+        raise("hmmfile does not exist")
 
     # Find hits and save tophit for every query
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
@@ -77,6 +84,7 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
                 out.write(queries[hit][0] + "\n")
                 i = i + 1
             res[marker] = i
+        out.close()
 
     return res
 
@@ -219,6 +227,9 @@ def process_arguments():
 def read_marker_list(infile):
     """Read hmm profiles file and return length of profiles"""
 
+    if not os.path.isfile(infile):
+        raise FileNotFoundError("Markers profile file not found")
+
     hmm_lenghts = dict()
     with open(infile) as fh:
         for l in fh:
@@ -226,6 +237,7 @@ def read_marker_list(infile):
                 name = l.split()[1]
             elif l.startswith('LENG'):
                 hmm_lenghts[name] = int(l.split()[1])
+    fh.close()
 
     return hmm_lenghts
 
