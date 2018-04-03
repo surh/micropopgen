@@ -183,14 +183,28 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile):
     # db = fasta_seq_lenghts(db_fasta, split=True)
     db = read_marker_list(dbfile)
 
+    # Find hits and save tophit for every query
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
     print("==Read==")
+    hmm_hits = {k: [] for k in db.keys}
     for query in hmmsearch:
         for hit in query:
             hit_span, query_span = hit_and_query_span(hit)
             query_cov = query_span / queries[query.id][1]
             hit_cov = hit_span / db[hit.id]
-            print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
+            # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
+            if query_cov > 0.7 and hit_cov > 0.7:
+                hmm_hits[hit.id].append(query.id)
+                break
+
+    # Write file per marker
+    for marker in hmm_hits:
+        marker_file = strip_right(hmmfile, '.hmms')
+        marker_file = marker_file + '.' + marker + '.faa'
+        with open(marker_file, mode='w') as out:
+            for hit in marker:
+                out.write(">" + hmmfile + "\n")
+                out.write(queries[hit][0] + "\n")
 
 
 def hit_and_query_span(hit):
