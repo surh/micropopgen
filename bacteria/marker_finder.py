@@ -162,7 +162,7 @@ def hmmscan_file(filename, db, args, hmmscan='hmmscan',
     return outfile, fyrd_job
 
 
-def get_hmm_hits(hmmfile, fasta_file):
+def get_hmm_hits(hmmfile):
     """Read HMMER files and get hits"""
 
     hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
@@ -215,15 +215,15 @@ if __name__ == "__main__":
                                     hmmscan=args.hmmscan,
                                     indir=args.indir,
                                     outdir=args.outdir)
-        hmm_files[hmmfile] = [job, f]
+        hmm_files[hmmfile] = [job]
         print(f)
 
     # Submit hits_job
     print("===hits===")
-    time.sleep(15)
+    time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        job = fyrd.Job(get_hmm_hits(f, o[1]), depends=o[0],
+        job = fyrd.Job(get_hmm_hits(f), depends=o,
                        runpath=os.getcwd())
         # job = fyrd.Job(' '.join(['ls -l', f]), depends=o[0],
         #                runpath=os.getcwd())
