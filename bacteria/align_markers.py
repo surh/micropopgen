@@ -19,6 +19,7 @@
 import argparse
 import os
 
+
 def process_arguments():
     # Read arguments
     parser_format = argparse.ArgumentDefaultsHelpFormatter
@@ -43,6 +44,9 @@ def process_arguments():
     parser.add_argument("--muscle", help=("Executable of muscle"),
                         type=str,
                         default="muscle")
+    parser.add_argument("--marker_suffix", help=("Suffix of files with "
+                                                 "sequences"),
+                        type=str, default='.faa')
 
     # Read arguments
     print("Reading arguments")
@@ -51,6 +55,7 @@ def process_arguments():
     # Processing goes here if needed
 
     return args
+
 
 if __name__ == "__main__":
     args = process_arguments()
