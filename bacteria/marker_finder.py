@@ -417,9 +417,10 @@ if __name__ == "__main__":
     # Collect fyrd results
     marker_tab = []
     for j in jobs:
-        print(j)
+        # print(j)
         marker_tab.append(j[list(j.keys())[0]].get())
 
+    print(marker_tab)
     # Print summary
     if not args.nosummary:
         print("Writing summary of markers")
