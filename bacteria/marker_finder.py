@@ -239,7 +239,7 @@ if __name__ == "__main__":
     time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        get_hmm_hits(f, o[1])
+        get_hmm_hits(f, ''.join([args.indir, '/', o[1]]))
         # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
         #                depends=o[0], runpath=os.getcwd(),
         #                outpath=args.logs,
