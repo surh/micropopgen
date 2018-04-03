@@ -23,7 +23,22 @@ from Bio import SearchIO, SeqIO
 import time
 
 
-def get_hmm_hits(hmmfile, query_fasta, dbfile):
+def fasta_seq_lenghts(fasta_file, split=False):
+    """Read sequences in fasta file and obtain sequence lengths"""
+
+    fasta = SeqIO.parse(fasta_file, 'fasta')
+    Sequences = dict()
+    for s in fasta:
+        if split:
+            key = s.description.split()[1]
+        else:
+            key = s.id
+        Sequences[key] = [str(s.seq), len(s.seq)]
+
+    return Sequences
+
+
+def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
     """Read HMMER files and get hits"""
 
     # Read query fasta
@@ -47,14 +62,21 @@ def get_hmm_hits(hmmfile, query_fasta, dbfile):
 
     # print(hmm_hits)
     # Write file per marker
+    res = dict()
     for marker in hmm_hits:
         # print(marker)
-        marker_file = strip_right(hmmfile, '.hmms')
-        marker_file = marker_file + '.' + marker + '.faa'
+        # marker_file = strip_right(hmmfile, '.hmms')
+        # marker_file = marker_file + '.' + marker + '.faa'
+        marker_file = outdir + '/' + name + '.faa'
         with open(marker_file, mode='w') as out:
+            i = 0
             for hit in hmm_hits[marker]:
-                out.write(">" + hmmfile + "\n")
+                out.write(">" + name + "_" + str(i) + "\n")
                 out.write(queries[hit][0] + "\n")
+                i = i + 1
+            res[marker] = i
+
+    return res
 
 
 def hit_and_query_span(hit):
@@ -114,21 +136,6 @@ def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
     fyrd_job.submit(max_jobs=maxjobs)
 
     return job_name, outfile, fyrd_job
-
-
-def fasta_seq_lenghts(fasta_file, split=False):
-    """Read sequences in fasta file and obtain sequence lengths"""
-
-    fasta = SeqIO.parse(fasta_file, 'fasta')
-    Sequences = dict()
-    for s in fasta:
-        if split:
-            key = s.description.split()[1]
-        else:
-            key = s.id
-        Sequences[key] = [str(s.seq), len(s.seq)]
-
-    return Sequences
 
 
 def process_arguments():
@@ -281,6 +288,36 @@ def submit_hmmscan_file(f, args, name=None):
     return hmmfile, job
 
 
+def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
+    """Create a job for rinnung hmmscan and submit it"""
+
+    # Creat subdirectory for fasta files
+    markersdir = args.outdir + '/' + 'markers/'
+    if not os.path.isdir(markersdir):
+        os.mkdir(markersdir)
+
+    # Get strain name
+    strain_name = os.path.basename(hmmfile)
+    strain_name = strip_right(strain_name, args.out_suffix)
+
+    # Fasta File
+    fasta_file = args.indir + '/' + fasta_file
+    if not os.path.isfile(fasta_file):
+        raise FileNotFoundError("Fasta file not found")
+
+    res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+                       dbfile=args.db, name=strain_name,
+                       outdir=markersdir)
+    Res = {strain_name: res}
+    # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
+    #                depends=o[0], runpath=os.getcwd(),
+    #                outpath=args.logs,
+    #                scriptpath=args.scripts)
+    # job.submit(max_jobs=args.maxjobs)
+
+    return Res
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
@@ -317,10 +354,4 @@ if __name__ == "__main__":
     time.sleep(10)
     for f, o in hmm_files.items():
         print(f)
-        get_hmm_hits(f, query_fasta=''.join([args.indir, '/', o[1]]),
-                     dbfile=args.db)
-        # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
-        #                depends=o[0], runpath=os.getcwd(),
-        #                outpath=args.logs,
-        #                scriptpath=args.scripts)
-        # job.submit(max_jobs=args.maxjobs)
+        submit_get_hmm_hits(hmmfile=f, job=o[0], fasta_file=o[1], args=args)
