@@ -86,7 +86,8 @@ def concatenate_marker_files(indir, suffix, outdir='./'):
         marker_suffix = '.' + m + suffix
         files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
                                         fasta_files))
-        files_from_marker = [''.join([indir,'/',f]) for f in files_from_marker]
+        files_from_marker = [''.join([indir, '/', f])
+                             for f in files_from_marker]
 
         print("====", m, "====")
         # print(files_from_marker)
@@ -110,7 +111,6 @@ def strip_right(text, suffix):
         return text
     # else
     return text[:len(text)-len(suffix)]
-
 
 
 def which(program):
@@ -152,7 +152,14 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Concatenate fasta per marker
-    concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix)
+    # Create directory for concatenated files_from_marker
+    markersdir = ''.join([args.outdir, '/cat/'])
+    if os.path.isdir(markersdir):
+        raise FileExistsError("Outdir already exists")
+    else:
+        os.mkdir(markersdir)
+    concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
+                             outdir=markersdir)
 
 
     # Align fasta files per marker
