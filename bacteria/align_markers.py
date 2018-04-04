@@ -66,7 +66,20 @@ def concatenate_marker_files(indir, suffix):
     fasta_files = os.listdir(indir)
     fasta_files = list(filter(lambda f: f.endswith(suffix),
                               fasta_files))
-    fasta_files = [strip_right(f, suffix) for f in fasta_files]
+
+    # Get set of markers
+    names = [strip_right(f, suffix) for f in fasta_files]
+    markers = set([n.split('.').pop for n in names])
+
+    for m in markers:
+        marker_suffix = '.' + m + suffix
+        files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
+                                        fasta_files))
+        print("====", m, "====")
+        print(files_from_marker)
+
+
+
 
     print(fasta_files)
 
