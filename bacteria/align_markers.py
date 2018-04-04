@@ -252,7 +252,8 @@ if __name__ == "__main__":
 
 
     # Align fasta files per marker
-    submit_align_markers(markersdir=markersdir, args=args)
+    print(args.muscle)
+    alns = submit_align_markers(markersdir=markersdir, args=args)
 
 
     # Filter alignment per marker
