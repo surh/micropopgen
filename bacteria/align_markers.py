@@ -155,6 +155,21 @@ def process_arguments():
                         type=str, default='logs/')
     parser.add_argument("--scripts", help=("Directory for script files"),
                         type=str, default='scripts/')
+    parser.add_argument("--maxjobs", help=("Maximum number of jobs at a "
+                                           "given time by fyrd."),
+                        type=str, default=1000)
+    parser.add_argument("--aln_mem", help=("Memory for alignment jobs"),
+                        type=str, default="2000mb")
+    parser.add_argument("--aln_time", help=("Time for alignment jobs"),
+                        type=str, default="2:00:00")
+    parser.add_argument("--aln_queue", help=("Qeueue for alignment jobs"),
+                        type=str, default='')
+    parser.add_argument("--filter_mem", help=("Memory for filter jobs"),
+                        type=str, default="1000mb")
+    parser.add_argument("--filter_time", help=("Time for filter jobs"),
+                        type=str, default="1:00:00")
+    parser.add_argument("--filter_queue", help=("Qeueue for filter jobs"),
+                        type=str, default='')
 
     # Read arguments
     print("Reading arguments")
