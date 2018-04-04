@@ -82,16 +82,21 @@ def concatenate_marker_files(indir, suffix, outdir='./'):
     print("Concatenating files per marker")
     outfiles = []
     for m in markers:
+        # Get files from marker
         marker_suffix = '.' + m + suffix
         files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
                                         fasta_files))
+        files_from_marker = [''.join([indir,'/',f]) for f in files_from_marker]
+
         print("====", m, "====")
         # print(files_from_marker)
-
+        # Build command
         outfile = ''.join([m, '.faa'])
         outfiles.append(outfile)
         outfile = ''.join([outdir, '/', outfile])
         command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+
+        # Run command
         print(command)
         os.system(command)
 
