@@ -20,7 +20,7 @@ import argparse
 import os
 import fyrd
 
-# from Bio import AlignIO
+from Bio import AlignIO
 from Bio.Alphabet import generic_protein, single_letter_alphabet
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -339,10 +339,27 @@ def submit_filter_alignments(alns, args):
 
     for n, o in alns.items():
         print("n", n)
-        print("n", o[0])
-        print("n", o[1])
+        print("o[0]", o[0])
+        print("o[1]", o[1])
 
     return 1
+
+
+def filter_alignment_file(infile, outfile, gap_prop=0.99,
+                          remove_singletons=True,
+                          alphabet=single_letter_alphabet,
+                          input_format='fasta',
+                          output_format='fasta'):
+    """Take file with a single alignment, filter it and
+    write a new file"""
+
+    aln = AlignIO.read(infile, input_format)
+    filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
+                                remove_singletons=remove_singletons,
+                                alphabet=alphabet)
+    AlignIO.write(filtered, outfile, output_format)
+
+    return(outfile)
 
 
 if __name__ == "__main__":
