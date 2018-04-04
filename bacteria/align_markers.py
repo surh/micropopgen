@@ -170,6 +170,12 @@ def process_arguments():
                         type=str, default="1:00:00")
     parser.add_argument("--filter_queue", help=("Qeueue for filter jobs"),
                         type=str, default='')
+    parser.add_argument("--gap_cov", help=("Maximum allowed propotion of "
+                                           "gaps when filtering"),
+                        type=float, default=0.99)
+    parser.add_argument("--remove_singletons", help=("If included singletons "
+                                                     "will also be filtered"),
+                        action="store_true")
 
     # Read arguments
     print("Reading arguments")
