@@ -65,7 +65,7 @@ def process_arguments():
     if which(args.muscle) is None:
         raise FileNotFoundError("Executable for hmmscan not found")
     else:
-        args.hmmscan = which(args.muscle)
+        args.muscle = which(args.muscle)
 
     return args
 
