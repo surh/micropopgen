@@ -158,13 +158,23 @@ def submit_align_markers(markersdir, args):
 
     catfiles = os.listdir(markersdir)
 
+    res = dict()
     for f in catfiles:
         infile = ''.join([markersdir, '/', f])
-        alnfile = strip_right(f, args.marker_suffix)
-        alnfile = ''.join([alndir, '/', alnfile, '.aln'])
-        print(infile)
-        print(alnfile)
-        # muscle_file()
+        marker = strip_right(f, args.marker_suffix)
+        alnfile = ''.join([alndir, '/', marker, '.aln'])
+        job_name = ''.join([marker, '.aln'])
+        # print(infile)
+        # print(alnfile)
+        n, o, j = muscle_file(infile=infile, outfile=alnfile,
+                              job_name=job_name, outpath=args.logs,
+                              scriptpath=args.scripts, partition='',
+                              time='1:00:00', muscle=args.muscle,
+                              memory='2000mb', maxjobs=1000)
+
+        res[n] = [o, j]
+
+    return(res)
 
 
 def muscle_file(infile, outfile, job_name=None,
