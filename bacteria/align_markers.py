@@ -283,9 +283,10 @@ def submit_align_markers(markersdir, args):
         # print(alnfile)
         n, o, j = muscle_file(infile=infile, outfile=alnfile,
                               job_name=job_name, outpath=args.logs,
-                              scriptpath=args.scripts, partition='',
-                              time='1:00:00', muscle=args.muscle,
-                              memory='2000mb', maxjobs=1000)
+                              scriptpath=args.scripts,
+                              partition=args.aln_queue,
+                              time=args.aln_time, muscle=args.muscle,
+                              memory=args.aln_mem, maxjobs=args.maxjobs)
 
         res[n] = [o, j]
 
