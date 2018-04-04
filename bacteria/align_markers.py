@@ -69,7 +69,10 @@ def concatenate_marker_files(indir, suffix):
 
     # Get set of markers
     names = [strip_right(f, suffix) for f in fasta_files]
-    markers = set([n.split('.').pop for n in names])
+    markers = [n.split('.').pop for n in names]
+    print(markers)
+    markers = set(markers)
+    print(markers)
 
     for m in markers:
         marker_suffix = '.' + m + suffix
