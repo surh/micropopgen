@@ -344,6 +344,7 @@ def submit_filter_alignments(alns, args):
     else:
         os.mkdir(fildir)
 
+    print("=============SUBMITING FILTERING ALIGNMENTS===============")
     res = []
     for n, o in alns.items():
         outfile = ''.join([fildir, '/', n])
@@ -363,6 +364,7 @@ def submit_filter_alignments(alns, args):
         job.submit(max_jobs=args.maxjobs)
         res.append({n: job})
 
+    print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
     return res
 
 def filter_alignment_file(infile, outfile, gap_prop=0.99,
