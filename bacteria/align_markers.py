@@ -250,13 +250,10 @@ if __name__ == "__main__":
     concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
                              outdir=markersdir, ignore=ignore)
 
-
     # Align fasta files per marker
     print(args.muscle)
     alns = submit_align_markers(markersdir=markersdir, args=args)
 
-
     # Filter alignment per marker
-
 
     # Concatenate overall alignment
