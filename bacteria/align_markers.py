@@ -18,6 +18,7 @@
 
 import argparse
 import os
+import fyrd
 
 
 def process_arguments():
@@ -47,10 +48,13 @@ def process_arguments():
     parser.add_argument("--marker_suffix", help=("Suffix of files with "
                                                  "sequences"),
                         type=str, default='.faa')
-    parser.add_argument("--which_markers", help=("A file of markers to use. "
-                                                 "if nothing is passed, then "
-                                                 "all markers will be used"),
+    parser.add_argument("--ignore_markers", help=("A file of markers to "
+                                                  "ignore."),
                         type=str, default='')
+    parser.add_argument("--logs", help=("Directory for log files"),
+                        type=str, default='logs/')
+    parser.add_argument("--scripts", help=("Directory for script files"),
+                        type=str, default='scripts/')
 
     # Read arguments
     print("Reading arguments")
@@ -66,7 +70,7 @@ def process_arguments():
     return args
 
 
-def concatenate_marker_files(indir, suffix, outdir='./'):
+def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
     # Get list of fasta files from indir
     fasta_files = os.listdir(indir)
     fasta_files = list(filter(lambda f: f.endswith(suffix),
@@ -82,6 +86,10 @@ def concatenate_marker_files(indir, suffix, outdir='./'):
     print("Concatenating files per marker")
     outfiles = []
     for m in markers:
+        # Check if it is in list to ignore
+        if m in ignore:
+            continue
+
         # Get files from marker
         marker_suffix = '.' + m + suffix
         files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
@@ -138,6 +146,62 @@ def which(program):
     return None
 
 
+def submit_align_markers(markersdir, args):
+    """Use fyrd to submit alignment jobs"""
+
+    # Create directory for concatenated aligned files
+    alndir = ''.join([args.outdir, '/aln/'])
+    if os.path.isdir(alndir):
+        raise FileExistsError("Alignment dir already exists")
+    else:
+        os.mkdir(alndir)
+
+    catfiles = os.listdir(markersdir)
+
+    for f in catfiles:
+        infile = ''.join([markersdir, '/', f])
+        alnfile = strip_right(f, args.marker_suffix)
+        alnfile = ''.join([alndir, '/', alnfile, '.aln'])
+        print(infile)
+        print(alnfile)
+        # muscle_file()
+
+
+def muscle_file(infile, outfile, job_name=None,
+                outpath='./logs/', scriptpath='./scripts/',
+                partition='', time='01:00:00', muscle='muscle',
+                memory='2000mb', maxjobs=1000):
+    """Use fyrd to call muscle for aligning each set"""
+
+    # Build muscle command
+    command = ' '.join([muscle,
+                        "-in", infile,
+                        "-out", outfile])
+
+    # Build fyrd filenames
+    if job_name is None:
+        basename = os.path.basename(infile)
+        job_name = '.'.join(['muscle', basename])
+    print(job_name)
+
+    print("\tCreating fyrd.Job")
+    fyrd_job = fyrd.Job(command,
+                        runpath=os.getcwd(), outpath=outpath,
+                        scriptpath=scriptpath,
+                        clean_files=False, clean_outputs=False,
+                        mem=memory, name=job_name,
+                        outfile=job_name + ".log",
+                        errfile=job_name + ".err",
+                        partition=partition,
+                        nodes=1, cores=1, time=time)
+
+    # Submit joobs
+    print("\tSubmitting job")
+    fyrd_job.submit(max_jobs=maxjobs)
+
+    return job_name, outfile, fyrd_job
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
@@ -145,11 +209,26 @@ if __name__ == "__main__":
     if not os.path.isdir(args.indir):
         raise FileNotFoundError("Indir not found")
 
+    # Make directories
+    if os.path.isdir(args.logs):
+        raise FileExistsError("Directory for fyrd logs ({}) "
+                              "already exists".format([args.logs]))
+    else:
+        os.mkdir(args.logs)
+    if os.path.isdir(args.scripts):
+        raise FileExistsError("Directory for fyrd scripts ({}) "
+                              "already exists".format([args.scripts]))
+    else:
+        os.mkdir(args.scripts)
+
     # Create output directory
     if os.path.isdir(args.outdir):
         raise FileExistsError("Outdir already exists")
     else:
         os.mkdir(args.outdir)
+
+    # Read ignore list
+    ignore = []
 
     # Concatenate fasta per marker
     # Create directory for concatenated files_from_marker
@@ -159,10 +238,11 @@ if __name__ == "__main__":
     else:
         os.mkdir(markersdir)
     concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
-                             outdir=markersdir)
+                             outdir=markersdir, ignore=ignore)
 
 
     # Align fasta files per marker
+    submit_align_markers(markersdir=markersdir, args=args)
 
 
     # Filter alignment per marker
