@@ -337,13 +337,33 @@ def muscle_file(infile, outfile, job_name=None,
 def submit_filter_alignments(alns, args):
     """Use fyrd to submit jobs for filtering alignments"""
 
+    # Create output directory
+    fildir = ''.join([args.outdir, '/filtered/'])
+    if os.path.isdir(fildir):
+        raise FileExistsError("Filtered dir already exists")
+    else:
+        os.mkdir(fildir)
+
+    res = []
     for n, o in alns.items():
-        print("n", n)
-        print("o[0]", o[0])
-        print("o[1]", o[1])
+        outfile = ''.join([fildir, '/', n])
+        job = fyrd.Job(filter_alignment_file, o[0],
+                       {'outfile': outfile,
+                        'gap_prop': args.gap_prop,
+                        'remove_singletons': args.remove_singletons,
+                        'alphabet': generic_protein,
+                        'input_format': 'fasta',
+                        'output_format': 'fasta'},
+                       depends=o[1],
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=['from align_markers import filter_alignment_file filter_alignment align2array array2align'],
+                       scriptpath=args.scripts)
+        job.submit(maxjobs=args.maxjobs)
+        res.append({n: job})
 
-    return 1
-
+    return res
 
 def filter_alignment_file(infile, outfile, gap_prop=0.99,
                           remove_singletons=True,
