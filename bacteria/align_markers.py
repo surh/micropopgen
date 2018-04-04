@@ -20,6 +20,106 @@ import argparse
 import os
 import fyrd
 
+from Bio import AlignIO
+from Bio.Alphabet import generic_dna, generic_protein, single_letter_alphabet
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Align import MultipleSeqAlignment
+import numpy as np
+
+
+def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
+                     alphabet=single_letter_alphabet):
+    """Function to filter a numpy array that represents an alignment,
+    where rows are records and columns are positions. Assumes gaps are
+    given by '-'"""
+
+    # Get sequence records
+    nseqs = len(aln)
+    rec_names = [r.id for r in aln]
+
+    # Convert to numpu array
+    a_array = align2array(aln)
+
+    # Prepare index. Positions to be removed will be changed
+    index = np.ones(a_array.shape[1], dtype=int)
+
+    # Iterate over columns
+    for i in range(a_array.shape[1]):
+        c = a_array[:, i]
+        # print(c)
+        counts = np.unique(c, return_counts=True)
+
+        # Remove constant columns
+        if counts[0].shape == (1,):
+            index[i] = 0
+            continue
+
+        # Count gaps
+        ngaps = counts[1][b'-' == counts[0]]
+        if ngaps.shape[0] == 0:
+            # print("hello")
+            ngaps = np.zeros(1, dtype=int)
+        # print("ngaps")
+        # print(type(ngaps))
+        # print("ngaps:", ngaps)
+        # print("ngaps/nseqs", ngaps/nseqs)
+        # print("ngaps/nseqs > gap_prop", ngaps/nseqs > gap_prop)
+
+        if ngaps / nseqs > gap_prop:
+            index[i] = 0
+            continue
+
+        if remove_singletons:
+            # DO SOMETHING
+            # print(counts[1].size)
+            # print(counts[1])
+            # print(counts[1].min)
+            if counts[1].size == 2 and counts[1].min() == 1:
+                index[i] = 0
+                continue
+
+        # print("===")
+
+    # Use index to slice array
+    index = np.array(index, dtype=bool)
+    # print(index.sum())
+    filtered = a_array[:, index]
+
+    # Convert back to alignent
+    new_aln = array2align(arr=filtered, names=rec_names, alphabet=alphabet)
+
+    return new_aln
+
+
+def align2array(aln):
+    """Convert multiple sequence alignment object to numpy array.
+    Taken from tutorial."""
+
+    a_array = np.array([list(rec) for rec in aln], np.character)
+
+    return(a_array)
+
+
+def array2align(arr, names, alphabet):
+    """Convert numpy array to multiple sequence alignment.
+    Adapted from documentation"""
+
+    records = []
+
+    # Iterate over array rows (i.e. records)
+    for i in range(arr.shape[0]):
+        seq = ''.join(np.array(arr[i], dtype=str))
+        name = names[i]
+
+        # Concatenate sequence records
+        records.append(SeqRecord(Seq(seq, alphabet), id=name))
+
+    # Convert to MSA
+    new_aln = MultipleSeqAlignment(records)
+
+    return(new_aln)
+
 
 def process_arguments():
     # Read arguments
