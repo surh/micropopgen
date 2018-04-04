@@ -328,6 +328,17 @@ def muscle_file(infile, outfile, job_name=None,
     return job_name, outfile, fyrd_job
 
 
+def submit_filter_alignments(alns, args):
+    """Use fyrd to submit jobs for filtering alignments"""
+
+    for n, o in alns.items():
+        print("n", n)
+        print("n", o[0])
+        print("n", o[1])
+
+    return 1
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
@@ -371,5 +382,6 @@ if __name__ == "__main__":
     alns = submit_align_markers(markersdir=markersdir, args=args)
 
     # Filter alignment per marker
+    filtered = submit_filter_alignments(alns=alns, args=args)
 
     # Concatenate overall alignment
