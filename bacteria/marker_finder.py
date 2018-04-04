@@ -20,7 +20,7 @@ import fyrd
 import argparse
 import os
 from Bio import SearchIO, SeqIO
-# import time
+import time
 
 
 def fasta_seq_lenghts(fasta_file, split=False):
@@ -405,7 +405,7 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    # time.sleep(10)
+    time.sleep(300) # Waiting to get jobs in queue
     jobs = []
     for f, o in hmm_files.items():
         print(f)
