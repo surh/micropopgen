@@ -20,8 +20,8 @@ import argparse
 import os
 import fyrd
 
-from Bio import AlignIO
-from Bio.Alphabet import generic_dna, generic_protein, single_letter_alphabet
+# from Bio import AlignIO
+from Bio.Alphabet import generic_protein, single_letter_alphabet
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
