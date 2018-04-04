@@ -57,11 +57,16 @@ def process_arguments():
     args = parser.parse_args()
 
     # Processing goes here if needed
+    # Check if exectuable exists
+    if which(args.muscle) is None:
+        raise FileNotFoundError("Executable for hmmscan not found")
+    else:
+        args.hmmscan = which(args.muscle)
 
     return args
 
 
-def concatenate_marker_files(indir, suffix):
+def concatenate_marker_files(indir, suffix, outdir='./'):
     # Get list of fasta files from indir
     fasta_files = os.listdir(indir)
     fasta_files = list(filter(lambda f: f.endswith(suffix),
@@ -74,17 +79,23 @@ def concatenate_marker_files(indir, suffix):
     # markers = set(markers)
     # print(markers)
 
+    print("Concatenating files per marker")
+    outfiles = []
     for m in markers:
         marker_suffix = '.' + m + suffix
         files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
                                         fasta_files))
         print("====", m, "====")
-        print(files_from_marker)
+        # print(files_from_marker)
 
+        outfile = ''.join([m, '.faa'])
+        outfiles.append(outfile)
+        outfile = ''.join([outdir, '/', outfile])
+        command = ' '.join(['cat'] + files_from_marker + '>' + outfile)
+        print(command)
+        os.system(command)
 
-
-
-    print(fasta_files)
+    return outfiles
 
 
 def strip_right(text, suffix):
@@ -94,6 +105,32 @@ def strip_right(text, suffix):
         return text
     # else
     return text[:len(text)-len(suffix)]
+
+
+
+def which(program):
+    """Check if executable exists. Returns path of executable."""
+
+    # From:
+    # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    # Under MIT license
+
+    def is_exe(fpath):
+        """Check if path is executable"""
+
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
 
 
 if __name__ == "__main__":
