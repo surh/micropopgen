@@ -359,7 +359,7 @@ def submit_filter_alignments(alns, args):
                        runpath=os.getcwd(),
                        outpath=args.logs,
                        syspaths=[os.path.dirname(__file__)],
-                       imports=['from align_markers import filter_alignment_file filter_alignment align2array array2align'],
+                       imports=['from align_markers import filter_alignment_file, filter_alignment, align2array, array2align'],
                        scriptpath=args.scripts)
         job.submit(max_jobs=args.maxjobs)
         res.append({n: job})
