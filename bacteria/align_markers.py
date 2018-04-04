@@ -91,7 +91,7 @@ def concatenate_marker_files(indir, suffix, outdir='./'):
         outfile = ''.join([m, '.faa'])
         outfiles.append(outfile)
         outfile = ''.join([outdir, '/', outfile])
-        command = ' '.join(['cat'] + files_from_marker + '>' + outfile)
+        command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
         print(command)
         os.system(command)
 
