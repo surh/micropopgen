@@ -171,7 +171,7 @@ def process_arguments():
     parser.add_argument("--filter_queue", help=("Qeueue for filter jobs"),
                         type=str, default='')
     parser.add_argument("--gap_prop", help=("Maximum allowed propotion of "
-                                           "gaps when filtering"),
+                                            "gaps when filtering"),
                         type=float, default=0.99)
     parser.add_argument("--remove_singletons", help=("If included singletons "
                                                      "will also be filtered"),
@@ -359,13 +359,17 @@ def submit_filter_alignments(alns, args):
                        runpath=os.getcwd(),
                        outpath=args.logs,
                        syspaths=[os.path.dirname(__file__)],
-                       imports=['from align_markers import filter_alignment_file, filter_alignment, align2array, array2align'],
+                       imports=[('from align_markers import '
+                                 'filter_alignment_file, '
+                                 'filter_alignment, '
+                                 'align2array, array2align')],
                        scriptpath=args.scripts)
         job.submit(max_jobs=args.maxjobs)
         res.append({n: job})
 
     print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
     return res
+
 
 def filter_alignment_file(infile, outfile, gap_prop=0.99,
                           remove_singletons=True,
