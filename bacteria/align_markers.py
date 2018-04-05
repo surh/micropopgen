@@ -474,7 +474,7 @@ def submit_concatenate_alignments(indir, args):
     job_name = 'cat.alns'
     print(job_name)
     print("\tCreating fyrd.Job")
-    job = fyrd.Job(concatenate_alignments, alns,
+    job = fyrd.Job(concatenate_alignments, [alns],
                    runpath=os.getcwd(),
                    outpath=args.logs,
                    syspaths=[os.path.dirname(__file__)],
@@ -489,6 +489,34 @@ def submit_concatenate_alignments(indir, args):
                    partition=args.cat_queue,
                    nodes=1, cores=1,
                    time=args.cat_time)
+
+
+    # job = fyrd.Job(concatenate_alignments, [alns],
+    #                {'outfile': outfile,
+    #                 'gap_prop': args.gap_prop,
+    #                 'remove_singletons': args.remove_singletons,
+    #                 'alphabet': generic_protein,
+    #                 'input_format': 'fasta',
+    #                 'output_format': 'fasta'},
+    #                depends=o[1],
+    #                runpath=os.getcwd(),
+    #                outpath=args.logs,
+    #                syspaths=[os.path.dirname(__file__)],
+    #                imports=[('from align_markers import '
+    #                          'filter_alignment_file, '
+    #                          'filter_alignment, '
+    #                          'align2array, array2align')],
+    #                scriptpath=args.scripts,
+    #                clean_files=False, clean_outputs=False,
+    #                mem=args.filter_mem,
+    #                name=job_name,
+    #                outfile=job_name + ".log",
+    #                errfile=job_name + ".err",
+    #                partition=args.filter_queue,
+    #                nodes=1, cores=1,
+    #                time=args.filter_time)
+
+
     print("\tSubmitting job")
 
     res = job.submit(max_jobs=args.maxjobs)
