@@ -577,4 +577,4 @@ if __name__ == "__main__":
     fildir = submit_filter_alignments(alns=alns, args=args)
 
     # Concatenate overall alignment
-    submit_concatenate_alignments(fildir)
+    submit_concatenate_alignments(fildir, args)
