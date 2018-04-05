@@ -322,9 +322,9 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                            dbfile=args.db, name=strain_name,
                            outdir=markersdir)
     elif args.mode == 'fyrd':
-    	job_name = strain_name + '.gethmmhits'
-	print(job_name)
-    	print("\tCreating fyrd.Job")
+        job_name = strain_name + '.gethmmhits'
+        print(job_name)
+        print("\tCreating fyrd.Job")
         job = fyrd.Job(get_hmm_hits, hmmfile,
                        {'query_fasta': fasta_file,
                         'dbfile': args.db,
@@ -342,7 +342,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                         syspaths=[os.path.dirname(__file__)],
                         imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span'],
                         scriptpath=args.scripts)
-    	print("\tSubmitting job")
+        print("\tSubmitting job")
         res = job.submit(max_jobs=args.maxjobs)
 
     Res = {strain_name: res}
