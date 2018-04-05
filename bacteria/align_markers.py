@@ -307,8 +307,6 @@ def process_arguments():
     parser.add_argument("--remove_singletons", help=("If included singletons "
                                                      "will also be filtered"),
                         action="store_true")
-
-
     parser.add_argument("--cat_mem", help=("Memory for alignment "
                                            "concatentation job"),
                         type=str, default="500mb")
@@ -487,20 +485,25 @@ def submit_concatenate_alignments(indir, args):
                              'reorder_alignment')],
                    scriptpath=args.scripts,
                    clean_files=False, clean_outputs=False,
-
-    mem=memory,
-    name=job_name,
-    outfile=job_name + ".log",
-    errfile=job_name + ".err",
-    partition=partition,
-    nodes=1, cores=1,
-    time=time)
-
+                   mem=args.cat_mem,
+                   name=job_name,
+                   outfile=job_name + ".log",
+                   errfile=job_name + ".err",
+                   partition=args.cat_queue,
+                   nodes=1, cores=1,
+                   time=args.cat_queue)
     print("\tSubmitting job")
     job.submit(max_jobs=args.maxjobs)
 
+    aln = job.get()
 
+    print("\t Writing output file")
+    outfile = catalndir + '/' + 'maker_concatenated_alignment.aln'
+    AlignIO.write(aln, outfile, 'fasta')
 
+    print("=============CONCATENATING ALIGNMENTS===============")
+
+    return outfile
 
 
 def which(program):
