@@ -330,18 +330,21 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                         'dbfile': args.db,
                         'name': strain_name,
                         'outdir': markersdir},
-			clean_files=False,
-			clean_outputs=False,
-                        nodes=1, cores=1,
-			time='00:50:00',
-                        mem='1000mb',
-			name=job_name,
-			depends=job,
-                        runpath=os.getcwd(),
-                        outpath=args.logs,
-                        syspaths=[os.path.dirname(__file__)],
-                        imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span'],
-                        scriptpath=args.scripts)
+                       clean_files=False,
+                       clean_outputs=False,
+                       nodes=1, cores=1,
+                       time='00:50:00',
+                       mem='1000mb',
+                       name=job_name,
+                       depends=job,
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=[('from marker_finder import '
+                                 'fasta_seq_lenghts, '
+                                 'read_marker_list, '
+                                 'hit_and_query_span')],
+                       scriptpath=args.scripts)
         print("\tSubmitting job")
         res = job.submit(max_jobs=args.maxjobs)
 
