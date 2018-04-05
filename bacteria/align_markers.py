@@ -494,23 +494,23 @@ def submit_concatenate_alignments(indir, args):
                    time=args.cat_time)
     print("\tSubmitting job")
 
-    # res = job.submit(max_jobs=args.maxjobs)
-    # aln = res.get()
+    res = job.submit(max_jobs=args.maxjobs)
+    aln = res.get()
 
-    job.write()
-    script = job.scriptpath + '/' + job.name
-    if job.qtype == 'local':
-        script = script + '.cluster'
-    elif job.qtype == 'torque':
-        script = script + '.qsub'
-    elif job.qtype == 'slurm':
-        script = script + '.qbatch'
-    else:
-        raise ValueError
-
-    os.chmod(script, 744)
-    print(script)
-    os.systm(script)
+    # job.write()
+    # script = job.scriptpath + '/' + job.name
+    # if job.qtype == 'local':
+    #     script = script + '.cluster'
+    # elif job.qtype == 'torque':
+    #     script = script + '.qsub'
+    # elif job.qtype == 'slurm':
+    #     script = script + '.qbatch'
+    # else:
+    #     raise ValueError
+    #
+    # os.chmod(script, 744)
+    # print(script)
+    # os.systm(script)
 
     print("\t Writing output file")
     # outfile = catalndir + '/' + 'maker_concatenated_alignment.aln'
