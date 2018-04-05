@@ -131,14 +131,17 @@ def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
 
     print("\tCreating fyrd.Job")
     fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=outpath,
+                        runpath=os.getcwd(),
+                        outpath=outpath,
                         scriptpath=scriptpath,
                         clean_files=False, clean_outputs=False,
-                        mem=memory, name=job_name,
+                        mem=memory,
+                        name=job_name,
                         outfile=job_name + ".log",
                         errfile=job_name + ".err",
                         partition=args.queue,
-                        nodes=1, cores=1, time=time)
+                        nodes=1, cores=1,
+                        time=time)
 
     # Submit joobs
     print("\tSubmitting job")
@@ -185,15 +188,26 @@ def process_arguments():
                         type=str, default='scripts/')
     parser.add_argument("--maxjobs", help=("Maximum number of fyrd jobs "
                                            "running simultaneously"),
-                        type=int, default='500')
-    parser.add_argument("--queue", help=("Queue (partition) to use for "
-                                         "submitting jobs"),
-                        type=str)
-    parser.add_argument("--memory", help=("Amunt of memory to reserve per "
-                                          "job"),
-                        type=str, default="300mb")
-    parser.add_argument("--time", help=("Amunt of time to reserve per "
-                                        "job"),
+                        type=int, default=1000)
+    parser.add_argument("--hmmscan_queue", help=("Queue (partition) to use "
+                                                 "for submitting hmmscan "
+                                                 "jobs"),
+                        type=str, default='')
+    parser.add_argument("--hmmscan_mem", help=("Amount of memory to reserve "
+                                               "per hmmscan job"),
+                        type=str, default="600mb")
+    parser.add_argument("--hmmscan_time", help=("Amount of time to reserve "
+                                                "per hmmscan job"),
+                        type=str, default="1:00:00")
+    parser.add_argument("--hits_queue", help=("Queue (partition) to use "
+                                              "for submitting get hits "
+                                              "jobs"),
+                        type=str, default='')
+    parser.add_argument("--hits_mem", help=("Amount of memory to reserve "
+                                            "per get hits job"),
+                        type=str, default="1000mb")
+    parser.add_argument("--hits_time", help=("Amount of time to reserve "
+                                             "per get hits job"),
                         type=str, default="1:00:00")
     parser.add_argument("--mode", help=("bash of fyrd for second step"),
                         default='fyrd', choices=['bash', 'fyrd'],
@@ -286,14 +300,14 @@ def submit_hmmscan_file(f, args, name=None):
                                           db=args.db,
                                           outpath=args.logs,
                                           scriptpath=args.scripts,
-                                          partition=args.queue,
-                                          time=args.time,
+                                          partition=args.hmmscan_queue,
+                                          time=args.hmmscan_time,
                                           hmmscan=args.hmmscan,
                                           indir=args.indir,
                                           outdir=hmmscandir,
                                           fasta_suffix=args.fasta_suffix,
                                           out_suffix=args.out_suffix,
-                                          memory=args.memory,
+                                          memory=args.hmmscan_mem,
                                           maxjobs=args.maxjobs,
                                           job_name=name)
 
@@ -333,8 +347,9 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                        clean_files=False,
                        clean_outputs=False,
                        nodes=1, cores=1,
-                       time='00:50:00',
-                       mem='1000mb',
+                       time=args.hits_time,
+                       mem=args.hits_mem,
+                       partition=args.hits_queue,
                        name=job_name,
                        depends=job,
                        runpath=os.getcwd(),
@@ -409,16 +424,15 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Submit hmmscan jobs
-    print("===hmmscan===")
+    print("============SUBMITTING HMMSCAN===========")
     hmm_files = dict()
     for f in fasta_files:
         hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
         hmm_files[hmmfile] = [job, f]
         print(f)
-
+    print("============DONE SUBMITTING HMMSCAN===========")
     # Submit hits_job
-    print("===hits===")
-    time.sleep(100)  # Waiting to get jobs in queue
+    time.sleep(5)  # Waiting to get jobs in queue
 
     print("============GETTING HMM HITS===========")
     jobs = []
