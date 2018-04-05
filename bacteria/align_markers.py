@@ -404,7 +404,8 @@ def submit_filter_alignments(alns, args):
     for n, o in alns.items():
         outfile = ''.join([fildir, '/', n])
 
-        print(n)
+        job_namne = n + '.filter'
+        print(job_name)
         print("\tCreating fyrd.Job")
         job = fyrd.Job(filter_alignment_file, o[0],
                        {'outfile': outfile,
@@ -421,18 +422,75 @@ def submit_filter_alignments(alns, args):
                                  'filter_alignment_file, '
                                  'filter_alignment, '
                                  'align2array, array2align')],
-                       scriptpath=args.scripts)
+                       scriptpath=args.scripts,
+                       clean_files=False, clean_outputs=False,
+                       mem=memory,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=args.filter_queue,
+                       nodes=1, cores=1,
+                       time=args.filter_time)
+
         print("\tSubmitting job")
         job.submit(max_jobs=args.maxjobs)
         res.append(job)
-
     print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
 
     print("=============WAITING FOR FILTERING ALIGNMENTS===============")
     [j.wait() for j in res]
     print("=============DONE WAITING FOR FILTERING ALIGNMENTS===============")
 
-    return None
+    return fildir
+
+
+def submit_concatenate_alignments(indir, args):
+    """Takes a directory of alignment files, reads them
+    and creates a fyrd job to concatenate them all"""
+
+    # Create output directory
+    catalndir = ''.join([args.outdir, '/cataln/'])
+    if os.path.isdir(catalndir):
+        raise FileExistsError("Concatenated alignment dir already exists")
+    else:
+        os.mkdir(catalndir)
+
+    # Read alignments
+    alnfiles = os.listdir(indir)
+    alns = []
+    for f in alnfiles:
+        alns.append(AlignIO.read(f, 'fasta'))
+
+    print("=============CONCATENATING ALIGNMENTS===============")
+    job_name = 'cat.alns'
+    print(job_name)
+    print("\tCreating fyrd.Job")
+    job = fyrd.Job(concatenate_alignments, alns,
+                   {'alphabet': generic_protein,
+                    'gap': '-'},
+                   runpath=os.getcwd(),
+                   outpath=args.logs,
+                   syspaths=[os.path.dirname(__file__)],
+                   imports=[('from align_markers import '
+                             'concatenate_alignments, '
+                             'reorder_alignment')],
+                   scriptpath=args.scripts)
+
+
+    runpath=os.getcwd(), outpath=outpath,
+    scriptpath=scriptpath,
+    clean_files=False, clean_outputs=False,
+    mem=memory, name=job_name,
+    outfile=job_name + ".log",
+    errfile=job_name + ".err",
+    partition=partition,
+    nodes=1, cores=1, time=time)
+
+    print("\tSubmitting job")
+    job.submit(max_jobs=args.maxjobs)
+
+
+
 
 
 def which(program):
@@ -503,6 +561,7 @@ if __name__ == "__main__":
     alns = submit_align_markers(markersdir=markersdir, args=args)
 
     # Filter alignment per marker
-    filtered = submit_filter_alignments(alns=alns, args=args)
+    fildir = submit_filter_alignments(alns=alns, args=args)
 
     # Concatenate overall alignment
+    submit_concatenate_alignments(fildir)
