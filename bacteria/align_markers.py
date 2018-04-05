@@ -413,7 +413,7 @@ def submit_filter_alignments(alns, args):
     for n, o in alns.items():
         outfile = ''.join([fildir, '/', n])
 
-        job_namne = n + '.filter'
+        job_name = n + '.filter'
         print(job_name)
         print("\tCreating fyrd.Job")
         job = fyrd.Job(filter_alignment_file, o[0],
@@ -433,7 +433,7 @@ def submit_filter_alignments(alns, args):
                                  'align2array, array2align')],
                        scriptpath=args.scripts,
                        clean_files=False, clean_outputs=False,
-                       mem=memory,
+                       mem=args.filter_mem,
                        name=job_name,
                        outfile=job_name + ".log",
                        errfile=job_name + ".err",
