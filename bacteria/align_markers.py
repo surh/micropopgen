@@ -403,6 +403,9 @@ def submit_filter_alignments(alns, args):
     res = []
     for n, o in alns.items():
         outfile = ''.join([fildir, '/', n])
+
+        print(n)
+        print("\tCreating fyrd.Job")
         job = fyrd.Job(filter_alignment_file, o[0],
                        {'outfile': outfile,
                         'gap_prop': args.gap_prop,
@@ -419,6 +422,7 @@ def submit_filter_alignments(alns, args):
                                  'filter_alignment, '
                                  'align2array, array2align')],
                        scriptpath=args.scripts)
+        print("\tSubmitting job")
         job.submit(max_jobs=args.maxjobs)
         res.append(job)
 
