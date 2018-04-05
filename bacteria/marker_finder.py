@@ -322,17 +322,27 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                            dbfile=args.db, name=strain_name,
                            outdir=markersdir)
     elif args.mode == 'fyrd':
+    	job_name = strain_name + '.gethmmhits'
+	print(job_name)
+    	print("\tCreating fyrd.Job")
         job = fyrd.Job(get_hmm_hits, hmmfile,
                        {'query_fasta': fasta_file,
                         'dbfile': args.db,
                         'name': strain_name,
                         'outdir': markersdir},
-                       depends=job,
-                       runpath=os.getcwd(),
-                       outpath=args.logs,
-                       syspaths=[os.path.dirname(__file__)],
-                       imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span'],
-                       scriptpath=args.scripts)
+			clean_files=False,
+			clean_outputs=False,
+                        nodes=1, cores=1,
+			time='00:50:00',
+                        mem='1000mb',
+			name=job_name,
+			depends=job,
+                        runpath=os.getcwd(),
+                        outpath=args.logs,
+                        syspaths=[os.path.dirname(__file__)],
+                        imports=['from marker_finder import fasta_seq_lenghts, read_marker_list, hit_and_query_span'],
+                        scriptpath=args.scripts)
+    	print("\tSubmitting job")
         res = job.submit(max_jobs=args.maxjobs)
 
     Res = {strain_name: res}
@@ -405,7 +415,9 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    time.sleep(300) # Waiting to get jobs in queue
+    time.sleep(100) # Waiting to get jobs in queue
+
+    print("============GETTING HMM HITS===========")
     jobs = []
     for f, o in hmm_files.items():
         print(f)
@@ -413,7 +425,9 @@ if __name__ == "__main__":
                                 fasta_file=o[1], args=args)
         jobs.append(j)
     # print(marker_tab)
+    print("============DONE SUBMITTING GETTING HMM HITS===========")
 
+    print("============COLLECTING HMM HITS===========")
     # Collect fyrd results
     marker_tab = []
     for j in jobs:
@@ -423,6 +437,7 @@ if __name__ == "__main__":
         res = job.get()
         marker_tab.append({strain: res})
 
+    print("============DONE COLLECTING HMM HITS===========")
     # print(marker_tab)
     # Print summary
     if not args.nosummary:
