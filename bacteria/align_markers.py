@@ -475,7 +475,7 @@ def submit_concatenate_alignments(indir, args):
     print(job_name)
     print("\tCreating fyrd.Job")
     job = fyrd.Job(concatenate_alignments, alns,
-                   {'alphabet': generic_protein,
+                   {'alphabet': single_letter_alphabet,
                     'gap': '-'},
                    runpath=os.getcwd(),
                    outpath=args.logs,
