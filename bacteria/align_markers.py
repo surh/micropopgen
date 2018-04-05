@@ -480,7 +480,6 @@ def submit_concatenate_alignments(indir, args):
                    outpath=args.logs,
                    syspaths=[os.path.dirname(__file__)],
                    imports=[('from align_markers import '
-                             'concatenate_alignments, '
                              'reorder_alignment')],
                    scriptpath=args.scripts,
                    clean_files=False, clean_outputs=False,
