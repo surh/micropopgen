@@ -491,7 +491,7 @@ def submit_concatenate_alignments(indir, args):
                    errfile=job_name + ".err",
                    partition=args.cat_queue,
                    nodes=1, cores=1,
-                   time=args.cat_queue)
+                   time=args.cat_time)
     print("\tSubmitting job")
     job.submit(max_jobs=args.maxjobs)
 
