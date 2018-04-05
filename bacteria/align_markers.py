@@ -308,6 +308,17 @@ def process_arguments():
                                                      "will also be filtered"),
                         action="store_true")
 
+
+    parser.add_argument("--cat_mem", help=("Memory for alignment "
+                                           "concatentation job"),
+                        type=str, default="500mb")
+    parser.add_argument("--cat_time", help=("Time for alignment "
+                                            "concatenation job"),
+                        type=str, default="2:00:00")
+    parser.add_argument("--cat_queue", help=("Qeueue for alignment "
+                                             "concatenation job"),
+                        type=str, default='')
+
     # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
@@ -474,17 +485,16 @@ def submit_concatenate_alignments(indir, args):
                    imports=[('from align_markers import '
                              'concatenate_alignments, '
                              'reorder_alignment')],
-                   scriptpath=args.scripts)
+                   scriptpath=args.scripts,
+                   clean_files=False, clean_outputs=False,
 
-
-    runpath=os.getcwd(), outpath=outpath,
-    scriptpath=scriptpath,
-    clean_files=False, clean_outputs=False,
-    mem=memory, name=job_name,
+    mem=memory,
+    name=job_name,
     outfile=job_name + ".log",
     errfile=job_name + ".err",
     partition=partition,
-    nodes=1, cores=1, time=time)
+    nodes=1, cores=1,
+    time=time)
 
     print("\tSubmitting job")
     job.submit(max_jobs=args.maxjobs)
