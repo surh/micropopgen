@@ -139,7 +139,7 @@ def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
                         name=job_name,
                         outfile=job_name + ".log",
                         errfile=job_name + ".err",
-                        partition=args.queue,
+                        partition=partition,
                         nodes=1, cores=1,
                         time=time)
 
