@@ -497,6 +497,7 @@ def submit_concatenate_alignments(indir, args):
     # res = job.submit(max_jobs=args.maxjobs)
     # aln = res.get()
 
+    job.write()
     script = job.scriptpath + '/' + job.name
     if job.qtype == 'local':
         script = script + '.cluster'
