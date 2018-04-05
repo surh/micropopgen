@@ -468,7 +468,7 @@ def submit_concatenate_alignments(indir, args):
     alnfiles = os.listdir(indir)
     alns = []
     for f in alnfiles:
-        alns.append(AlignIO.read(f, 'fasta'))
+        alns.append(AlignIO.read(indir + '/' + f, 'fasta'))
 
     print("=============CONCATENATING ALIGNMENTS===============")
     job_name = 'cat.alns'
