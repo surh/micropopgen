@@ -23,6 +23,133 @@ from Bio import SearchIO, SeqIO
 import time
 
 
+def fasta_seq_lenghts(fasta_file, split=False):
+    """Read sequences in fasta file and obtain sequence lengths"""
+
+    if not os.path.isfile(fasta_file):
+        raise FileNotFoundError("Fasta file not found")
+
+    fasta = SeqIO.parse(fasta_file, 'fasta')
+    Sequences = dict()
+    for s in fasta:
+        if split:
+            key = s.description.split()[1]
+        else:
+            key = s.id
+        Sequences[key] = [str(s.seq), len(s.seq)]
+
+    return Sequences
+
+
+def get_hmm_hits(hmmfile, query_fasta, dbfile, name, outdir='./'):
+    """Read HMMER files and get hits"""
+
+    # Read query fasta
+    queries = fasta_seq_lenghts(query_fasta)
+    # db = fasta_seq_lenghts(db_fasta, split=True)
+    db = read_marker_list(dbfile)
+
+    # Check file FileExistsError
+    if not os.path.isfile(hmmfile):
+        raise("hmmfile does not exist")
+
+    print("\tFinding hits")
+    # Find hits and save tophit for every query
+    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
+    print("==Read==")
+    hmm_hits = {k: [] for k in db}
+    for query in hmmsearch:
+        for hit in query:
+            hit_span, query_span = hit_and_query_span(hit)
+            query_cov = query_span / queries[query.id][1]
+            hit_cov = hit_span / db[hit.id]
+            # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
+
+            # Only keep to hit that spans more than 70% of query and target
+            if query_cov > 0.7 and hit_cov > 0.7:
+                hmm_hits[hit.id].append(query.id)
+                break
+
+    # print(hmm_hits)
+    # Write file per marker
+    res = dict()
+    for marker in hmm_hits:
+        # print(marker)
+        marker_file = outdir + '/' + name + '.' + marker + '.faa'
+        with open(marker_file, mode='w') as out:
+            i = 0
+            for hit in hmm_hits[marker]:
+                out.write(">" + name + "_" + str(i) + "\n")
+                out.write(queries[hit][0] + "\n")
+                i = i + 1
+            res[marker] = i
+        out.close()
+
+    return res
+
+
+def hit_and_query_span(hit):
+    """Calculate total hit and query span"""
+
+    hit_span = 0
+    query_span = 0
+    for hsp in hit.fragments:
+        query_span = query_span + hsp.query_span
+        hit_span = hit_span + hsp.hit_span
+
+    return(hit_span, query_span)
+
+
+def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
+                 scriptpath='./scripts/', partition='',
+                 time='00:30:00', hmmscan='hmmscan',
+                 indir='', outdir='', fasta_suffix='.faa',
+                 out_suffix='.hmms', memory='300mb',
+                 maxjobs=1000):
+    """Use fyrd to run hmmscan on a given file"""
+
+    # Get basename
+    basename = strip_right(filename, fasta_suffix)
+
+    # Build hmmscan filenames
+    infile = '/'.join([indir, filename])
+    outfile = '/'.join([outdir, basename])
+    outfile = ''.join([outfile, out_suffix])
+
+    # Build hmmscan command
+    command = ' '.join([hmmscan,
+                        "-Z", str(5000),
+                        "-E", str(1e-3),
+                        db,
+                        infile,
+                        ">", outfile])
+
+    # Build fyrd filenames
+    if job_name is None:
+        job_name = '.'.join(['hmmscan', basename])
+    print(job_name)
+
+    print("\tCreating fyrd.Job")
+    fyrd_job = fyrd.Job(command,
+                        runpath=os.getcwd(),
+                        outpath=outpath,
+                        scriptpath=scriptpath,
+                        clean_files=False, clean_outputs=False,
+                        mem=memory,
+                        name=job_name,
+                        outfile=job_name + ".log",
+                        errfile=job_name + ".err",
+                        partition=partition,
+                        nodes=1, cores=1,
+                        time=time)
+
+    # Submit joobs
+    print("\tSubmitting job")
+    fyrd_job.submit(max_jobs=maxjobs)
+
+    return job_name, outfile, fyrd_job
+
+
 def process_arguments():
     # Read arguments
     parser_format = argparse.ArgumentDefaultsHelpFormatter
@@ -45,12 +172,6 @@ def process_arguments():
                           required=True, type=str)
 
     # Define other arguments
-    parser.add_argument("--markers_pep", help=("Location of fasta file of "
-                                               "marker genes. If left empty "
-                                               "it will default to "
-                                               "'markers.fas' in the same "
-                                               "directory as --db."),
-                        type=str, default='')
     parser.add_argument("--fasta_suffix", help=("Suffix of fasta files in "
                                                 "indir"),
                         type=str, default='.faa')
@@ -67,16 +188,32 @@ def process_arguments():
                         type=str, default='scripts/')
     parser.add_argument("--maxjobs", help=("Maximum number of fyrd jobs "
                                            "running simultaneously"),
-                        type=int, default='500')
-    parser.add_argument("--queue", help=("Queue (partition) to use for "
-                                         "submitting jobs"),
-                        type=str)
-    parser.add_argument("--memory", help=("Amunt of memory to reserve per "
-                                          "job"),
-                        type=str, default="300mb")
-    parser.add_argument("--time", help=("Amunt of time to reserve per "
-                                        "job"),
+                        type=int, default=1000)
+    parser.add_argument("--hmmscan_queue", help=("Queue (partition) to use "
+                                                 "for submitting hmmscan "
+                                                 "jobs"),
+                        type=str, default='')
+    parser.add_argument("--hmmscan_mem", help=("Amount of memory to reserve "
+                                               "per hmmscan job"),
+                        type=str, default="600mb")
+    parser.add_argument("--hmmscan_time", help=("Amount of time to reserve "
+                                                "per hmmscan job"),
                         type=str, default="1:00:00")
+    parser.add_argument("--hits_queue", help=("Queue (partition) to use "
+                                              "for submitting get hits "
+                                              "jobs"),
+                        type=str, default='')
+    parser.add_argument("--hits_mem", help=("Amount of memory to reserve "
+                                            "per get hits job"),
+                        type=str, default="1000mb")
+    parser.add_argument("--hits_time", help=("Amount of time to reserve "
+                                             "per get hits job"),
+                        type=str, default="1:00:00")
+    parser.add_argument("--mode", help=("bash of fyrd for second step"),
+                        default='fyrd', choices=['bash', 'fyrd'],
+                        type=str)
+    parser.add_argument("--nosummary", help=("Don't print a summary"),
+                        action="store_true")
 
     # Read arguments
     print("Reading arguments")
@@ -91,12 +228,39 @@ def process_arguments():
 
     # Check if markers.pep is passed and exists, if not
     # set default and check if exists
-    if args.markers_pep == '':
-        args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
-    if not os.path.isfile(args.markers_pep):
-        raise FileExistsError("Markers fasta ({}) does not exist".format(args.markers_pep))
+    # if args.markers_pep == '':
+    #     args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
+    # if not os.path.isfile(args.markers_pep):
+    #     raise FileExistsError("Markers fasta does not exist")
 
     return args
+
+
+def read_marker_list(infile):
+    """Read hmm profiles file and return length of profiles"""
+
+    if not os.path.isfile(infile):
+        raise FileNotFoundError("Markers profile file not found")
+
+    hmm_lenghts = dict()
+    with open(infile) as fh:
+        for l in fh:
+            if l.startswith('NAME'):
+                name = l.split()[1]
+            elif l.startswith('LENG'):
+                hmm_lenghts[name] = int(l.split()[1])
+    fh.close()
+
+    return hmm_lenghts
+
+
+def strip_right(text, suffix):
+    # tip from http://stackoverflow.com/questions/1038824
+    # MIT License
+    if not text.endswith(suffix):
+        return text
+    # else
+    return text[:len(text)-len(suffix)]
 
 
 def which(program):
@@ -124,130 +288,116 @@ def which(program):
     return None
 
 
-def strip_right(text, suffix):
-    # tip from http://stackoverflow.com/questions/1038824
-    # MIT License
-    if not text.endswith(suffix):
-        return text
-    # else
-    return text[:len(text)-len(suffix)]
+def submit_hmmscan_file(f, args, name=None):
+    """Create a job for rinnung hmmscan and submit it"""
+
+    # Creat subdirectory for hmmscan files
+    hmmscandir = args.outdir + '/' + 'hmms/'
+    if not os.path.isdir(hmmscandir):
+        os.mkdir(hmmscandir)
+
+    job_name, hmmfile, job = hmmscan_file(filename=f,
+                                          db=args.db,
+                                          outpath=args.logs,
+                                          scriptpath=args.scripts,
+                                          partition=args.hmmscan_queue,
+                                          time=args.hmmscan_time,
+                                          hmmscan=args.hmmscan,
+                                          indir=args.indir,
+                                          outdir=hmmscandir,
+                                          fasta_suffix=args.fasta_suffix,
+                                          out_suffix=args.out_suffix,
+                                          memory=args.hmmscan_mem,
+                                          maxjobs=args.maxjobs,
+                                          job_name=name)
+
+    return hmmfile, job
 
 
-def hmmscan_file(filename, db, args, hmmscan='hmmscan',
-                 indir='', outdir=''):
-    """Use fyrd to run hmmscan on a given file"""
+def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
+    """Create a job for rinnung hmmscan and submit it"""
 
-    # Get basename
-    basename = strip_right(filename, args.fasta_suffix)
+    # Creat subdirectory for fasta files
+    markersdir = args.outdir + '/' + 'markers/'
+    if not os.path.isdir(markersdir):
+        os.mkdir(markersdir)
 
-    # Build hmmscan filenames
-    infile = '/'.join([indir, filename])
-    outfile = '/'.join([outdir, basename])
-    outfile = ''.join([outfile, args.out_suffix])
+    # Get strain name
+    strain_name = os.path.basename(hmmfile)
+    strain_name = strip_right(strain_name, args.out_suffix)
 
-    # Build hmmscan command
-    command = ' '.join([hmmscan,
-                        "-Z", str(5000),
-                        "-E", str(1e-3),
-                        db,
-                        infile,
-                        ">", outfile])
+    # Fasta File
+    fasta_file = args.indir + '/' + fasta_file
+    if not os.path.isfile(fasta_file):
+        raise FileNotFoundError("Fasta file not found")
 
-    # Build fyrd filenames
-    job_name = '.'.join(['hmmscan', basename])
-    print(job_name)
+    if args.mode == 'bash':
+        res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+                           dbfile=args.db, name=strain_name,
+                           outdir=markersdir)
+    elif args.mode == 'fyrd':
+        job_name = strain_name + '.gethmmhits'
+        print(job_name)
+        print("\tCreating fyrd.Job")
+        job = fyrd.Job(get_hmm_hits, hmmfile,
+                       {'query_fasta': fasta_file,
+                        'dbfile': args.db,
+                        'name': strain_name,
+                        'outdir': markersdir},
+                       clean_files=False,
+                       clean_outputs=False,
+                       nodes=1, cores=1,
+                       time=args.hits_time,
+                       mem=args.hits_mem,
+                       partition=args.hits_queue,
+                       name=job_name,
+                       depends=job,
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=[('from marker_finder import '
+                                 'fasta_seq_lenghts, '
+                                 'read_marker_list, '
+                                 'hit_and_query_span')],
+                       scriptpath=args.scripts)
+        print("\tSubmitting job")
+        res = job.submit(max_jobs=args.maxjobs)
 
-    print("\tCreating fyrd.Job")
-    fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=args.logs,
-                        scriptpath=args.scripts,
-                        clean_files=False, clean_outputs=False,
-                        mem=args.memory, name=job_name,
-                        outfile=job_name + ".log",
-                        errfile=job_name + ".err",
-                        partition=args.queue,
-                        nodes=1, cores=1, time=args.time)
+    Res = {strain_name: res}
 
-    # Submit joobs
-    print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=args.maxjobs)
-
-    return outfile, fyrd_job
-
-
-def get_hmm_hits(hmmfile, query_fasta, dbfile):
-    """Read HMMER files and get hits"""
-
-    # Read query fasta
-    queries = fasta_seq_lenghts(query_fasta)
-    # db = fasta_seq_lenghts(db_fasta, split=True)
-    db = read_marker_list(dbfile)
-
-    # Find hits and save tophit for every query
-    hmmsearch = SearchIO.parse(hmmfile, 'hmmer3-text')
-    print("==Read==")
-    hmm_hits = {k: [] for k in db}
-    for query in hmmsearch:
-        for hit in query:
-            hit_span, query_span = hit_and_query_span(hit)
-            query_cov = query_span / queries[query.id][1]
-            hit_cov = hit_span / db[hit.id]
-            # print("\t{}\t{}\t{}".format(query.id, query_cov, hit_cov))
-            if query_cov > 0.7 and hit_cov > 0.7:
-                hmm_hits[hit.id].append(query.id)
-                break
-
-    print(hmm_hits)
-    # Write file per marker
-    for marker in hmm_hits:
-        print(marker)
-        marker_file = strip_right(hmmfile, '.hmms')
-        marker_file = marker_file + '.' + marker + '.faa'
-        with open(marker_file, mode='w') as out:
-            for hit in hmm_hits[marker]:
-                out.write(">" + hmmfile + "\n")
-                out.write(queries[hit][0] + "\n")
+    return Res
 
 
-def hit_and_query_span(hit):
-    """Calculate total hit and query span"""
+def write_summary(tab, args, name='summary.txt'):
+    """Write file with summary of found markers"""
 
-    hit_span = 0
-    query_span = 0
-    for hsp in hit.fragments:
-        query_span = query_span + hsp.query_span
-        hit_span = hit_span + hsp.hit_span
+    # Creat subdirectory for fasta files
+    markersdir = args.outdir + '/' + 'markers/'
+    if not os.path.isdir(markersdir):
+        raise FileNotFoundError("Markers directory not found")
 
-    return(hit_span, query_span)
+    summary_file = markersdir + '/' + name
+    # print(summary_file)
+    with open(summary_file, mode='w') as out:
+        i = 0
+        for c in tab:
+            # For first line print the header
+            strain = list(c.keys())[0]
+            marker_counts = c[strain]
+            # print(strain)
+            # print(marker_counts)
+            if i == 0:
+                # print(markers)
+                markers = list(marker_counts.keys())
+                out.write("\t".join(['strain'] + markers) + "\n")
+                i = i + 1
 
+            # print(counts)
+            counts = [str(marker_counts[m]) for m in markers]
+            out.write("\t".join([strain] + counts) + "\n")
+    out.close()
 
-def fasta_seq_lenghts(fasta_file, split=False):
-    """Read sequences in fasta file and obtain sequence lengths"""
-
-    fasta = SeqIO.parse(fasta_file, 'fasta')
-    Sequences = dict()
-    for s in fasta:
-        if split:
-            key = s.description.split()[1]
-        else:
-            key = s.id
-        Sequences[key] = [str(s.seq), len(s.seq)]
-
-    return Sequences
-
-
-def read_marker_list(infile):
-    """Read hmm profiles file and return length of profiles"""
-
-    hmm_lenghts = dict()
-    with open(infile) as fh:
-        for l in fh:
-            if l.startswith('NAME'):
-                name = l.split()[1]
-            elif l.startswith('LENG'):
-                hmm_lenghts[name] = int(l.split()[1])
-
-    return hmm_lenghts
+    return summary_file
 
 
 if __name__ == "__main__":
@@ -274,25 +424,39 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Submit hmmscan jobs
-    print("===hmmscan===")
+    print("============SUBMITTING HMMSCAN===========")
     hmm_files = dict()
     for f in fasta_files:
-        hmmfile, job = hmmscan_file(filename=f, db=args.db, args=args,
-                                    hmmscan=args.hmmscan,
-                                    indir=args.indir,
-                                    outdir=args.outdir)
+        hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
         hmm_files[hmmfile] = [job, f]
         print(f)
-
+    print("============DONE SUBMITTING HMMSCAN===========")
     # Submit hits_job
-    print("===hits===")
-    time.sleep(10)
+    time.sleep(5)  # Waiting to get jobs in queue
+
+    print("============GETTING HMM HITS===========")
+    jobs = []
     for f, o in hmm_files.items():
         print(f)
-        get_hmm_hits(f, query_fasta=''.join([args.indir, '/', o[1]]),
-                     dbfile=args.db)
-        # job = fyrd.Job(get_hmm_hits, f, {'query_fasta': o[1]},
-        #                depends=o[0], runpath=os.getcwd(),
-        #                outpath=args.logs,
-        #                scriptpath=args.scripts)
-        # job.submit(max_jobs=args.maxjobs)
+        j = submit_get_hmm_hits(hmmfile=f, job=o[0],
+                                fasta_file=o[1], args=args)
+        jobs.append(j)
+    # print(marker_tab)
+    print("============DONE SUBMITTING GETTING HMM HITS===========")
+
+    print("============COLLECTING HMM HITS===========")
+    # Collect fyrd results
+    marker_tab = []
+    for j in jobs:
+        # print(j)
+        strain = list(j.keys())[0]
+        job = j[strain]
+        res = job.get()
+        marker_tab.append({strain: res})
+
+    print("============DONE COLLECTING HMM HITS===========")
+    # print(marker_tab)
+    # Print summary
+    if not args.nosummary:
+        print("Writing summary of markers")
+        write_summary(tab=marker_tab, args=args)
