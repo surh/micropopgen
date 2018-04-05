@@ -418,7 +418,7 @@ if __name__ == "__main__":
 
     # Submit hits_job
     print("===hits===")
-    time.sleep(100) # Waiting to get jobs in queue
+    time.sleep(100)  # Waiting to get jobs in queue
 
     print("============GETTING HMM HITS===========")
     jobs = []
