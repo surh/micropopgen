@@ -493,9 +493,9 @@ def submit_concatenate_alignments(indir, args):
                    nodes=1, cores=1,
                    time=args.cat_time)
     print("\tSubmitting job")
-    job.submit(max_jobs=args.maxjobs)
+    res = job.submit(max_jobs=args.maxjobs)
 
-    aln = job.get()
+    aln = res.get()
 
     print("\t Writing output file")
     outfile = catalndir + '/' + 'maker_concatenated_alignment.aln'
