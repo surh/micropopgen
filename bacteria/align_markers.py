@@ -493,13 +493,27 @@ def submit_concatenate_alignments(indir, args):
                    nodes=1, cores=1,
                    time=args.cat_time)
     print("\tSubmitting job")
-    res = job.submit(max_jobs=args.maxjobs)
 
-    aln = res.get()
+    # res = job.submit(max_jobs=args.maxjobs)
+    # aln = res.get()
+
+    script = job.scriptpath + '/' + job.name
+    if job.qtype == 'local':
+        script = script + '.cluster'
+    elif job.qtype == 'torque':
+        script = script + '.qsub'
+    elif job.qtype == 'slurm':
+        script = script + '.qbatch'
+    else:
+        raise ValueError
+
+    os.chmod(script, 744)
+    print(script)
+    os.systm(script)
 
     print("\t Writing output file")
-    outfile = catalndir + '/' + 'maker_concatenated_alignment.aln'
-    AlignIO.write(aln, outfile, 'fasta')
+    # outfile = catalndir + '/' + 'maker_concatenated_alignment.aln'
+    # AlignIO.write(aln, outfile, 'fasta')
 
     print("=============CONCATENATING ALIGNMENTS===============")
 
