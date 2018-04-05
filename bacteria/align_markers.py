@@ -28,6 +28,77 @@ from Bio.Align import MultipleSeqAlignment
 import numpy as np
 
 
+def align2array(aln):
+    """Convert multiple sequence alignment object to numpy array.
+    Taken from tutorial."""
+
+    a_array = np.array([list(rec) for rec in aln], np.character)
+
+    return(a_array)
+
+
+def array2align(arr, names, alphabet):
+    """Convert numpy array to multiple sequence alignment.
+    Adapted from documentation"""
+
+    records = []
+
+    # Iterate over array rows (i.e. records)
+    for i in range(arr.shape[0]):
+        seq = ''.join(np.array(arr[i], dtype=str))
+        name = names[i]
+
+        # Concatenate sequence records
+        records.append(SeqRecord(Seq(seq, alphabet), id=name))
+
+    # Convert to MSA
+    new_aln = MultipleSeqAlignment(records)
+
+    return(new_aln)
+
+
+def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get set of markers
+    names = [strip_right(f, suffix) for f in fasta_files]
+    markers = set([n.split('.').pop() for n in names])
+    # print(markers)
+    # markers = set(markers)
+    # print(markers)
+
+    print("Concatenating files per marker")
+    outfiles = []
+    for m in markers:
+        # Check if it is in list to ignore
+        if m in ignore:
+            continue
+
+        # Get files from marker
+        marker_suffix = '.' + m + suffix
+        files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
+                                        fasta_files))
+        files_from_marker = [''.join([indir, '/', f])
+                             for f in files_from_marker]
+
+        print("====", m, "====")
+        # print(files_from_marker)
+        # Build command
+        outfile = ''.join([m, '.faa'])
+        outfiles.append(outfile)
+        outfile = ''.join([outdir, '/', outfile])
+        command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+
+        # Run command
+        print(command)
+        os.system(command)
+
+    return outfiles
+
+
 def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
                      alphabet=single_letter_alphabet):
     """Function to filter a numpy array that represents an alignment,
@@ -92,33 +163,56 @@ def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
     return new_aln
 
 
-def align2array(aln):
-    """Convert multiple sequence alignment object to numpy array.
-    Taken from tutorial."""
+def filter_alignment_file(infile, outfile, gap_prop=0.99,
+                          remove_singletons=True,
+                          alphabet=single_letter_alphabet,
+                          input_format='fasta',
+                          output_format='fasta'):
+    """Take file with a single alignment, filter it and
+    write a new file"""
 
-    a_array = np.array([list(rec) for rec in aln], np.character)
+    aln = AlignIO.read(infile, input_format)
+    filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
+                                remove_singletons=remove_singletons,
+                                alphabet=alphabet)
+    AlignIO.write(filtered, outfile, output_format)
 
-    return(a_array)
+    return(outfile)
 
 
-def array2align(arr, names, alphabet):
-    """Convert numpy array to multiple sequence alignment.
-    Adapted from documentation"""
+def muscle_file(infile, outfile, job_name=None,
+                outpath='./logs/', scriptpath='./scripts/',
+                partition='', time='01:00:00', muscle='muscle',
+                memory='2000mb', maxjobs=1000):
+    """Use fyrd to call muscle for aligning each set"""
 
-    records = []
+    # Build muscle command
+    command = ' '.join([muscle,
+                        "-in", infile,
+                        "-out", outfile])
 
-    # Iterate over array rows (i.e. records)
-    for i in range(arr.shape[0]):
-        seq = ''.join(np.array(arr[i], dtype=str))
-        name = names[i]
+    # Build fyrd filenames
+    if job_name is None:
+        basename = os.path.basename(infile)
+        job_name = '.'.join(['muscle', basename])
+    print(job_name)
 
-        # Concatenate sequence records
-        records.append(SeqRecord(Seq(seq, alphabet), id=name))
+    print("\tCreating fyrd.Job")
+    fyrd_job = fyrd.Job(command,
+                        runpath=os.getcwd(), outpath=outpath,
+                        scriptpath=scriptpath,
+                        clean_files=False, clean_outputs=False,
+                        mem=memory, name=job_name,
+                        outfile=job_name + ".log",
+                        errfile=job_name + ".err",
+                        partition=partition,
+                        nodes=1, cores=1, time=time)
 
-    # Convert to MSA
-    new_aln = MultipleSeqAlignment(records)
+    # Submit joobs
+    print("\tSubmitting job")
+    fyrd_job.submit(max_jobs=maxjobs)
 
-    return(new_aln)
+    return job_name, outfile, fyrd_job
 
 
 def process_arguments():
@@ -191,48 +285,6 @@ def process_arguments():
     return args
 
 
-def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
-    # Get list of fasta files from indir
-    fasta_files = os.listdir(indir)
-    fasta_files = list(filter(lambda f: f.endswith(suffix),
-                              fasta_files))
-
-    # Get set of markers
-    names = [strip_right(f, suffix) for f in fasta_files]
-    markers = set([n.split('.').pop() for n in names])
-    # print(markers)
-    # markers = set(markers)
-    # print(markers)
-
-    print("Concatenating files per marker")
-    outfiles = []
-    for m in markers:
-        # Check if it is in list to ignore
-        if m in ignore:
-            continue
-
-        # Get files from marker
-        marker_suffix = '.' + m + suffix
-        files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
-                                        fasta_files))
-        files_from_marker = [''.join([indir, '/', f])
-                             for f in files_from_marker]
-
-        print("====", m, "====")
-        # print(files_from_marker)
-        # Build command
-        outfile = ''.join([m, '.faa'])
-        outfiles.append(outfile)
-        outfile = ''.join([outdir, '/', outfile])
-        command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
-
-        # Run command
-        print(command)
-        os.system(command)
-
-    return outfiles
-
-
 def strip_right(text, suffix):
     # tip from http://stackoverflow.com/questions/1038824
     # MIT License
@@ -240,31 +292,6 @@ def strip_right(text, suffix):
         return text
     # else
     return text[:len(text)-len(suffix)]
-
-
-def which(program):
-    """Check if executable exists. Returns path of executable."""
-
-    # From:
-    # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-    # Under MIT license
-
-    def is_exe(fpath):
-        """Check if path is executable"""
-
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
 
 
 def submit_align_markers(markersdir, args):
@@ -297,41 +324,6 @@ def submit_align_markers(markersdir, args):
         res[n] = [o, j]
 
     return(res)
-
-
-def muscle_file(infile, outfile, job_name=None,
-                outpath='./logs/', scriptpath='./scripts/',
-                partition='', time='01:00:00', muscle='muscle',
-                memory='2000mb', maxjobs=1000):
-    """Use fyrd to call muscle for aligning each set"""
-
-    # Build muscle command
-    command = ' '.join([muscle,
-                        "-in", infile,
-                        "-out", outfile])
-
-    # Build fyrd filenames
-    if job_name is None:
-        basename = os.path.basename(infile)
-        job_name = '.'.join(['muscle', basename])
-    print(job_name)
-
-    print("\tCreating fyrd.Job")
-    fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=outpath,
-                        scriptpath=scriptpath,
-                        clean_files=False, clean_outputs=False,
-                        mem=memory, name=job_name,
-                        outfile=job_name + ".log",
-                        errfile=job_name + ".err",
-                        partition=partition,
-                        nodes=1, cores=1, time=time)
-
-    # Submit joobs
-    print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=maxjobs)
-
-    return job_name, outfile, fyrd_job
 
 
 def submit_filter_alignments(alns, args):
@@ -371,21 +363,29 @@ def submit_filter_alignments(alns, args):
     return res
 
 
-def filter_alignment_file(infile, outfile, gap_prop=0.99,
-                          remove_singletons=True,
-                          alphabet=single_letter_alphabet,
-                          input_format='fasta',
-                          output_format='fasta'):
-    """Take file with a single alignment, filter it and
-    write a new file"""
+def which(program):
+    """Check if executable exists. Returns path of executable."""
 
-    aln = AlignIO.read(infile, input_format)
-    filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
-                                remove_singletons=remove_singletons,
-                                alphabet=alphabet)
-    AlignIO.write(filtered, outfile, output_format)
+    # From:
+    # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    # Under MIT license
 
-    return(outfile)
+    def is_exe(fpath):
+        """Check if path is executable"""
+
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
 
 
 if __name__ == "__main__":
