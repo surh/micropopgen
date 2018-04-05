@@ -420,10 +420,15 @@ def submit_filter_alignments(alns, args):
                                  'align2array, array2align')],
                        scriptpath=args.scripts)
         job.submit(max_jobs=args.maxjobs)
-        res.append({n: job})
+        res.append(job)
 
     print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
-    return res
+
+    print("=============WAITING FOR FILTERING ALIGNMENTS===============")
+    [j.wait() for j in res]
+    print("=============DONE WAITING FOR FILTERING ALIGNMENTS===============")
+
+    return None
 
 
 def which(program):
