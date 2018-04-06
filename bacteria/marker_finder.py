@@ -425,7 +425,7 @@ if __name__ == "__main__":
         print(f)
     print("============DONE SUBMITTING HMMSCAN===========")
     # Submit hits_job
-    time.sleep(5)  # Waiting to get jobs in queue
+    # time.sleep(5)  # Waiting to get jobs in queue
 
     print("============GETTING HMM HITS===========")
     jobs = []
