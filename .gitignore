@@ -2,3 +2,4 @@
 .project
 .pydevproject
 .ipynb_checkpoints/
+bacteria/__pycache__/
