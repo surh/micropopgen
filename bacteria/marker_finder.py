@@ -325,7 +325,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
         raise FileNotFoundError("Fasta file not found")
 
     if args.mode == 'bash':
-        res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+        job = get_hmm_hits(hmmfile, query_fasta=fasta_file,
                            dbfile=args.db, name=strain_name,
                            outdir=markersdir)
     elif args.mode == 'fyrd':
@@ -354,9 +354,9 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                                  'hit_and_query_span')],
                        scriptpath=args.scripts)
         print("\tSubmitting job")
-        res = job.submit(max_jobs=args.maxjobs)
+        job.submit(max_jobs=args.maxjobs)
 
-    Res = {strain_name: res}
+    Res = {strain_name: job}
 
     return Res
 
@@ -452,4 +452,5 @@ if __name__ == "__main__":
     # Print summary
     if not args.nosummary:
         print("Writing summary of markers")
+        print(marker_tab)
         write_summary(tab=marker_tab, args=args)
