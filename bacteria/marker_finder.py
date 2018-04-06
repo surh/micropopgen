@@ -226,13 +226,6 @@ def process_arguments():
     else:
         args.hmmscan = which(args.hmmscan)
 
-    # Check if markers.pep is passed and exists, if not
-    # set default and check if exists
-    # if args.markers_pep == '':
-    #     args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
-    # if not os.path.isfile(args.markers_pep):
-    #     raise FileExistsError("Markers fasta does not exist")
-
     return args
 
 
