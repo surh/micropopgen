@@ -442,6 +442,7 @@ if __name__ == "__main__":
     marker_tab = []
     for j in jobs:
         # print(j)
+        print("####", j)
         strain = list(j.keys())[0]
         job = j[strain]
         res = job.get()
