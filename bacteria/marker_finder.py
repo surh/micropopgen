@@ -446,7 +446,9 @@ if __name__ == "__main__":
         strain = list(j.keys())[0]
         job = j[strain]
         res = job.get()
-        marker_tab.append({strain: res})
+        res = {strain: res}
+        print("%%%%", res)
+        marker_tab.append(res)
 
     print("============DONE COLLECTING HMM HITS===========")
     # print(marker_tab)
