@@ -226,13 +226,6 @@ def process_arguments():
     else:
         args.hmmscan = which(args.hmmscan)
 
-    # Check if markers.pep is passed and exists, if not
-    # set default and check if exists
-    # if args.markers_pep == '':
-    #     args.markers_pep = "/".join([os.path.dirname(args.db), 'markers.fas'])
-    # if not os.path.isfile(args.markers_pep):
-    #     raise FileExistsError("Markers fasta does not exist")
-
     return args
 
 
@@ -332,7 +325,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
         raise FileNotFoundError("Fasta file not found")
 
     if args.mode == 'bash':
-        res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+        job = get_hmm_hits(hmmfile, query_fasta=fasta_file,
                            dbfile=args.db, name=strain_name,
                            outdir=markersdir)
     elif args.mode == 'fyrd':
@@ -361,9 +354,9 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                                  'hit_and_query_span')],
                        scriptpath=args.scripts)
         print("\tSubmitting job")
-        res = job.submit(max_jobs=args.maxjobs)
+        job.submit(max_jobs=args.maxjobs)
 
-    Res = {strain_name: res}
+    Res = {strain_name: job}
 
     return Res
 
@@ -459,4 +452,5 @@ if __name__ == "__main__":
     # Print summary
     if not args.nosummary:
         print("Writing summary of markers")
+        print(marker_tab)
         write_summary(tab=marker_tab, args=args)
