@@ -307,7 +307,7 @@ def submit_hmmscan_file(f, args, name=None):
     return hmmfile, job
 
 
-def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
+def submit_get_hmm_hits(hmmfile, hmmscanjob, fasta_file, args):
     """Create a job for rinnung hmmscan and submit it"""
 
     # Creat subdirectory for fasta files
@@ -332,6 +332,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
         job_name = strain_name + '.gethmmhits'
         print(job_name)
         print("\tCreating fyrd.Job")
+        hmmscanjob.wait()
         job = fyrd.Job(get_hmm_hits, hmmfile,
                        {'query_fasta': fasta_file,
                         'dbfile': args.db,
@@ -344,7 +345,7 @@ def submit_get_hmm_hits(hmmfile, job, fasta_file, args):
                        mem=args.hits_mem,
                        partition=args.hits_queue,
                        name=job_name,
-                       depends=job,
+                       # depends=hmmscanjob,
                        runpath=os.getcwd(),
                        outpath=args.logs,
                        syspaths=[os.path.dirname(__file__)],
@@ -431,7 +432,7 @@ if __name__ == "__main__":
     jobs = []
     for f, o in hmm_files.items():
         print(f)
-        j = submit_get_hmm_hits(hmmfile=f, job=o[0],
+        j = submit_get_hmm_hits(hmmfile=f, hmmscanjob=o[0],
                                 fasta_file=o[1], args=args)
         jobs.append(j)
     # print(marker_tab)
