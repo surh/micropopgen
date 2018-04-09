@@ -109,13 +109,14 @@ def get_marker_names(indir, suffix, ignore = []):
     # Remove markers to ignore
     markers = list(filter(lambda i: i not in ignore, markers))
 
-    return markers
+    return markers, fasta_files
+
 
 def concatenate_and_align_markers(indir, suffix, outdir='./', ignore=[]):
     """Single function that calls function that performs
     concatenation and alignment per marker"""
 
-    markers = get_marker_names(indir, suffix, ignore)
+    markers, fasta_files = get_marker_names(indir, suffix, ignore)
 
 
     # Create directory for concatenated aligned files
@@ -131,7 +132,6 @@ def concatenate_and_align_markers(indir, suffix, outdir='./', ignore=[]):
         # Check if it is in list to ignore. Redundant but safe
         if m in ignore:
             continue
-
 
     return outfiles
 
@@ -153,6 +153,7 @@ def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
     files_from_marker = [''.join([indir, '/', f])
                          for f in files_from_marker]
 
+    print("Concatenating all sequences from marker")
     # Build command
     outfile = ''.join([m, '.faa'])
     catfile = outfile
@@ -164,9 +165,8 @@ def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
     status = os.system(command)
     print("Status=", status)
 
-    print("Concatenate all marker sequences")
+    print("Aligning all sequences from marker")
     infile = ''.join([catdir, '/', catfile])
-
     alnfile = ''.join([alndir, '/', m, '.aln'])
     job_name = ''.join([m, '.aln'])
     n, o, s = muscle_file(infile=infile, outfile=alnfile,
@@ -183,10 +183,11 @@ def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
     return
 
 
-
 def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
+    """Submit system job to concatenate all files from
+    one marker"""
 
-    markers = get_marker_names(indir, suffix, ignore)
+    markers, fasta_files = get_marker_names(indir, suffix, ignore)
 
     print("Concatenating files per marker")
     outfiles = []
@@ -691,7 +692,6 @@ if __name__ == "__main__":
 
     # Read ignore list
     ignore = []
-
 
     # Concatenate fasta per marker
     # Create directory for concatenated files_from_marker
