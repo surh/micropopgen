@@ -441,19 +441,30 @@ if __name__ == "__main__":
 
     # Collect fyrd results
     marker_tab = []
+    failed = []
     for j in jobs:
-        print(j)
-    #     strain = list(j.keys())[0]
-    #     job = j[strain]
-    #     res = job.get()
-    #     res = {strain: res}
-    #     # print("%%%%", res)
-    #     marker_tab.append(res)
-    #
-    # print("============DONE COLLECTING HMM HITS===========")
-    # # print(marker_tab)
-    # # Print summary
-    # if not args.nosummary:
-    #     print("Writing summary of markers")
-    #     print(marker_tab)
-    #     write_summary(tab=marker_tab, args=args)
+        # print(j)
+        strain = list(j.keys())[0]
+        job = j[strain]
+        res = job.get()
+
+        # Check if failed and save rest
+        if job.state == 'failed':
+            failed.append(strain)
+        else:
+            res = {strain: res}
+            marker_tab.append(res)
+    print("============DONE COLLECTING HMM HITS===========")
+
+    # Print summary
+    if not args.nosummary:
+        print("Writing summary of markers")
+        print(marker_tab)
+        write_summary(tab=marker_tab, args=args)
+
+    # Print failed
+    if len(failed) > 0:
+        with open(args.outdir + '/failed.markers.txt') as fh:
+            for s in failed:
+                fh.write(s, "\n")
+        fh.close()
