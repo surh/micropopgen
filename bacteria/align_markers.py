@@ -168,19 +168,19 @@ def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
     infile = ''.join([catdir, '/', catfile])
 
     alnfile = ''.join([alndir, '/', m, '.aln'])
-    # job_name = ''.join([marker, '.aln'])
+    job_name = ''.join([m, '.aln'])
+    n, o, s = muscle_file(infile=infile, outfile=alnfile,
+                          mode='bash',
+                          job_name=job_name,
+                          outpath=args.logs,
+                          scriptpath=args.scripts,
+                          partition=args.aln_queue,
+                          time=args.aln_time,
+                          muscle=args.muscle,
+                          memory=args.aln_mem,
+                          maxjobs=args.maxjobs)
 
-
-        n, o, j = muscle_file(infile=infile, outfile=alnfile,
-                              job_name=job_name, outpath=args.logs,
-                              scriptpath=args.scripts,
-                              partition=args.aln_queue,
-                              time=args.aln_time, muscle=args.muscle,
-                              memory=args.aln_mem, maxjobs=args.maxjobs)
-
-        res[n] = [o, j]
-
-    return(res)
+    return
 
 
 
