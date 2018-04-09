@@ -500,6 +500,7 @@ if __name__ == "__main__":
                                 'read_marker_list, '
                                 'hit_and_query_span, '
                                 'submit_hmmscan_file, '
+                                'hmmscan_file, '
                                 'get_hmm_hits')],
                         scriptpath=args.scripts)
         print("Submitting job")
