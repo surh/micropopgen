@@ -20,7 +20,7 @@ import fyrd
 import argparse
 import os
 from Bio import SearchIO, SeqIO
-import time
+# import time
 
 
 def fasta_seq_lenghts(fasta_file, split=False):
@@ -310,7 +310,7 @@ def submit_hmmscan_file(f, args, name=None):
 def submit_get_hmm_hits(hmmfile, hmmscanjob, fasta_file, args):
     """Create a job for rinnung hmmscan and submit it"""
 
-    # Creat subdirectory for fasta files
+    # Create subdirectory for fasta files
     markersdir = args.outdir + '/' + 'markers/'
     if not os.path.isdir(markersdir):
         os.mkdir(markersdir)
@@ -418,43 +418,42 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Submit hmmscan jobs
-    print("============SUBMITTING HMMSCAN===========")
-    hmm_files = dict()
+    print("============PROCESSING FILE===========")
+    # hmm_files = dict()
+    jobs = []
     for f in fasta_files:
-        hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
-        hmm_files[hmmfile] = [job, f]
         print(f)
-    print("============DONE SUBMITTING HMMSCAN===========")
+        hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
+        job2 = submit_get_hmm_hits(hmmfile=hmmfile, hmmscanjob=job,
+                                   fasta_file=f, args=args)
+        # hmm_files[hmmfile] = [job, f]
+        jobs.append(job2)
+    print("============DONE PROCESSING FILE===========")
+
     # Submit hits_job
     # time.sleep(5)  # Waiting to get jobs in queue
 
-    print("============GETTING HMM HITS===========")
-    jobs = []
-    for f, o in hmm_files.items():
-        print(f)
-        j = submit_get_hmm_hits(hmmfile=f, hmmscanjob=o[0],
-                                fasta_file=o[1], args=args)
-        jobs.append(j)
-    # print(marker_tab)
-    print("============DONE SUBMITTING GETTING HMM HITS===========")
-
     print("============COLLECTING HMM HITS===========")
+    # Create directory for summary tables
+    summarydir = args.outdir + '/' + 'summary/'
+    if not os.path.isdir(summarydir):
+        os.mkdir(summarydir)
+
     # Collect fyrd results
     marker_tab = []
     for j in jobs:
-        # print(j)
-        # print("####", j)
-        strain = list(j.keys())[0]
-        job = j[strain]
-        res = job.get()
-        res = {strain: res}
-        # print("%%%%", res)
-        marker_tab.append(res)
-
-    print("============DONE COLLECTING HMM HITS===========")
-    # print(marker_tab)
-    # Print summary
-    if not args.nosummary:
-        print("Writing summary of markers")
-        print(marker_tab)
-        write_summary(tab=marker_tab, args=args)
+        print(j)
+    #     strain = list(j.keys())[0]
+    #     job = j[strain]
+    #     res = job.get()
+    #     res = {strain: res}
+    #     # print("%%%%", res)
+    #     marker_tab.append(res)
+    #
+    # print("============DONE COLLECTING HMM HITS===========")
+    # # print(marker_tab)
+    # # Print summary
+    # if not args.nosummary:
+    #     print("Writing summary of markers")
+    #     print(marker_tab)
+    #     write_summary(tab=marker_tab, args=args)
