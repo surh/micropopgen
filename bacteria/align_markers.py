@@ -94,7 +94,7 @@ def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
     return new_aln
 
 
-def get_marker_names(indir, suffix, ignore = []):
+def get_marker_names(indir, suffix, ignore=[]):
     """Get list of markers"""
 
     # Get list of fasta files from indir
@@ -118,13 +118,19 @@ def concatenate_and_align_markers(indir, suffix, outdir='./', ignore=[]):
 
     markers, fasta_files = get_marker_names(indir, suffix, ignore)
 
-
     # Create directory for concatenated aligned files
     alndir = ''.join([args.outdir, '/aln/'])
     if os.path.isdir(alndir):
         raise FileExistsError("Alignment dir already exists")
     else:
         os.mkdir(alndir)
+
+    # Create output directory
+    fildir = ''.join([args.outdir, '/filtered/'])
+    if os.path.isdir(fildir):
+        raise FileExistsError("Filtered dir already exists")
+    else:
+        os.mkdir(fildir)
 
     print("Processing markers")
     outfiles = []
@@ -136,7 +142,8 @@ def concatenate_and_align_markers(indir, suffix, outdir='./', ignore=[]):
     return outfiles
 
 
-def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
+def concatenate_and_align_marker(m, indir, catdir, alndir,
+                                 fildir, suffix, args):
     """Perform all the alignment and concatenation for a single
     marker"""
 
@@ -180,7 +187,14 @@ def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
                           memory=args.aln_mem,
                           maxjobs=args.maxjobs)
 
-    return
+    # Filter alignment
+    print("Filter alignment")
+    filfile = ''.join([fildir, '/', n])
+    job_name = n + '.filter'
+    print(job_name)
+    filter_alignment_file(alnfile, filfile, gap_pro=args.gap_prop)
+
+    return filfile
 
 
 def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
