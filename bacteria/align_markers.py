@@ -112,34 +112,80 @@ def get_marker_names(indir, suffix, ignore=[]):
     return markers, fasta_files
 
 
-def concatenate_and_align_markers(indir, suffix, outdir='./', ignore=[]):
-    """Single function that calls function that performs
-    concatenation and alignment per marker"""
-
-    markers, fasta_files = get_marker_names(indir, suffix, ignore)
+def create_pipeline_outdirs(dir):
+    """Create directories for output"""
 
     # Create directory for concatenated aligned files
-    alndir = ''.join([args.outdir, '/aln/'])
+    alndir = ''.join([dir, '/aln/'])
     if os.path.isdir(alndir):
         raise FileExistsError("Alignment dir already exists")
     else:
         os.mkdir(alndir)
 
-    # Create output directory
-    fildir = ''.join([args.outdir, '/filtered/'])
+    # Create output for filtered files
+    fildir = ''.join([dir, '/filtered/'])
     if os.path.isdir(fildir):
         raise FileExistsError("Filtered dir already exists")
     else:
         os.mkdir(fildir)
 
+    return alndir, fildir
+
+
+def concatenate_and_align_markers(indir, suffix, args, outdir='./',
+                                  ignore=[]):
+    """Single function that calls function that performs
+    concatenation and alignment per marker"""
+
+    markers, fasta_files = get_marker_names(indir, suffix, ignore)
+    alndir, fildir = create_pipeline_outdirs(outdir)
+    catdir = ''.join([args.outdir, '/cat/'])
+
     print("Processing markers")
-    outfiles = []
+    # outfiles = []
+    jobs = []
     for m in markers:
         # Check if it is in list to ignore. Redundant but safe
         if m in ignore:
             continue
 
-    return outfiles
+        job_name = m + '.catalnfil'
+        print(job_name)
+        print("\tCreating fyrd job")
+        job = fyrd.Job(concatenate_and_align_marker, m,
+                       {'indir': indir,
+                        'catdir': catdir,
+                        'alndir': alndir,
+                        'fildir': fildir,
+                        'suffix': suffix,
+                        'args': args},
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=[('from align_markers import '
+                                 'filter_alignment_file, '
+                                 'filter_alignment, '
+                                 'align2array, '
+                                 'array2align, '
+                                 'muscle_file, '
+                                 'get_marker_names, '
+                                 'create_pipeline_outdirs')],
+                       scriptpath=args.scripts,
+                       clean_files=False,
+                       clean_outputs=False,
+                       mem=args.filter_mem,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=args.filter_queue,
+                       nodes=1, cores=1,
+                       time=args.filter_time)
+
+        print("\tSubmitting job")
+        job.submit(max_jobs=args.maxjobs)
+        jobs.append(job)
+
+    return jobs
 
 
 def concatenate_and_align_marker(m, indir, catdir, alndir,
