@@ -185,7 +185,7 @@ def concatenate_and_align_markers(indir, suffix, args, outdir='./',
         job.submit(max_jobs=args.maxjobs)
         jobs.append(job)
 
-    return jobs
+    return jobs, fildir
 
 
 def concatenate_and_align_marker(m, indir, catdir, alndir,
@@ -732,9 +732,17 @@ if __name__ == "__main__":
     # # Filter alignment per marker
     # fildir = submit_filter_alignments(alns=alns, args=args)
 
-    concatenate_and_align_markers(indir=args.indir, suffix=args.suffix,
-                                  args=args, outdir=args.outdir,
-                                  ignore=ignore)
+    jobs, fildir = concatenate_and_align_markers(indir=args.indir,
+                                                 suffix=args.suffix,
+                                                 args=args,
+                                                 outdir=args.outdir,
+                                                 ignore=ignore)
+
+    # Waiting for jobs to complete
+    print("Waiting for jobs to complete")
+    for j in jobs:
+        j.wait()
+    print("Finished alignment and filtering")
 
     # Concatenate overall alignment
     submit_concatenate_alignments(fildir, args)
