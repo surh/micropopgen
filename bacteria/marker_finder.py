@@ -506,6 +506,7 @@ if __name__ == "__main__":
         job.submit()
         jobs.append(job)
     print("============DONE PROCESSING FILE===========")
+    print(jobs)
 
     # Submit hits_job
     # time.sleep(5)  # Waiting to get jobs in queue
@@ -520,7 +521,7 @@ if __name__ == "__main__":
     marker_tab = []
     failed = []
     for j in jobs:
-        # print(j)
+        print(j)
         strain = list(j.keys())[0]
         job = j[strain]
         res = job.get()
