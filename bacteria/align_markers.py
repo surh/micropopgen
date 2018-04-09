@@ -94,7 +94,7 @@ def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
     return new_aln
 
 
-def get_markers(indir, suffix, ignore):
+def get_marker_names(indir, suffix, ignore = []):
     """Get list of markers"""
 
     # Get list of fasta files from indir
@@ -106,12 +106,87 @@ def get_markers(indir, suffix, ignore):
     names = [strip_right(f, suffix) for f in fasta_files]
     markers = set([n.split('.').pop() for n in names])
 
+    # Remove markers to ignore
+    markers = list(filter(lambda i: i not in ignore, markers))
+
     return markers
+
+def concatenate_and_align_markers(indir, suffix, outdir='./', ignore=[]):
+    """Single function that calls function that performs
+    concatenation and alignment per marker"""
+
+    markers = get_marker_names(indir, suffix, ignore)
+
+
+    # Create directory for concatenated aligned files
+    alndir = ''.join([args.outdir, '/aln/'])
+    if os.path.isdir(alndir):
+        raise FileExistsError("Alignment dir already exists")
+    else:
+        os.mkdir(alndir)
+
+    print("Processing markers")
+    outfiles = []
+    for m in markers:
+        # Check if it is in list to ignore. Redundant but safe
+        if m in ignore:
+            continue
+
+
+    return outfiles
+
+
+def concatenate_and_align_marker(m, indir, catdir, alndir, suffix, args):
+    """Perform all the alignment and concatenation for a single
+    marker"""
+
+    print("====", m, "====")
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get files from marker
+    marker_suffix = '.' + m + suffix
+    files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
+                                    fasta_files))
+    files_from_marker = [''.join([indir, '/', f])
+                         for f in files_from_marker]
+
+    # Build command
+    outfile = ''.join([m, '.faa'])
+    catfile = outfile
+    outfile = ''.join([catdir, '/', outfile])
+    command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+
+    # Run command
+    print("Executing:\n>{}".format(command))
+    status = os.system(command)
+    print("Status=", status)
+
+    print("Concatenate all marker sequences")
+    infile = ''.join([catdir, '/', catfile])
+
+    alnfile = ''.join([alndir, '/', m, '.aln'])
+    # job_name = ''.join([marker, '.aln'])
+
+
+        n, o, j = muscle_file(infile=infile, outfile=alnfile,
+                              job_name=job_name, outpath=args.logs,
+                              scriptpath=args.scripts,
+                              partition=args.aln_queue,
+                              time=args.aln_time, muscle=args.muscle,
+                              memory=args.aln_mem, maxjobs=args.maxjobs)
+
+        res[n] = [o, j]
+
+    return(res)
+
 
 
 def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
 
-    markers = get_markers(indir, suffix, ignore):
+    markers = get_marker_names(indir, suffix, ignore)
 
     print("Concatenating files per marker")
     outfiles = []
@@ -223,7 +298,7 @@ def filter_alignment_file(infile, outfile, gap_prop=0.99,
     return(outfile)
 
 
-def muscle_file(infile, outfile, job_name=None,
+def muscle_file(infile, outfile, mode='fyrd', job_name=None,
                 outpath='./logs/', scriptpath='./scripts/',
                 partition='', time='01:00:00', muscle='muscle',
                 memory='2000mb', maxjobs=1000):
@@ -240,22 +315,34 @@ def muscle_file(infile, outfile, job_name=None,
         job_name = '.'.join(['muscle', basename])
     print(job_name)
 
-    print("\tCreating fyrd.Job")
-    fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=outpath,
-                        scriptpath=scriptpath,
-                        clean_files=False, clean_outputs=False,
-                        mem=memory, name=job_name,
-                        outfile=job_name + ".log",
-                        errfile=job_name + ".err",
-                        partition=partition,
-                        nodes=1, cores=1, time=time)
+    if mode == 'fyrd':
+        print("\tCreating fyrd.Job")
+        job = fyrd.Job(command,
+                       runpath=os.getcwd(),
+                       outpath=outpath,
+                       scriptpath=scriptpath,
+                       clean_files=False,
+                       clean_outputs=False,
+                       mem=memory,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=partition,
+                       nodes=1, cores=1,
+                       time=time)
 
-    # Submit joobs
-    print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=maxjobs)
+        # Submit joobs
+        print("\tSubmitting job")
+        job.submit(max_jobs=maxjobs)
+    elif mode == 'bash':
+        print("Executing:\n>{}".format(command))
+        status = os.sytem(command)
+        print("Status=", status)
+        job = status
+    else:
+        raise ValueError("bash or fyrd")
 
-    return job_name, outfile, fyrd_job
+    return job_name, outfile, job
 
 
 def process_arguments():
