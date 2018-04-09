@@ -505,7 +505,7 @@ if __name__ == "__main__":
                                 'strip_right')],
                         scriptpath=args.scripts)
         print("Submitting job")
-        job.submit()
+        job.submit(max_jobs==args.maxjobs)
         jobs.append(job)
     print("============DONE PROCESSING FILE===========")
     # print(jobs)
