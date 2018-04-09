@@ -94,7 +94,9 @@ def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
     return new_aln
 
 
-def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
+def get_markers(indir, suffix, ignore):
+    """Get list of markers"""
+
     # Get list of fasta files from indir
     fasta_files = os.listdir(indir)
     fasta_files = list(filter(lambda f: f.endswith(suffix),
@@ -103,9 +105,13 @@ def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
     # Get set of markers
     names = [strip_right(f, suffix) for f in fasta_files]
     markers = set([n.split('.').pop() for n in names])
-    # print(markers)
-    # markers = set(markers)
-    # print(markers)
+
+    return markers
+
+
+def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
+
+    markers = get_markers(indir, suffix, ignore):
 
     print("Concatenating files per marker")
     outfiles = []
@@ -598,6 +604,7 @@ if __name__ == "__main__":
 
     # Read ignore list
     ignore = []
+
 
     # Concatenate fasta per marker
     # Create directory for concatenated files_from_marker
