@@ -501,7 +501,8 @@ if __name__ == "__main__":
                                 'hit_and_query_span, '
                                 'submit_hmmscan_file, '
                                 'hmmscan_file, '
-                                'get_hmm_hits')],
+                                'get_hmm_hits, '
+                                'strip_right')],
                         scriptpath=args.scripts)
         print("Submitting job")
         job.submit()
