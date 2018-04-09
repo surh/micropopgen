@@ -522,9 +522,10 @@ if __name__ == "__main__":
     failed = []
     for j in jobs:
         print(j)
-        strain = list(j.keys())[0]
-        job = j[strain]
+        # strain = list(j.keys())[0]
+        # job = j[strain]
         res = job.get()
+        print(res)
 
         # Check if failed and save rest
         if job.state == 'failed':
