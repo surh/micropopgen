@@ -477,11 +477,34 @@ if __name__ == "__main__":
     jobs = []
     for f in fasta_files:
         print(f)
-        hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
-        job2 = submit_get_hmm_hits(hmmfile=hmmfile, hmmscanjob=job,
-                                   fasta_file=f, args=args)
-        # hmm_files[hmmfile] = [job, f]
-        jobs.append(job2)
+        # hmmfile, job = submit_hmmscan_file(f=f, name=None, args=args)
+        # job2 = submit_get_hmm_hits(hmmfile=hmmfile, hmmscanjob=job,
+        #                            fasta_file=f, args=args)
+        # # hmm_files[hmmfile] = [job, f]
+        # jobs.append(job2)
+        job = fyrd.Job(submit_all, f,
+                       {'args': args,
+                        'name': None},
+                        clean_files=False,
+                        clean_outputs=False,
+                        nodes=1, cores=1,
+                        time=args.hits_time,
+                        mem=args.hits_mem,
+                        partition=args.hits_queue,
+                        name=f + '.markers',
+                        runpath=os.getcwd(),
+                        outpath=args.logs,
+                        syspaths=[os.path.dirname(__file__)],
+                        imports=[('from marker_finder import '
+                                'fasta_seq_lenghts, '
+                                'read_marker_list, '
+                                'hit_and_query_span, '
+                                'submit_hmmscan_file, '
+                                'get_hmm_hits')],
+                        scriptpath=args.scripts)
+        print("Submitting job")
+        job.submit()
+        jobs.append(job)
     print("============DONE PROCESSING FILE===========")
 
     # Submit hits_job
@@ -489,9 +512,9 @@ if __name__ == "__main__":
 
     print("============COLLECTING HMM HITS===========")
     # Create directory for summary tables
-    summarydir = args.outdir + '/' + 'summary/'
-    if not os.path.isdir(summarydir):
-        os.mkdir(summarydir)
+    # summarydir = args.outdir + '/' + 'summary/'
+    # if not os.path.isdir(summarydir):
+    #     os.mkdir(summarydir)
 
     # Collect fyrd results
     marker_tab = []
