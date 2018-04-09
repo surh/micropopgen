@@ -485,25 +485,25 @@ if __name__ == "__main__":
         job = fyrd.Job(submit_all, f,
                        {'args': args,
                         'name': None},
-                        clean_files=False,
-                        clean_outputs=False,
-                        nodes=1, cores=1,
-                        time=args.hits_time,
-                        mem=args.hits_mem,
-                        partition=args.hits_queue,
-                        name=f + '.markers',
-                        runpath=os.getcwd(),
-                        outpath=args.logs,
-                        syspaths=[os.path.dirname(__file__)],
-                        imports=[('from marker_finder import '
-                                'fasta_seq_lenghts, '
-                                'read_marker_list, '
-                                'hit_and_query_span, '
-                                'submit_hmmscan_file, '
-                                'hmmscan_file, '
-                                'get_hmm_hits, '
-                                'strip_right')],
-                        scriptpath=args.scripts)
+                       clean_files=False,
+                       clean_outputs=False,
+                       nodes=1, cores=1,
+                       time=args.hits_time,
+                       mem=args.hits_mem,
+                       partition=args.hits_queue,
+                       name=f + '.markers',
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=[('from marker_finder import '
+                                 'fasta_seq_lenghts, '
+                                 'read_marker_list, '
+                                 'hit_and_query_span, '
+                                 'submit_hmmscan_file, '
+                                 'hmmscan_file, '
+                                 'get_hmm_hits, '
+                                 'strip_right')],
+                       scriptpath=args.scripts)
         print("Submitting job")
         job.submit(max_jobs=args.maxjobs)
         jobs.append(job)
