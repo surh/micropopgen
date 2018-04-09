@@ -720,15 +720,21 @@ if __name__ == "__main__":
         raise FileExistsError("Outdir already exists")
     else:
         os.mkdir(markersdir)
-    concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
-                             outdir=markersdir, ignore=ignore)
 
-    # Align fasta files per marker
-    # print(args.muscle)
-    alns = submit_align_markers(markersdir=markersdir, args=args)
+    # old pipeline
+    # concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
+    #                          outdir=markersdir, ignore=ignore)
+    #
+    # # Align fasta files per marker
+    # # print(args.muscle)
+    # alns = submit_align_markers(markersdir=markersdir, args=args)
+    #
+    # # Filter alignment per marker
+    # fildir = submit_filter_alignments(alns=alns, args=args)
 
-    # Filter alignment per marker
-    fildir = submit_filter_alignments(alns=alns, args=args)
+    concatenate_and_align_markers(indir=args.indir, suffix=args.suffix,
+                                  args=args, outdir=args.outdir,
+                                  ignore=ignore)
 
     # Concatenate overall alignment
     submit_concatenate_alignments(fildir, args)
