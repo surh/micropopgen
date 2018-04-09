@@ -100,7 +100,7 @@ def hit_and_query_span(hit):
     return(hit_span, query_span)
 
 
-def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
+def hmmscan_file(filename, db, mode='fyrd', job_name=None, outpath='./logs/',
                  scriptpath='./scripts/', partition='',
                  time='00:30:00', hmmscan='hmmscan',
                  indir='', outdir='', fasta_suffix='.faa',
@@ -124,30 +124,34 @@ def hmmscan_file(filename, db, job_name=None, outpath='./logs/',
                         infile,
                         ">", outfile])
 
-    # Build fyrd filenames
+    # Build job name
     if job_name is None:
         job_name = '.'.join(['hmmscan', basename])
     print(job_name)
 
-    print("\tCreating fyrd.Job")
-    fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(),
-                        outpath=outpath,
-                        scriptpath=scriptpath,
-                        clean_files=False, clean_outputs=False,
-                        mem=memory,
-                        name=job_name,
-                        outfile=job_name + ".log",
-                        errfile=job_name + ".err",
-                        partition=partition,
-                        nodes=1, cores=1,
-                        time=time)
+    if mode == 'fyrd':
+        print("\tCreating fyrd.Job")
+        job = fyrd.Job(command,
+                       runpath=os.getcwd(),
+                       outpath=outpath,
+                       scriptpath=scriptpath,
+                       clean_files=False, clean_outputs=False,
+                       mem=memory,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=partition,
+                       nodes=1, cores=1,
+                       time=time)
 
-    # Submit joobs
-    print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=maxjobs)
+        # Submit joobs
+        print("\tSubmitting job")
+        job.submit(max_jobs=maxjobs)
+    elif mode == 'bash':
+        print("\tExecuting:\n\t>{}".format(command))
+        job = os.system(command)
 
-    return job_name, outfile, fyrd_job
+    return job_name, outfile, job
 
 
 def process_arguments():
@@ -281,16 +285,66 @@ def which(program):
     return None
 
 
-def submit_hmmscan_file(f, args, name=None):
-    """Create a job for rinnung hmmscan and submit it"""
+def submit_all(f, args, name=None):
+    """Function that performs both hmmscan and submit_get_hmm_hits
+    for a given file in bash mode. It can be used to submit a
+    single job per input file"""
 
-    # Creat subdirectory for hmmscan files
+    # Create subdirectory for hmmscan files
     hmmscandir = args.outdir + '/' + 'hmms/'
     if not os.path.isdir(hmmscandir):
         os.mkdir(hmmscandir)
 
     job_name, hmmfile, job = hmmscan_file(filename=f,
                                           db=args.db,
+                                          mode='bash',
+                                          outpath=args.logs,
+                                          scriptpath=args.scripts,
+                                          partition=args.hmmscan_queue,
+                                          time=args.hmmscan_time,
+                                          hmmscan=args.hmmscan,
+                                          indir=args.indir,
+                                          outdir=hmmscandir,
+                                          fasta_suffix=args.fasta_suffix,
+                                          out_suffix=args.out_suffix,
+                                          memory=args.hmmscan_mem,
+                                          maxjobs=args.maxjobs,
+                                          job_name=name)
+
+    # Create subdirectory for fasta files
+    markersdir = args.outdir + '/' + 'markers/'
+    if not os.path.isdir(markersdir):
+        os.mkdir(markersdir)
+
+    # Get strain name
+    strain_name = os.path.basename(hmmfile)
+    strain_name = strip_right(strain_name, args.out_suffix)
+
+    # Fasta File
+    fasta_file = args.indir + '/' + f
+    if not os.path.isfile(fasta_file):
+        raise FileNotFoundError("Fasta file not found")
+
+    print("\tGetting hmm hits")
+    res = get_hmm_hits(hmmfile, query_fasta=fasta_file,
+                       dbfile=args.db, name=strain_name,
+                       outdir=markersdir)
+
+    Res = {strain_name: res}
+    return Res
+
+
+def submit_hmmscan_file(f, args, name=None):
+    """Create a job for rinnung hmmscan and submit it"""
+
+    # Create subdirectory for hmmscan files
+    hmmscandir = args.outdir + '/' + 'hmms/'
+    if not os.path.isdir(hmmscandir):
+        os.mkdir(hmmscandir)
+
+    job_name, hmmfile, job = hmmscan_file(filename=f,
+                                          db=args.db,
+                                          mode='fyrd',
                                           outpath=args.logs,
                                           scriptpath=args.scripts,
                                           partition=args.hmmscan_queue,
