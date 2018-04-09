@@ -456,15 +456,16 @@ if __name__ == "__main__":
             marker_tab.append(res)
     print("============DONE COLLECTING HMM HITS===========")
 
-    # Print summary
-    if not args.nosummary:
-        print("Writing summary of markers")
-        print(marker_tab)
-        write_summary(tab=marker_tab, args=args)
-
     # Print failed
     if len(failed) > 0:
+        print("Writing failed")
         with open(args.outdir + '/failed.markers.txt') as fh:
             for s in failed:
                 fh.write(s, "\n")
         fh.close()
+
+    # Print summary
+    if not args.nosummary:
+        print("Writing summary of markers")
+        # print(marker_tab)
+        write_summary(tab=marker_tab, args=args)
