@@ -147,6 +147,7 @@ def concatenate_and_align_markers(indir, suffix, args, outdir='./',
     for m in markers:
         # Check if it is in list to ignore. Redundant but safe
         if m in ignore:
+            print("===Skipping", m)
             continue
 
         job_name = m + '.catalnfil'
