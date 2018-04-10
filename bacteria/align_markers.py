@@ -19,7 +19,7 @@
 import argparse
 import os
 import fyrd
-import subprocess
+# import subprocess
 
 from Bio import AlignIO
 from Bio.Alphabet import generic_protein, single_letter_alphabet
@@ -210,17 +210,22 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
                          for f in files_from_marker]
 
     print("Concatenating all sequences from marker")
-    # Build command
+
     outfile = ''.join([m, '.faa'])
     catfile = outfile
     outfile = ''.join([catdir, '/', outfile])
-    command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+    # Need to iterate over subsets of file to prevent error 32512
+    # when command is too long
+    for i in range(0, len(files_from_marker, 100)):
+        # Build command
+        end = min(i + 100, len(files_from_marker))
+        command = ' '.join(['cat'] + files_from_marker[i:end] + ['>>', outfile])
 
-    # Run command
-    print("Executing:\n>{}".format(command))
-    status = subprocess.run(command)
-    # status = os.system(command)
-    print("Status=", status)
+        # Run command
+        print("Executing:\n>{}".format(command))
+        # status = subprocess.run(command)
+        status = os.system(command)
+        print("Status=", status)
 
     print("Aligning all sequences from marker")
     infile = ''.join([catdir, '/', catfile])
