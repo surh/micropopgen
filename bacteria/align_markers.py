@@ -223,7 +223,7 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     infile = ''.join([catdir, '/', catfile])
     alnfile = ''.join([alndir, '/', m, '.aln'])
     job_name = ''.join([m, '.aln'])
-    print("muscle", infile, outfile)
+    print("muscle", infile, alnfile)
     n, o, s = muscle_file(infile=infile, outfile=alnfile,
                           mode='bash',
                           job_name=job_name,
@@ -234,6 +234,7 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
                           muscle=args.muscle,
                           memory=args.aln_mem,
                           maxjobs=args.maxjobs)
+    print("=============HOLA=============")
 
     # Filter alignment
     print("Filter alignment")
