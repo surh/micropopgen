@@ -303,10 +303,10 @@ def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
     index = np.ones(a_array.shape[1], dtype=int)
 
     # Iterate over columns
-    print("Iterating")
+    # print("Iterating")
     for i in range(a_array.shape[1]):
         c = a_array[:, i]
-        print("\t", c)
+        # print("\t", c)
         counts = np.unique(c, return_counts=True)
 
         # Remove constant columns
