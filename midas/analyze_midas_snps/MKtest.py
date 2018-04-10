@@ -16,7 +16,7 @@
 
 # Imports
 import os
-import sutilspy
+# import sutilspy
 import csv
 import numpy as np
 import pandas as pd
@@ -181,6 +181,15 @@ class MKtest:
 
         return(res)
 
+    def DoS(self, pseudocount):
+        """Estimate Direction of Selection (DoS) from Stoletzki & Eyre-Walker
+        2010"""
+        num = self.Dn + pseudocount / (self.Dn + self.Ds + 2 * pseudocount)
+        denom = self.Pn + pseudocount / (self.Pn + self.Ps + 2 * pseudocount)
+        DoS = num / denom
+
+        return DoS
+
     def neutrality_index(self, pseudocount=1, log=True):
         """Calculate neutrality index (Pn/Dn)/(Ps/Ds).
         Following Li et al. (2008), we add a psedocount and
@@ -217,18 +226,17 @@ def process_snp_info_file(args):
         gene_id_col = 12
         aminoacids_col = 15
 
-        print("============HEADERs============")
-        print(">Site id: {}".format(header[site_id_col]))
-        print(">Contig: {}".format(header[contig_col]))
-        print(">Position: {}".format(header[pos_col]))
-        print(">Ref allele: {}".format(header[ref_allele_col]))
-        print(">Major allele: {}".format(header[major_allele_col]))
-        print(">Minor allele: {}".format(header[minor_allele_col]))
-        print(">Locus type: {}".format(header[locus_type_col]))
-        print(">Gene id: {}".format(header[gene_id_col]))
-        print(">Aminoacids: {}".format(header[aminoacids_col]))
+        # print("============HEADERs============")
+        # print(">Site id: {}".format(header[site_id_col]))
+        # print(">Contig: {}".format(header[contig_col]))
+        # print(">Position: {}".format(header[pos_col]))
+        # print(">Ref allele: {}".format(header[ref_allele_col]))
+        # print(">Major allele: {}".format(header[major_allele_col]))
+        # print(">Minor allele: {}".format(header[minor_allele_col]))
+        # print(">Locus type: {}".format(header[locus_type_col]))
+        # print(">Gene id: {}".format(header[gene_id_col]))
+        # print(">Aminoacids: {}".format(header[aminoacids_col]))
 
-        #
         for row in info_reader:
             i += 1
             if i > args.nrows:
@@ -385,9 +393,9 @@ def process_snp_freq_file(args, Counts, Groups, Samples, Sites):
 
             # Check if site was selected based on sites
             site_id = row[0]
-            print(site_id)
+            # print(site_id)
             if not (site_id in Sites):
-                print("==Skipping")
+                # print("==Skipping")
                 continue
 
             gene = Sites[site_id].gene_id
@@ -395,16 +403,16 @@ def process_snp_freq_file(args, Counts, Groups, Samples, Sites):
             present_index = np.array(Counts[site_id])
             group_index = np.array([Samples[s][0] for s in samples])
     #         if site_id == '77719':
-            print("==========================")
-            print(row)
-            print(site_id)
-            print("Major Allele: {}".format(Sites[site_id].major_allele))
-            print("Minor Allele: {}".format(Sites[site_id].minor_allele))
-            print("Substitution type: {}".format(s_type))
-            print("Gene: {}".format(gene))
-            print(present_index)
-            print(group_index)
-            print("==========================")
+            # print("==========================")
+            # print(row)
+            # print(site_id)
+            # print("Major Allele: {}".format(Sites[site_id].major_allele))
+            # print("Minor Allele: {}".format(Sites[site_id].minor_allele))
+            # print("Substitution type: {}".format(s_type))
+            # print("Gene: {}".format(gene))
+            # print(present_index)
+            # print(group_index)
+            # print("==========================")
 
             # Create MKtest if needed
             if not (gene in MK):
@@ -419,14 +427,14 @@ def process_snp_freq_file(args, Counts, Groups, Samples, Sites):
             ii = np.where(present_index)
             group_index = group_index[ii]
             allele_freqs = allele_freqs[ii]
-            print("group_index", group_index, len(group_index))
-            print("allele_freqs", allele_freqs, len(allele_freqs))
+            # print("group_index", group_index, len(group_index))
+            # print("allele_freqs", allele_freqs, len(allele_freqs))
 
             # Count alleles per group
             group1_count = allele_freqs[np.where(group_index == args.group1)].sum()
             group2_count = allele_freqs[np.where(group_index == args.group2)].sum()
-            print("group1_count", group1_count)
-            print("group2_count", group2_count)
+            # print("group1_count", group1_count)
+            # print("group2_count", group2_count)
 
             if group1_count > 0 and group2_count > 0:
                 fixed = False
@@ -500,9 +508,22 @@ def process_arguments():
                           required=True)
 
     # Define other arguments
-    parser.add_argument("--test", help="Eventually specify test to perform",
-                        default="G", type=str,
-                        choices=['all', 'G', 'hg', 'NI', 'alpha'])
+    parser.add_argument("--test", help=("Eventually specify test to perform."
+                                        "all performs all tests. G performs "
+                                        "a G test without correction."
+                                        "G_Yates performs a G test with the "
+                                        "Yates correction. G_Williams "
+                                        "performs a G test with the Williams "
+                                        "correction. hg performs the "
+                                        "hypergeometric (Fisher's Exact) "
+                                        "test. NI rerturns the neutrality "
+                                        "index. alpha returs the Eyre-"
+                                        "Walker alpha. Ratio returns the MK "
+                                        "rati. DoS is the direction of "
+                                        "selection statistic."),
+                        default="hg", type=str,
+                        choices=['all', 'G', 'G_Yates', 'G_Williamps',
+                                 'hg', 'NI', 'alpha', 'ratio', 'DoS'])
     parser.add_argument("--outfile", help="Output file with results",
                         default="mk_results.txt", type=str)
     parser.add_argument("--min_count", help=("min depth at a position in "
@@ -515,7 +536,7 @@ def process_arguments():
                         default="mk_tables.txt", type=str)
     parser.add_argument("--pseudocount", help=("Pseudocount value to use "
                                                "in contingency tables"),
-                        default=1, type=int)
+                        default=0, type=int)
     parser.add_argument("--permutations", help=("Number of permutations to "
                                                 "perform to establish "
                                                 "significance"),
@@ -559,23 +580,202 @@ def calculate_contingency_tables(Samples, Groups, args):
 
     print("\tRead snps_info.txt")
     Genes, Sites = process_snp_info_file(args)
-    print("Number of sites: {}".format(str(len(Sites))))
-    print("Number of genes: {}".format(str(len(Genes))))
+    # print("Number of sites: {}".format(str(len(Sites))))
+    # print("Number of genes: {}".format(str(len(Genes))))
 
     print("\tChose sites based on depth in groups to compare")
     Counts = process_snps_depth_file(args, Groups, Sites)
-    print("Number of sites: {}".format(str(len(Sites))))
-    print("Number of genes: {}".format(str(len(Genes))))
-    print("Sites with counts: {}".format(str(len(Counts))))
+    # print("Number of sites: {}".format(str(len(Sites))))
+    # print("Number of genes: {}".format(str(len(Genes))))
+    # print("Sites with counts: {}".format(str(len(Counts))))
 
     print("\tRead frequencies and calculate")
     MK = process_snp_freq_file(args, Counts, Groups, Samples, Sites)
-    print("Number of sites: {}".format(str(len(Sites))))
-    print("Number of genes: {}".format(str(len(Genes))))
-    print("Sites with counts: {}".format(str(len(Counts))))
-    print("Genes with MK: {}".format(str(len(MK))))
+    # print("Number of sites: {}".format(str(len(Sites))))
+    # print("Number of genes: {}".format(str(len(Genes))))
+    # print("Sites with counts: {}".format(str(len(Counts))))
+    # print("Genes with MK: {}".format(str(len(MK))))
 
-    return MK
+    return MK, Genes
+
+
+def calculate_statistic(mk, test, pseudocount=0):
+    """Takes an MK object and returns a dictionary
+    with the statistics asked"""
+
+    tests = dict()
+    # Calculate neutrality index
+    if 'NI' in test:
+        tests['NI.pval'] = float('nan')
+        try:
+            tests['NI'] = mk.neutrality_index(log=True,
+                                              pseudocount=pseudocount)
+        except ZeroDivisionError:
+            tests['NI'] = float('nan')
+
+    # Calculate ratio
+    if 'ratio' in test:
+        tests['ratio.pval'] = float('nan')
+        try:
+            tests['ratio'] = mk.mk_ratio(pseudocount=pseudocount)
+        except ZeroDivisionError:
+            tests['ratio'] = float('nan')
+
+    # Hypergeometric test
+    if 'hg' in test:
+        tests['hg'], tests['hg.pval'] = mk.hg_test(pseudocount=pseudocount)
+
+    # G test of indenpendece try multiple corrections
+    if 'G' in test:
+        try:
+            tests['G'], tests['G.pval'], tests['G.df'], tests['G.E'] = mk.g_test(correction='none',
+                                                                                 pseudocount=pseudocount)
+        except ValueError:
+            tests['G'] = float('nan')
+            tests['G.pval'] = float('nan')
+            tests['G.df'] = float('nan')
+            tests['G.E'] = float('nan')
+
+    if 'G_Yates' in test:
+        try:
+            tests['G_Yates'], tests['G_Yates.pval'], tests['G_Yates.df'], tests['G_Yates.E'] = mk.g_test(correction='yates',
+                                                                                                         pseudocount=pseudocount)
+        except ValueError:
+            tests['G_Yates'] = float('nan')
+            tests['G_Yates.pval'] = float('nan')
+            tests['G_Yates.df'] = float('nan')
+            tests['G_Yates.E'] = float('nan')
+
+    if 'G_Williams' in test:
+        try:
+            tests['G_Williams'], tests['G_Williams.pval'], tests['G_Williams.df'], tests['G_Williams.E'] = mk.g_test(correction='williams',
+                                                                                                                     pseudocount=pseudocount)
+        except ValueError:
+            tests['G_Williams'] = float('nan')
+            tests['G_Williams.pval'] = float('nan')
+            tests['G_Williams.df'] = float('nan')
+            tests['G_Williams.E'] = float('nan')
+
+    # Eyre-Walker alpha
+    if 'alpha' in test:
+        tests['alpha.pval'] = float('nan')
+        try:
+            tests['alpha'] = mk.alpha(pseudocount=pseudocount)
+        except ZeroDivisionError:
+            tests['alpha'] = float('nan')
+
+    if 'DoS' in test:
+        tests['DoS.pval'] = float('nan')
+        try:
+            tests['DoS'] = mk.DoS(pseudocount=pseudocount)
+        except ZeroDivisionError:
+            tests['DoS'] = float('nan')
+
+
+    return tests
+
+
+def test_by_permutation(gene, MK, permutations, test, pval_list, pseudocount):
+    nperm = int(permutations + 1)
+    perm_table = np.full(shape=(nperm, len(test)), fill_value=np.nan)
+    row = 0
+    for p in MK:
+        if gene in p:
+            p_stat = calculate_statistic(p[gene], test, pseudocount=pseudocount)
+            p_res = [p_stat[t] for t in test]
+            perm_table[row] = p_res
+
+        row = row + 1
+
+    # Pvalues
+    nperms = nperm - np.isnan(perm_table).sum(axis=0)
+    perm_pvals = (perm_table >= perm_table[0]).sum(axis=0) / nperms
+    nperm_names = [''.join([t, '.nperm']) for t in test]
+
+    keys = np.concatenate((test, pval_list, nperm_names))
+    vals = np.concatenate((perm_table[0], perm_pvals, nperms))
+    # vals = np.array(vals, dtype=np.character)
+    res = dict(zip(keys, vals))
+
+    return res
+
+
+def test_and_write_results(MK, Genes, outfile, tables,
+                           test='hg', pseudocount=0,
+                           permutations=0):
+    """Take MK results, perform test and write outfile with
+    results."""
+
+    # Get list of tests to perform
+    supported_tests = ['NI', 'ratio', 'hg',
+                       'G', 'G_Yates', 'G_Williams',
+                       'alpha', 'DoS']
+    if test == 'all':
+        test = supported_tests
+    elif test not in supported_tests:
+        raise ValueError("Test not supported")
+    else:
+        test = [test]
+
+    # Create header
+    header_base = ['gene', 'contig', 'start', 'end',
+                   'Dn', 'Ds', 'Pn', 'Ps']
+    pval_list = [''.join([t, '.pval']) for t in test]
+    header = header_base + test + pval_list
+
+    # Open files for output
+    # with open(outfile, mode='w') as fh, open(tables, mode='w') as th:
+    with open(outfile, mode='w') as fh:
+        # Write header as first line of results
+        fh.write("\t".join(header) + "\n")
+
+        # Iterate over every MK element
+        for gene, mk in MK[0].items():
+            # th.write("=============================================\n")
+            # th.write(gene)
+            # th.write("\t\tFixed\tPolymorphic\n\tSynonymous\t{}\t{}\n\tnon-synonymous\t{}\t{}\n".format(mk.Ds,mk.Ps,mk.Dn,mk.Pn))
+
+            if permutations == 0:
+                # Calculate statistics
+                tests = calculate_statistic(mk, test, pseudocount)
+
+                # prepare res
+                res = [str(tests[t]) for t in test + pval_list]
+                res = [gene, Genes[gene].contig,
+                       str(Genes[gene].start),
+                       str(Genes[gene].end),
+                       str(mk.Dn), str(mk.Ds),
+                       str(mk.Pn), str(mk.Ps)] + res
+
+                # res = [gene, Genes[gene].contig, str(Genes[gene].start), str(Genes[gene].end),
+                #        str(mk.Dn), str(mk.Ds), str(mk.Pn), str(mk.Ps),
+                #        str(ni), str(ratio), str(ratio_pseudo),
+                #        str(hg_odds), str(hg_p), str(hg_odds_pseudo),str(hg_p_pseudo),
+                #        str(g_none_p), str(g_yates_p),str(g_williams_p),
+                #        str(g_none_p_pseudo), str(g_yates_p_pseudo),str(g_williams_p_pseudo),
+                #        str(alpha), str(alpha_pseudo)]
+
+                # th.write(str(res) + "\n")
+                fh.write("\t".join(res) + "\n")
+                #alpha = mk.alpha()
+                #print("MK ratio is: {}".format(str(ratio)))
+                #print("MK alpha is: {}".format(str(alpha)))
+            elif permutations > 0:
+                res = test_by_permutation(gene, MK, permutations,
+                                          test, pval_list, pseudocount)
+                # print(res)
+                res = [str(res[k]) for k in res]
+                res = [gene, Genes[gene].contig,
+                       str(Genes[gene].start),
+                       str(Genes[gene].end),
+                       str(mk.Dn), str(mk.Ds),
+                       str(mk.Pn), str(mk.Ps)] + res
+                fh.write("\t".join(res) + "\n")
+            else:
+                raise ValueError("Invalid permutations")
+
+    fh.close()
+    # th.close()
 
 
 if __name__ == "__main__":
@@ -593,128 +793,17 @@ if __name__ == "__main__":
     Samples, Groups = process_metadata_file(args.metadata_file)
 
     print("Calculate MK contingency tables")
-    MK = calculate_contingency_tables(Samples, Groups, args)
+    MK, Genes = calculate_contingency_tables(Samples, Groups, args)
+    MK = [MK]
     if args.permutations > 0:
-        MK = [MK]
         print("Permuting")
         print("Seed is {}".format(str(args.seed)))
+        np.random.seed(args.seed)
         for i in range(args.permutations):
             Sp, Gp = process_metadata_file(args.metadata_file, permute=True)
-            MK.append(calculate_contingency_tables(Sp, Gp, args))
+            mk, genes = calculate_contingency_tables(Sp, Gp, args)
+            MK.append(mk)
 
-
-    ################ Test and results ########
-    with open(args.outfile,mode='w') as fh, open(args.tables,mode='w') as th:
-        header = ['gene','contig','start','end',
-                  'Dn','Ds','Pn','Ps',
-                  'ni', 'ratio','ratio_pseudo','hg_odds','hg_p','hg_odds_pseudo','hg_p_pseudo',
-                  'g_none_p','g_yates_p','g_williams_p',
-                  'g_none_p_pseudo','g_yates_p_pseudo','g_williams_p_pseudo',
-                  'alpha','alpha_pseudo']
-        fh.write("\t".join(header) + "\n")
-        for gene,mk in MK.items():
-            th.write("=============================================\n")
-            th.write(gene)
-            th.write("\t\tFixed\tPolymorphic\n\tSynonymous\t{}\t{}\n\tnon-synonymous\t{}\t{}\n".format(mk.Ds,mk.Ps,mk.Dn,mk.Pn))
-
-            # Calculate neutrality index
-            try:
-                ni = mk.neutrality_index(log=True, pseudocount = args.pseudocount)
-            except ZeroDivisionError:
-                ni = float('nan')
-
-            # Calculate ratio with and without pseudocount
-            try:
-                ratio = mk.mk_ratio(pseudocount=0)
-            except ZeroDivisionError:
-                ratio = float('nan')
-            try:
-                ratio_pseudo = mk.mk_ratio(pseudocount=args.pseudocount)
-            except ZeroDivisionError:
-                ratio = float('nan')
-
-            # Hypergeometric test
-            hg_odds, hg_p = mk.hg_test(pseudocount = 0)
-            hg_odds_pseudo, hg_p_pseudo = mk.hg_test(pseudocount = args.pseudocount)
-
-            # G test of indenpendece try multiple corrections
-            try:
-                g_none, g_none_p, g_none_df, g_none_E = mk.g_test(correction='none',
-                                                                  pseudocount=0)
-            except ValueError:
-                g_none = float('nan')
-                g_none_p = float('nan')
-                g_none_df = float('nan')
-                g_none_E = float('nan')
-
-            try:
-                g_yates, g_yates_p, g_yates_df, g_yates_E = mk.g_test(correction='yates',
-                                                                      pseudocount=0)
-            except ValueError:
-                g_yates = float('nan')
-                g_yates_p = float('nan')
-                g_yates_df = float('nan')
-                g_yates_E = float('nan')
-
-            try:
-                g_williams, g_williams_p, g_williams_df, g_williams_E = mk.g_test(correction='williams',
-                                                                                  pseudocount=0)
-            except ValueError:
-                g_williams = float('nan')
-                g_williams_p = float('nan')
-                g_williams_df = float('nan')
-                g_williams_E = float('nan')
-
-            # G test for independence with pseududocounts
-            try:
-                g_none_pseudo, g_none_p_pseudo, g_none_df_pseudo, g_none_E_pseudo = mk.g_test(correction='none',
-                                                                                              pseudocount=args.pseudocount)
-            except ValueError:
-                g_none_pseudo = float('nan')
-                g_none_p_pseudo = float('nan')
-                g_none_df_pseudo = float('nan')
-                g_none_E_pseudo = float('nan')
-
-            try:
-                g_yates_pseudo, g_yates_p_pseudo, g_yates_df_pseudo, g_yates_E_pseudo = mk.g_test(correction='yates',
-                                                                                                  pseudocount=args.pseudocount)
-            except ValueError:
-                g_yates_pseudo = float('nan')
-                g_yates_p_pseudo = float('nan')
-                g_yates_df_pseudo = float('nan')
-                g_yates_E_pseudo = float('nan')
-
-            try:
-                g_williams_pseudo, g_williams_p_pseudo, g_williams_df_pseudo, g_williams_E_pseudo = mk.g_test(correction='williams',
-                                                                                                              pseudocount=args.pseudocount)
-            except ValueError:
-                g_williams_pseudo = float('nan')
-                g_williams_p_pseudo = float('nan')
-                g_williams_df_pseudo = float('nan')
-                g_williams_E_pseudo = float('nan')
-
-
-            # Eyre-Walker alpha
-            try:
-                alpha = mk.alpha(pseudocount=0)
-            except ZeroDivisionError:
-                alpha = float('nan')
-
-            alpha_pseudo = mk.alpha(pseudocount=args.pseudocount)
-
-            # prepare res
-            res = [gene, Genes[gene].contig, str(Genes[gene].start), str(Genes[gene].end),
-                   str(mk.Dn), str(mk.Ds), str(mk.Pn), str(mk.Ps),
-                   str(ni), str(ratio), str(ratio_pseudo),
-                   str(hg_odds), str(hg_p), str(hg_odds_pseudo),str(hg_p_pseudo),
-                   str(g_none_p), str(g_yates_p),str(g_williams_p),
-                   str(g_none_p_pseudo), str(g_yates_p_pseudo),str(g_williams_p_pseudo),
-                   str(alpha), str(alpha_pseudo)]
-
-            th.write(str(res) + "\n")
-            fh.write("\t".join(res) + "\n")
-            #alpha = mk.alpha()
-            #print("MK ratio is: {}".format(str(ratio)))
-            #print("MK alpha is: {}".format(str(alpha)))
-    fh.close()
-    th.close()
+    test_and_write_results(MK, Genes, args.outfile, args.tables,
+                           test=args.test, pseudocount=args.pseudocount,
+                           permutations=args.permutations)
