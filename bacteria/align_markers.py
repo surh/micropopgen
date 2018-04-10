@@ -94,24 +94,6 @@ def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
     return new_aln
 
 
-def get_marker_names(indir, suffix, ignore=[]):
-    """Get list of markers"""
-
-    # Get list of fasta files from indir
-    fasta_files = os.listdir(indir)
-    fasta_files = list(filter(lambda f: f.endswith(suffix),
-                              fasta_files))
-
-    # Get set of markers
-    names = [strip_right(f, suffix) for f in fasta_files]
-    markers = set([n.split('.').pop() for n in names])
-
-    # Remove markers to ignore
-    markers = list(filter(lambda i: i not in ignore, markers))
-
-    return markers, fasta_files
-
-
 def create_pipeline_outdirs(dir):
     """Create directories for output"""
 
@@ -130,6 +112,25 @@ def create_pipeline_outdirs(dir):
         os.mkdir(fildir)
 
     return alndir, fildir
+
+
+def get_marker_names(indir, suffix, ignore=[]):
+    """Get list of markers"""
+
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get set of markers
+    names = [strip_right(f, suffix) for f in fasta_files]
+    markers = set([n.split('.').pop() for n in names])
+
+    # Remove markers to ignore
+    markers = list(filter(lambda i: i not in ignore, markers))
+
+    return markers, fasta_files
+
 
 
 def concatenate_and_align_markers(indir, suffix, args, outdir='./',
@@ -237,17 +238,6 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     print("Status=", status)
     if not os.path.isfile(alnfile):
         raise FileNotFoundError("Output alignment file not found")
-    # n, o, s = muscle_file(infile=infile, outfile=alnfile,
-    #                       mode='bash',
-    #                       job_name=job_name,
-    #                       outpath=args.logs,
-    #                       scriptpath=args.scripts,
-    #                       partition=args.aln_queue,
-    #                       time=args.aln_time,
-    #                       muscle=args.muscle,
-    #                       memory=args.aln_mem,
-    #                       maxjobs=args.maxjobs)
-    print("=============HOLA=============")
 
     # Filter alignment
     print("Filter alignment")
@@ -255,6 +245,7 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     job_name = job_name + '.filter'
     print(job_name)
     filter_alignment_file(alnfile, filfile, gap_pro=args.gap_prop)
+    print("hola")
 
     return filfile
 
@@ -311,9 +302,10 @@ def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
     index = np.ones(a_array.shape[1], dtype=int)
 
     # Iterate over columns
+    print("Iterating")
     for i in range(a_array.shape[1]):
         c = a_array[:, i]
-        # print(c)
+        print("\t", c)
         counts = np.unique(c, return_counts=True)
 
         # Remove constant columns
@@ -413,7 +405,7 @@ def muscle_file(infile, outfile, mode='fyrd', job_name=None,
         job.submit(max_jobs=maxjobs)
     elif mode == 'bash':
         print("Executing:\n>{}".format(command))
-        status = os.sytem(command)
+        status = os.system(command)
         print("Status=", status)
         job = status
         if not os.path.isfile(outfile):
