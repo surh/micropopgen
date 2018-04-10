@@ -19,6 +19,7 @@
 import argparse
 import os
 import fyrd
+import subprocess
 
 from Bio import AlignIO
 from Bio.Alphabet import generic_protein, single_letter_alphabet
@@ -217,7 +218,8 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
 
     # Run command
     print("Executing:\n>{}".format(command))
-    status = os.system(command)
+    status = subprocess.run(command)
+    # status = os.system(command)
     print("Status=", status)
 
     print("Aligning all sequences from marker")
