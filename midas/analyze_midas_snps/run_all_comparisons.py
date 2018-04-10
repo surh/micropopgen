@@ -17,7 +17,7 @@
 import pandas as pd
 import argparse
 import os
-import sutilspy
+# import sutilspy
 import fyrd
 
 
@@ -51,10 +51,6 @@ def process_arguments():
                           type=str, required=True)
 
     # Define other arguments
-    parser.add_argument("--permute", help=('Number of permutations to use '
-                                           'to calculate p-value. If 0 '
-                                           'no permutations will be done.'),
-                        type=int, default=0)
     parser.add_argument("--mode", help=('Whether to use fyrd to '
                                         'parallelize per comparison or '
                                         'submit serially'),
@@ -70,12 +66,40 @@ def process_arguments():
                         type=str, default='logs/')
     parser.add_argument("--scripts", help='Directory for fyrd scripts',
                         type=str, default='scripts')
+    parser.add_argument("--pseudocount", help=("Pseudocount value to use "
+                                               "in contingency tables"),
+                        default=0, type=int)
+    parser.add_argument("--permutations", help=("Number of permutations to "
+                                                "perform to establish "
+                                                "significance"),
+                        type=int, default=0)
+    parser.add_argument("--seed", help="Permutation seed",
+                        type=int, default=None)
+    parser.add_argument("--test", help=("Eventually specify test to perform."
+                                        "all performs all tests. G performs "
+                                        "a G test without correction."
+                                        "G_Yates performs a G test with the "
+                                        "Yates correction. G_Williams "
+                                        "performs a G test with the Williams "
+                                        "correction. hg performs the "
+                                        "hypergeometric (Fisher's Exact) "
+                                        "test. NI rerturns the neutrality "
+                                        "index. alpha returs the Eyre-"
+                                        "Walker alpha. Ratio returns the MK "
+                                        "rati. DoS is the direction of "
+                                        "selection statistic."),
+                        default="hg", type=str,
+                        choices=['all', 'G', 'G_Yates', 'G_Williamps',
+                                 'hg', 'NI', 'alpha', 'ratio', 'DoS'])
 
     # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
 
     # Processing goes here if needed
+    if args.seed is None and args.permutations > 0:
+        args.seed = np.random.randint(1000)*2 + 1
+        print("Seed is ", args.seed)
 
     return args
 
@@ -158,7 +182,11 @@ if __name__ == '__main__':
                '--group1', group1,
                '--group2', group2,
                '--outfile', species_outfile,
-               '--tables', species_tables]
+               '--tables', species_tables,
+               '--permutations', str(args.permutations),
+               '--test', args.test,
+               '--seed', str(args.seed),
+               '--pseudocount', str(args.pseudocount)]
 
         # If not equal to default, pass it
         if args.nrows != float('inf'):
@@ -172,7 +200,9 @@ if __name__ == '__main__':
         # print(cmd)
 
         if args.mode == 'bash':
-            sutilspy.io.run_command(cmd)
+            # sutilspy.io.run_command(cmd)
+            print("Running command:\n>{}".format(cmd))
+            os.system(cmd)
         elif args.mode == 'fyrd':
             job_name = 'mktest' + r['Species']
             print("Creating fyrd job {}".format(job_name))

@@ -28,6 +28,256 @@ from Bio.Align import MultipleSeqAlignment
 import numpy as np
 
 
+def align2array(aln):
+    """Convert multiple sequence alignment object to numpy array.
+    Taken from tutorial."""
+
+    a_array = np.array([list(rec) for rec in aln], np.character)
+
+    return(a_array)
+
+
+def array2align(arr, names, alphabet):
+    """Convert numpy array to multiple sequence alignment.
+    Adapted from documentation"""
+
+    records = []
+
+    # Iterate over array rows (i.e. records)
+    for i in range(arr.shape[0]):
+        seq = ''.join(np.array(arr[i], dtype=str))
+        name = names[i]
+
+        # Concatenate sequence records
+        records.append(SeqRecord(Seq(seq, alphabet), id=name))
+
+    # Convert to MSA
+    new_aln = MultipleSeqAlignment(records)
+
+    return(new_aln)
+
+
+def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
+    """Take a list of multiple sequence alignments and
+    concatenate them, fill with gaps where missing sequences."""
+
+    # Get list of species from alignments
+    species = []
+    species_per_aln = []
+    for a in alns:
+        specs = [r.id for r in a]
+        species.extend(specs)
+        species_per_aln.append(specs)
+
+    species = list(set(species))
+
+    # Create empty alignmet
+    new_aln = MultipleSeqAlignment([SeqRecord(Seq('', alphabet),
+                                              id=s) for s in species])
+
+    # Iterate over each species, re-ordering when neccessary
+    for i in range(len(alns)):
+        # print("alginment", i)
+        specs = species_per_aln[i]
+        if specs != species:
+            # print("\treordering")
+            # new_alns.append(reorder_alignment(aln=alns[i],
+            #                                   specs=specs, species=species))
+            new_aln = new_aln + reorder_alignment(aln=alns[i], specs=specs,
+                                                  species=species,
+                                                  alphabet=alphabet,
+                                                  gap=gap)
+        else:
+            # print("matched")
+            new_aln = new_aln + alns[i]
+
+    return new_aln
+
+
+def get_marker_names(indir, suffix, ignore=[]):
+    """Get list of markers"""
+
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get set of markers
+    names = [strip_right(f, suffix) for f in fasta_files]
+    markers = set([n.split('.').pop() for n in names])
+
+    # Remove markers to ignore
+    markers = list(filter(lambda i: i not in ignore, markers))
+
+    return markers, fasta_files
+
+
+def create_pipeline_outdirs(dir):
+    """Create directories for output"""
+
+    # Create directory for concatenated aligned files
+    alndir = ''.join([dir, '/aln/'])
+    if os.path.isdir(alndir):
+        raise FileExistsError("Alignment dir already exists")
+    else:
+        os.mkdir(alndir)
+
+    # Create output for filtered files
+    fildir = ''.join([dir, '/filtered/'])
+    if os.path.isdir(fildir):
+        raise FileExistsError("Filtered dir already exists")
+    else:
+        os.mkdir(fildir)
+
+    return alndir, fildir
+
+
+def concatenate_and_align_markers(indir, suffix, args, outdir='./',
+                                  ignore=[]):
+    """Single function that calls function that performs
+    concatenation and alignment per marker"""
+
+    markers, fasta_files = get_marker_names(indir, suffix, ignore)
+    alndir, fildir = create_pipeline_outdirs(outdir)
+    catdir = ''.join([args.outdir, '/cat/'])
+
+    print("Processing markers")
+    # outfiles = []
+    jobs = []
+    for m in markers:
+        # Check if it is in list to ignore. Redundant but safe
+        if m in ignore:
+            continue
+
+        job_name = m + '.catalnfil'
+        print(job_name)
+        print("\tCreating fyrd job")
+        job = fyrd.Job(concatenate_and_align_marker, m,
+                       {'indir': indir,
+                        'catdir': catdir,
+                        'alndir': alndir,
+                        'fildir': fildir,
+                        'suffix': suffix,
+                        'args': args},
+                       runpath=os.getcwd(),
+                       outpath=args.logs,
+                       syspaths=[os.path.dirname(__file__)],
+                       imports=[('from align_markers import '
+                                 'filter_alignment_file, '
+                                 'filter_alignment, '
+                                 'align2array, '
+                                 'array2align, '
+                                 'muscle_file, '
+                                 'get_marker_names, '
+                                 'create_pipeline_outdirs')],
+                       scriptpath=args.scripts,
+                       clean_files=False,
+                       clean_outputs=False,
+                       mem=args.filter_mem,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=args.filter_queue,
+                       nodes=1, cores=1,
+                       time=args.filter_time)
+
+        print("\tSubmitting job")
+        job.submit(max_jobs=args.maxjobs)
+        jobs.append(job)
+
+    return jobs, fildir
+
+
+def concatenate_and_align_marker(m, indir, catdir, alndir,
+                                 fildir, suffix, args):
+    """Perform all the alignment and concatenation for a single
+    marker"""
+
+    print("====", m, "====")
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get files from marker
+    marker_suffix = '.' + m + suffix
+    files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
+                                    fasta_files))
+    files_from_marker = [''.join([indir, '/', f])
+                         for f in files_from_marker]
+
+    print("Concatenating all sequences from marker")
+    # Build command
+    outfile = ''.join([m, '.faa'])
+    catfile = outfile
+    outfile = ''.join([catdir, '/', outfile])
+    command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+
+    # Run command
+    print("Executing:\n>{}".format(command))
+    status = os.system(command)
+    print("Status=", status)
+
+    print("Aligning all sequences from marker")
+    infile = ''.join([catdir, '/', catfile])
+    alnfile = ''.join([alndir, '/', m, '.aln'])
+    job_name = ''.join([m, '.aln'])
+    n, o, s = muscle_file(infile=infile, outfile=alnfile,
+                          mode='bash',
+                          job_name=job_name,
+                          outpath=args.logs,
+                          scriptpath=args.scripts,
+                          partition=args.aln_queue,
+                          time=args.aln_time,
+                          muscle=args.muscle,
+                          memory=args.aln_mem,
+                          maxjobs=args.maxjobs)
+
+    # Filter alignment
+    print("Filter alignment")
+    filfile = ''.join([fildir, '/', n])
+    job_name = n + '.filter'
+    print(job_name)
+    filter_alignment_file(alnfile, filfile, gap_pro=args.gap_prop)
+
+    return filfile
+
+
+def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
+    """Submit system job to concatenate all files from
+    one marker"""
+
+    markers, fasta_files = get_marker_names(indir, suffix, ignore)
+
+    print("Concatenating files per marker")
+    outfiles = []
+    for m in markers:
+        # Check if it is in list to ignore
+        if m in ignore:
+            continue
+
+        # Get files from marker
+        marker_suffix = '.' + m + suffix
+        files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
+                                        fasta_files))
+        files_from_marker = [''.join([indir, '/', f])
+                             for f in files_from_marker]
+
+        print("====", m, "====")
+        # print(files_from_marker)
+        # Build command
+        outfile = ''.join([m, '.faa'])
+        outfiles.append(outfile)
+        outfile = ''.join([outdir, '/', outfile])
+        command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+
+        # Run command
+        print(command)
+        os.system(command)
+
+    return outfiles
+
+
 def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
                      alphabet=single_letter_alphabet):
     """Function to filter a numpy array that represents an alignment,
@@ -92,33 +342,68 @@ def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
     return new_aln
 
 
-def align2array(aln):
-    """Convert multiple sequence alignment object to numpy array.
-    Taken from tutorial."""
+def filter_alignment_file(infile, outfile, gap_prop=0.99,
+                          remove_singletons=True,
+                          alphabet=single_letter_alphabet,
+                          input_format='fasta',
+                          output_format='fasta'):
+    """Take file with a single alignment, filter it and
+    write a new file"""
 
-    a_array = np.array([list(rec) for rec in aln], np.character)
+    aln = AlignIO.read(infile, input_format)
+    filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
+                                remove_singletons=remove_singletons,
+                                alphabet=alphabet)
+    AlignIO.write(filtered, outfile, output_format)
 
-    return(a_array)
+    return(outfile)
 
 
-def array2align(arr, names, alphabet):
-    """Convert numpy array to multiple sequence alignment.
-    Adapted from documentation"""
+def muscle_file(infile, outfile, mode='fyrd', job_name=None,
+                outpath='./logs/', scriptpath='./scripts/',
+                partition='', time='01:00:00', muscle='muscle',
+                memory='2000mb', maxjobs=1000):
+    """Use fyrd to call muscle for aligning each set"""
 
-    records = []
+    # Build muscle command
+    command = ' '.join([muscle,
+                        "-in", infile,
+                        "-out", outfile])
 
-    # Iterate over array rows (i.e. records)
-    for i in range(arr.shape[0]):
-        seq = ''.join(np.array(arr[i], dtype=str))
-        name = names[i]
+    # Build fyrd filenames
+    if job_name is None:
+        basename = os.path.basename(infile)
+        job_name = '.'.join(['muscle', basename])
+    print(job_name)
 
-        # Concatenate sequence records
-        records.append(SeqRecord(Seq(seq, alphabet), id=name))
+    if mode == 'fyrd':
+        print("\tCreating fyrd.Job")
+        job = fyrd.Job(command,
+                       runpath=os.getcwd(),
+                       outpath=outpath,
+                       scriptpath=scriptpath,
+                       clean_files=False,
+                       clean_outputs=False,
+                       mem=memory,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=partition,
+                       nodes=1, cores=1,
+                       time=time)
 
-    # Convert to MSA
-    new_aln = MultipleSeqAlignment(records)
+        # Submit joobs
+        print("\tSubmitting job")
+        job.submit(max_jobs=maxjobs)
+    elif mode == 'bash':
+        print("Executing:\n>{}".format(command))
+        status = os.sytem(command)
+        print("Status=", status)
+        job = status
+    else:
+        raise ValueError("bash or fyrd")
 
-    return(new_aln)
+    return job_name, outfile, job
 
 
 def process_arguments():
@@ -171,11 +456,20 @@ def process_arguments():
     parser.add_argument("--filter_queue", help=("Qeueue for filter jobs"),
                         type=str, default='')
     parser.add_argument("--gap_prop", help=("Maximum allowed propotion of "
-                                           "gaps when filtering"),
+                                            "gaps when filtering"),
                         type=float, default=0.99)
     parser.add_argument("--remove_singletons", help=("If included singletons "
                                                      "will also be filtered"),
                         action="store_true")
+    parser.add_argument("--cat_mem", help=("Memory for alignment "
+                                           "concatentation job"),
+                        type=str, default="500mb")
+    parser.add_argument("--cat_time", help=("Time for alignment "
+                                            "concatenation job"),
+                        type=str, default="2:00:00")
+    parser.add_argument("--cat_queue", help=("Qeueue for alignment "
+                                             "concatenation job"),
+                        type=str, default='')
 
     # Read arguments
     print("Reading arguments")
@@ -191,46 +485,30 @@ def process_arguments():
     return args
 
 
-def concatenate_marker_files(indir, suffix, outdir='./', ignore=[]):
-    # Get list of fasta files from indir
-    fasta_files = os.listdir(indir)
-    fasta_files = list(filter(lambda f: f.endswith(suffix),
-                              fasta_files))
+def reorder_alignment(aln, specs, species,
+                      alphabet=single_letter_alphabet, gap='-'):
+    """Take an alignment and reorder it acording to species list.
+    Add records as gapped if missing"""
 
-    # Get set of markers
-    names = [strip_right(f, suffix) for f in fasta_files]
-    markers = set([n.split('.').pop() for n in names])
-    # print(markers)
-    # markers = set(markers)
-    # print(markers)
+    new_aln = []
+    missing_seq = ''.join([gap] * aln.get_alignment_length())
+    for s in species:
+        # Check if species exist in alignment
+        try:
+            i = specs.index(s)
+        except ValueError:
+            i = -1
+        except:
+            raise
 
-    print("Concatenating files per marker")
-    outfiles = []
-    for m in markers:
-        # Check if it is in list to ignore
-        if m in ignore:
-            continue
+        if i >= 0:
+            new_aln.append(aln[i])
+        elif i == -1:
+            new_aln.append(SeqRecord(Seq(missing_seq, alphabet), id=s))
 
-        # Get files from marker
-        marker_suffix = '.' + m + suffix
-        files_from_marker = list(filter(lambda f: f.endswith(marker_suffix),
-                                        fasta_files))
-        files_from_marker = [''.join([indir, '/', f])
-                             for f in files_from_marker]
+    new_aln = MultipleSeqAlignment(new_aln)
 
-        print("====", m, "====")
-        # print(files_from_marker)
-        # Build command
-        outfile = ''.join([m, '.faa'])
-        outfiles.append(outfile)
-        outfile = ''.join([outdir, '/', outfile])
-        command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
-
-        # Run command
-        print(command)
-        os.system(command)
-
-    return outfiles
+    return(new_aln)
 
 
 def strip_right(text, suffix):
@@ -240,31 +518,6 @@ def strip_right(text, suffix):
         return text
     # else
     return text[:len(text)-len(suffix)]
-
-
-def which(program):
-    """Check if executable exists. Returns path of executable."""
-
-    # From:
-    # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-    # Under MIT license
-
-    def is_exe(fpath):
-        """Check if path is executable"""
-
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
 
 
 def submit_align_markers(markersdir, args):
@@ -299,41 +552,6 @@ def submit_align_markers(markersdir, args):
     return(res)
 
 
-def muscle_file(infile, outfile, job_name=None,
-                outpath='./logs/', scriptpath='./scripts/',
-                partition='', time='01:00:00', muscle='muscle',
-                memory='2000mb', maxjobs=1000):
-    """Use fyrd to call muscle for aligning each set"""
-
-    # Build muscle command
-    command = ' '.join([muscle,
-                        "-in", infile,
-                        "-out", outfile])
-
-    # Build fyrd filenames
-    if job_name is None:
-        basename = os.path.basename(infile)
-        job_name = '.'.join(['muscle', basename])
-    print(job_name)
-
-    print("\tCreating fyrd.Job")
-    fyrd_job = fyrd.Job(command,
-                        runpath=os.getcwd(), outpath=outpath,
-                        scriptpath=scriptpath,
-                        clean_files=False, clean_outputs=False,
-                        mem=memory, name=job_name,
-                        outfile=job_name + ".log",
-                        errfile=job_name + ".err",
-                        partition=partition,
-                        nodes=1, cores=1, time=time)
-
-    # Submit joobs
-    print("\tSubmitting job")
-    fyrd_job.submit(max_jobs=maxjobs)
-
-    return job_name, outfile, fyrd_job
-
-
 def submit_filter_alignments(alns, args):
     """Use fyrd to submit jobs for filtering alignments"""
 
@@ -348,6 +566,10 @@ def submit_filter_alignments(alns, args):
     res = []
     for n, o in alns.items():
         outfile = ''.join([fildir, '/', n])
+
+        job_name = n + '.filter'
+        print(job_name)
+        print("\tCreating fyrd.Job")
         job = fyrd.Job(filter_alignment_file, o[0],
                        {'outfile': outfile,
                         'gap_prop': args.gap_prop,
@@ -359,29 +581,108 @@ def submit_filter_alignments(alns, args):
                        runpath=os.getcwd(),
                        outpath=args.logs,
                        syspaths=[os.path.dirname(__file__)],
-                       imports=['from align_markers import filter_alignment_file, filter_alignment, align2array, array2align'],
-                       scriptpath=args.scripts)
+                       imports=[('from align_markers import '
+                                 'filter_alignment_file, '
+                                 'filter_alignment, '
+                                 'align2array, array2align')],
+                       scriptpath=args.scripts,
+                       clean_files=False, clean_outputs=False,
+                       mem=args.filter_mem,
+                       name=job_name,
+                       outfile=job_name + ".log",
+                       errfile=job_name + ".err",
+                       partition=args.filter_queue,
+                       nodes=1, cores=1,
+                       time=args.filter_time)
+
+        print("\tSubmitting job")
         job.submit(max_jobs=args.maxjobs)
-        res.append({n: job})
-
+        res.append(job)
     print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
-    return res
 
-def filter_alignment_file(infile, outfile, gap_prop=0.99,
-                          remove_singletons=True,
-                          alphabet=single_letter_alphabet,
-                          input_format='fasta',
-                          output_format='fasta'):
-    """Take file with a single alignment, filter it and
-    write a new file"""
+    print("=============WAITING FOR FILTERING ALIGNMENTS===============")
+    [j.wait() for j in res]
+    print("=============DONE WAITING FOR FILTERING ALIGNMENTS===============")
 
-    aln = AlignIO.read(infile, input_format)
-    filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
-                                remove_singletons=remove_singletons,
-                                alphabet=alphabet)
-    AlignIO.write(filtered, outfile, output_format)
+    return fildir
 
-    return(outfile)
+
+def submit_concatenate_alignments(indir, args):
+    """Takes a directory of alignment files, reads them
+    and creates a fyrd job to concatenate them all"""
+
+    # Create output directory
+    catalndir = ''.join([args.outdir, '/cataln/'])
+    if os.path.isdir(catalndir):
+        raise FileExistsError("Concatenated alignment dir already exists")
+    else:
+        os.mkdir(catalndir)
+
+    # Read alignments
+    alnfiles = os.listdir(indir)
+    alns = []
+    for f in alnfiles:
+        alns.append(AlignIO.read(indir + '/' + f, 'fasta'))
+
+    print("=============CONCATENATING ALIGNMENTS===============")
+    job_name = 'cat.alns'
+    print(job_name)
+    print("\tCreating fyrd.Job")
+    job = fyrd.Job(concatenate_alignments, [alns],
+                   {'alphabet': single_letter_alphabet,
+                    'gap': '-'},
+                   runpath=os.getcwd(),
+                   outpath=args.logs,
+                   syspaths=[os.path.dirname(__file__)],
+                   imports=[('from align_markers import '
+                             'reorder_alignment')],
+                   scriptpath=args.scripts,
+                   clean_files=False, clean_outputs=False,
+                   mem=args.cat_mem,
+                   name=job_name,
+                   outfile=job_name + ".log",
+                   errfile=job_name + ".err",
+                   partition=args.cat_queue,
+                   nodes=1, cores=1,
+                   time=args.cat_time)
+
+    print("\tSubmitting job")
+
+    res = job.submit(max_jobs=args.maxjobs)
+    aln = res.get()
+
+    print("\t Writing output file")
+    outfile = catalndir + '/' + 'maker_concatenated_alignment.aln'
+    AlignIO.write(aln, outfile, 'fasta')
+
+    print("=============CONCATENATING ALIGNMENTS===============")
+
+    return outfile
+
+
+def which(program):
+    """Check if executable exists. Returns path of executable."""
+
+    # From:
+    # https://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    # Under MIT license
+
+    def is_exe(fpath):
+        """Check if path is executable"""
+
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
 
 
 if __name__ == "__main__":
@@ -410,7 +711,7 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Read ignore list
-    ignore = []
+    ignore = ['mutM']
 
     # Concatenate fasta per marker
     # Create directory for concatenated files_from_marker
@@ -419,14 +720,29 @@ if __name__ == "__main__":
         raise FileExistsError("Outdir already exists")
     else:
         os.mkdir(markersdir)
-    concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
-                             outdir=markersdir, ignore=ignore)
 
-    # Align fasta files per marker
-    # print(args.muscle)
-    alns = submit_align_markers(markersdir=markersdir, args=args)
+    # old pipeline
+    # concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
+    #                          outdir=markersdir, ignore=ignore)
+    #
+    # # Align fasta files per marker
+    # # print(args.muscle)
+    # alns = submit_align_markers(markersdir=markersdir, args=args)
+    #
+    # # Filter alignment per marker
+    # fildir = submit_filter_alignments(alns=alns, args=args)
 
-    # Filter alignment per marker
-    filtered = submit_filter_alignments(alns=alns, args=args)
+    jobs, fildir = concatenate_and_align_markers(indir=args.indir,
+                                                 suffix=args.marker_suffix,
+                                                 args=args,
+                                                 outdir=args.outdir,
+                                                 ignore=ignore)
+
+    # Waiting for jobs to complete
+    print("Waiting for jobs to complete")
+    for j in jobs:
+        j.wait()
+    print("Finished alignment and filtering")
 
     # Concatenate overall alignment
+    submit_concatenate_alignments(fildir, args)
