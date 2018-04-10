@@ -224,22 +224,35 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     alnfile = ''.join([alndir, '/', m, '.aln'])
     job_name = ''.join([m, '.aln'])
     print("muscle", infile, alnfile)
-    n, o, s = muscle_file(infile=infile, outfile=alnfile,
-                          mode='bash',
-                          job_name=job_name,
-                          outpath=args.logs,
-                          scriptpath=args.scripts,
-                          partition=args.aln_queue,
-                          time=args.aln_time,
-                          muscle=args.muscle,
-                          memory=args.aln_mem,
-                          maxjobs=args.maxjobs)
+
+    # Build muscle command
+    command = ' '.join([args.muscle,
+                        "-in", infile,
+                        "-out", alnfile])
+    basename = os.path.basename(infile)
+    job_name = '.'.join(['muscle', basename])
+    print(job_name)
+    print("Executing:\n>{}".format(command))
+    status = os.sytem(command)
+    print("Status=", status)
+    if not os.path.isfile(alnfile):
+        raise FileNotFoundError("Output alignment file not found")
+    # n, o, s = muscle_file(infile=infile, outfile=alnfile,
+    #                       mode='bash',
+    #                       job_name=job_name,
+    #                       outpath=args.logs,
+    #                       scriptpath=args.scripts,
+    #                       partition=args.aln_queue,
+    #                       time=args.aln_time,
+    #                       muscle=args.muscle,
+    #                       memory=args.aln_mem,
+    #                       maxjobs=args.maxjobs)
     print("=============HOLA=============")
 
     # Filter alignment
     print("Filter alignment")
-    filfile = ''.join([fildir, '/', n])
-    job_name = n + '.filter'
+    filfile = ''.join([fildir, '/', job_name])
+    job_name = job_name + '.filter'
     print(job_name)
     filter_alignment_file(alnfile, filfile, gap_pro=args.gap_prop)
 
