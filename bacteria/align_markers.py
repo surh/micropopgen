@@ -115,25 +115,6 @@ def create_pipeline_outdirs(dir):
     return alndir, fildir
 
 
-def get_marker_names(indir, suffix, ignore=[]):
-    """Get list of markers"""
-
-    # Get list of fasta files from indir
-    fasta_files = os.listdir(indir)
-    fasta_files = list(filter(lambda f: f.endswith(suffix),
-                              fasta_files))
-
-    # Get set of markers
-    names = [strip_right(f, suffix) for f in fasta_files]
-    markers = set([n.split('.').pop() for n in names])
-
-    # Remove markers to ignore
-    markers = list(filter(lambda i: i not in ignore, markers))
-
-    return markers, fasta_files
-
-
-
 def concatenate_and_align_markers(indir, suffix, args, outdir='./',
                                   ignore=[]):
     """Single function that calls function that performs
@@ -377,6 +358,24 @@ def filter_alignment_file(infile, outfile, gap_prop=0.99,
     AlignIO.write(filtered, outfile, output_format)
 
     return(outfile)
+
+
+def get_marker_names(indir, suffix, ignore=[]):
+    """Get list of markers"""
+
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get set of markers
+    names = [strip_right(f, suffix) for f in fasta_files]
+    markers = set([n.split('.').pop() for n in names])
+
+    # Remove markers to ignore
+    markers = list(filter(lambda i: i not in ignore, markers))
+
+    return markers, fasta_files
 
 
 def muscle_file(infile, outfile, mode='fyrd', job_name=None,
