@@ -359,10 +359,13 @@ def filter_alignment_file(infile, outfile, gap_prop=0.99,
     """Take file with a single alignment, filter it and
     write a new file"""
 
+    print("\treading")
     aln = AlignIO.read(infile, input_format)
+    print("\tfiltering")
     filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
                                 remove_singletons=remove_singletons,
                                 alphabet=alphabet)
+    print("\twriting")
     AlignIO.write(filtered, outfile, output_format)
 
     return(outfile)
