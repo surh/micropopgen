@@ -233,7 +233,7 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     job_name = '.'.join(['muscle', basename])
     print(job_name)
     print("Executing:\n>{}".format(command))
-    status = os.sytem(command)
+    status = os.system(command)
     print("Status=", status)
     if not os.path.isfile(alnfile):
         raise FileNotFoundError("Output alignment file not found")
