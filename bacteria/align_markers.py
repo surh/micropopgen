@@ -244,6 +244,7 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     filfile = ''.join([fildir, '/', job_name])
     job_name = job_name + '.filter'
     print(job_name)
+    print("filter", alnfile, filfile)
     filter_alignment_file(alnfile, filfile, gap_pro=args.gap_prop)
     print("hola")
 
