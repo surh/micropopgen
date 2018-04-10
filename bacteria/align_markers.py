@@ -403,6 +403,8 @@ def muscle_file(infile, outfile, mode='fyrd', job_name=None,
         status = os.sytem(command)
         print("Status=", status)
         job = status
+        if not os.path.isfile(alnfile):
+            raise FileNotFoundError("Output alignment file not found")
     else:
         raise ValueError("bash or fyrd")
 
