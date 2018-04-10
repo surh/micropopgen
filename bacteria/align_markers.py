@@ -711,7 +711,7 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
 
     # Read ignore list
-    ignore = []
+    ignore = ['mutM']
 
     # Concatenate fasta per marker
     # Create directory for concatenated files_from_marker
