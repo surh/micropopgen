@@ -214,11 +214,12 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
     outfile = ''.join([m, '.faa'])
     catfile = outfile
     outfile = ''.join([catdir, '/', outfile])
+    step = 100
     # Need to iterate over subsets of file to prevent error 32512
     # when command is too long
-    for i in range(0, len(files_from_marker, 100)):
+    for i in range(0, len(files_from_marker, step)):
         # Build command
-        end = min(i + 100, len(files_from_marker))
+        end = min(i + step, len(files_from_marker))
         command = ' '.join(['cat'] + files_from_marker[i:end] + ['>>', outfile])
 
         # Run command
