@@ -733,7 +733,7 @@ if __name__ == "__main__":
     # fildir = submit_filter_alignments(alns=alns, args=args)
 
     jobs, fildir = concatenate_and_align_markers(indir=args.indir,
-                                                 suffix=args.suffix,
+                                                 suffix=args.marker_suffix,
                                                  args=args,
                                                  outdir=args.outdir,
                                                  ignore=ignore)
