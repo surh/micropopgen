@@ -157,13 +157,13 @@ def concatenate_and_align_markers(indir, suffix, args, outdir='./',
                        scriptpath=args.scripts,
                        clean_files=False,
                        clean_outputs=False,
-                       mem=args.filter_mem,
+                       mem=args.mem,
                        name=job_name,
                        outfile=job_name + ".log",
                        errfile=job_name + ".err",
-                       partition=args.filter_queue,
+                       partition=args.queue,
                        nodes=1, cores=1,
-                       time=args.filter_time)
+                       time=args.time)
 
         print("\tSubmitting job")
         job.submit(max_jobs=args.maxjobs)
@@ -464,17 +464,11 @@ def process_arguments():
     parser.add_argument("--maxjobs", help=("Maximum number of jobs at a "
                                            "given time by fyrd."),
                         type=str, default=1000)
-    parser.add_argument("--aln_mem", help=("Memory for alignment jobs"),
-                        type=str, default="2000mb")
-    parser.add_argument("--aln_time", help=("Time for alignment jobs"),
-                        type=str, default="2:00:00")
-    parser.add_argument("--aln_queue", help=("Qeueue for alignment jobs"),
-                        type=str, default='')
-    parser.add_argument("--filter_mem", help=("Memory for filter jobs"),
-                        type=str, default="1000mb")
-    parser.add_argument("--filter_time", help=("Time for filter jobs"),
-                        type=str, default="1:00:00")
-    parser.add_argument("--filter_queue", help=("Qeueue for filter jobs"),
+    parser.add_argument("--mem", help=("Memory per fyrd job"),
+                        type=str, default="10000mb")
+    parser.add_argument("--time", help=("Time per fyrd job"),
+                        type=str, default="10:00:00")
+    parser.add_argument("--queue", help=("Qeueue for fyrd jobs"),
                         type=str, default='')
     parser.add_argument("--gap_prop", help=("Maximum allowed propotion of "
                                             "gaps when filtering"),
@@ -482,15 +476,6 @@ def process_arguments():
     parser.add_argument("--remove_singletons", help=("If included singletons "
                                                      "will also be filtered"),
                         action="store_true")
-    parser.add_argument("--cat_mem", help=("Memory for alignment "
-                                           "concatentation job"),
-                        type=str, default="500mb")
-    parser.add_argument("--cat_time", help=("Time for alignment "
-                                            "concatenation job"),
-                        type=str, default="2:00:00")
-    parser.add_argument("--cat_queue", help=("Qeueue for alignment "
-                                             "concatenation job"),
-                        type=str, default='')
 
     # Read arguments
     print("Reading arguments")
@@ -539,93 +524,6 @@ def strip_right(text, suffix):
         return text
     # else
     return text[:len(text)-len(suffix)]
-
-
-def submit_align_markers(markersdir, args):
-    """Use fyrd to submit alignment jobs"""
-
-    # Create directory for concatenated aligned files
-    alndir = ''.join([args.outdir, '/aln/'])
-    if os.path.isdir(alndir):
-        raise FileExistsError("Alignment dir already exists")
-    else:
-        os.mkdir(alndir)
-
-    catfiles = os.listdir(markersdir)
-
-    res = dict()
-    for f in catfiles:
-        infile = ''.join([markersdir, '/', f])
-        marker = strip_right(f, args.marker_suffix)
-        alnfile = ''.join([alndir, '/', marker, '.aln'])
-        job_name = ''.join([marker, '.aln'])
-        # print(infile)
-        # print(alnfile)
-        n, o, j = muscle_file(infile=infile, outfile=alnfile,
-                              job_name=job_name, outpath=args.logs,
-                              scriptpath=args.scripts,
-                              partition=args.aln_queue,
-                              time=args.aln_time, muscle=args.muscle,
-                              memory=args.aln_mem, maxjobs=args.maxjobs)
-
-        res[n] = [o, j]
-
-    return(res)
-
-
-def submit_filter_alignments(alns, args):
-    """Use fyrd to submit jobs for filtering alignments"""
-
-    # Create output directory
-    fildir = ''.join([args.outdir, '/filtered/'])
-    if os.path.isdir(fildir):
-        raise FileExistsError("Filtered dir already exists")
-    else:
-        os.mkdir(fildir)
-
-    print("=============SUBMITING FILTERING ALIGNMENTS===============")
-    res = []
-    for n, o in alns.items():
-        outfile = ''.join([fildir, '/', n])
-
-        job_name = n + '.filter'
-        print(job_name)
-        print("\tCreating fyrd.Job")
-        job = fyrd.Job(filter_alignment_file, o[0],
-                       {'outfile': outfile,
-                        'gap_prop': args.gap_prop,
-                        'remove_singletons': args.remove_singletons,
-                        'alphabet': generic_protein,
-                        'input_format': 'fasta',
-                        'output_format': 'fasta'},
-                       depends=o[1],
-                       runpath=os.getcwd(),
-                       outpath=args.logs,
-                       syspaths=[os.path.dirname(__file__)],
-                       imports=[('from align_markers import '
-                                 'filter_alignment_file, '
-                                 'filter_alignment, '
-                                 'align2array, array2align')],
-                       scriptpath=args.scripts,
-                       clean_files=False, clean_outputs=False,
-                       mem=args.filter_mem,
-                       name=job_name,
-                       outfile=job_name + ".log",
-                       errfile=job_name + ".err",
-                       partition=args.filter_queue,
-                       nodes=1, cores=1,
-                       time=args.filter_time)
-
-        print("\tSubmitting job")
-        job.submit(max_jobs=args.maxjobs)
-        res.append(job)
-    print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
-
-    print("=============WAITING FOR FILTERING ALIGNMENTS===============")
-    [j.wait() for j in res]
-    print("=============DONE WAITING FOR FILTERING ALIGNMENTS===============")
-
-    return fildir
 
 
 def submit_concatenate_alignments(indir, args):
@@ -741,17 +639,6 @@ if __name__ == "__main__":
         raise FileExistsError("Outdir already exists")
     else:
         os.mkdir(markersdir)
-
-    # old pipeline
-    # concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
-    #                          outdir=markersdir, ignore=ignore)
-    #
-    # # Align fasta files per marker
-    # # print(args.muscle)
-    # alns = submit_align_markers(markersdir=markersdir, args=args)
-    #
-    # # Filter alignment per marker
-    # fildir = submit_filter_alignments(alns=alns, args=args)
 
     jobs, fildir = concatenate_and_align_markers(indir=args.indir,
                                                  suffix=args.marker_suffix,
