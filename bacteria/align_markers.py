@@ -19,6 +19,7 @@
 import argparse
 import os
 import fyrd
+# import subprocess
 
 from Bio import AlignIO
 from Bio.Alphabet import generic_protein, single_letter_alphabet
@@ -94,24 +95,6 @@ def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
     return new_aln
 
 
-def get_marker_names(indir, suffix, ignore=[]):
-    """Get list of markers"""
-
-    # Get list of fasta files from indir
-    fasta_files = os.listdir(indir)
-    fasta_files = list(filter(lambda f: f.endswith(suffix),
-                              fasta_files))
-
-    # Get set of markers
-    names = [strip_right(f, suffix) for f in fasta_files]
-    markers = set([n.split('.').pop() for n in names])
-
-    # Remove markers to ignore
-    markers = list(filter(lambda i: i not in ignore, markers))
-
-    return markers, fasta_files
-
-
 def create_pipeline_outdirs(dir):
     """Create directories for output"""
 
@@ -147,6 +130,7 @@ def concatenate_and_align_markers(indir, suffix, args, outdir='./',
     for m in markers:
         # Check if it is in list to ignore. Redundant but safe
         if m in ignore:
+            print("===Skipping", m)
             continue
 
         job_name = m + '.catalnfil'
@@ -207,38 +191,51 @@ def concatenate_and_align_marker(m, indir, catdir, alndir,
                          for f in files_from_marker]
 
     print("Concatenating all sequences from marker")
-    # Build command
+
     outfile = ''.join([m, '.faa'])
     catfile = outfile
     outfile = ''.join([catdir, '/', outfile])
-    command = ' '.join(['cat'] + files_from_marker + ['>', outfile])
+    step = 100
+    # Need to iterate over subsets of file to prevent error 32512
+    # when command is too long
+    for i in range(0, len(files_from_marker), step):
+        # Build command
+        end = min(i + step, len(files_from_marker))
+        command = ' '.join(['cat'] + files_from_marker[i:end] + ['>>', outfile])
 
-    # Run command
-    print("Executing:\n>{}".format(command))
-    status = os.system(command)
-    print("Status=", status)
+        # Run command
+        print("Executing:\n>{}".format(command))
+        # status = subprocess.run(command)
+        status = os.system(command)
+        print("Status=", status)
 
     print("Aligning all sequences from marker")
     infile = ''.join([catdir, '/', catfile])
     alnfile = ''.join([alndir, '/', m, '.aln'])
     job_name = ''.join([m, '.aln'])
-    n, o, s = muscle_file(infile=infile, outfile=alnfile,
-                          mode='bash',
-                          job_name=job_name,
-                          outpath=args.logs,
-                          scriptpath=args.scripts,
-                          partition=args.aln_queue,
-                          time=args.aln_time,
-                          muscle=args.muscle,
-                          memory=args.aln_mem,
-                          maxjobs=args.maxjobs)
+    print("muscle", infile, alnfile)
+
+    # Build muscle command
+    command = ' '.join([args.muscle,
+                        "-in", infile,
+                        "-out", alnfile])
+    basename = os.path.basename(infile)
+    job_name = '.'.join(['muscle', basename])
+    print(job_name)
+    print("Executing:\n>{}".format(command))
+    status = os.system(command)
+    print("Status=", status)
+    if not os.path.isfile(alnfile):
+        raise FileNotFoundError("Output alignment file not found")
 
     # Filter alignment
     print("Filter alignment")
-    filfile = ''.join([fildir, '/', n])
-    job_name = n + '.filter'
+    filfile = ''.join([fildir, '/', m, '.filtered.aln'])
+    job_name = m + '.filter'
     print(job_name)
-    filter_alignment_file(alnfile, filfile, gap_pro=args.gap_prop)
+    print("filter", alnfile, filfile)
+    filter_alignment_file(alnfile, filfile, gap_prop=args.gap_prop)
+    # print("hola")
 
     return filfile
 
@@ -295,9 +292,10 @@ def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
     index = np.ones(a_array.shape[1], dtype=int)
 
     # Iterate over columns
+    # print("Iterating")
     for i in range(a_array.shape[1]):
         c = a_array[:, i]
-        # print(c)
+        # print("\t", c)
         counts = np.unique(c, return_counts=True)
 
         # Remove constant columns
@@ -350,13 +348,34 @@ def filter_alignment_file(infile, outfile, gap_prop=0.99,
     """Take file with a single alignment, filter it and
     write a new file"""
 
+    print("\treading")
     aln = AlignIO.read(infile, input_format)
+    print("\tfiltering")
     filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
                                 remove_singletons=remove_singletons,
                                 alphabet=alphabet)
+    print("\twriting")
     AlignIO.write(filtered, outfile, output_format)
 
     return(outfile)
+
+
+def get_marker_names(indir, suffix, ignore=[]):
+    """Get list of markers"""
+
+    # Get list of fasta files from indir
+    fasta_files = os.listdir(indir)
+    fasta_files = list(filter(lambda f: f.endswith(suffix),
+                              fasta_files))
+
+    # Get set of markers
+    names = [strip_right(f, suffix) for f in fasta_files]
+    markers = set([n.split('.').pop() for n in names])
+
+    # Remove markers to ignore
+    markers = list(filter(lambda i: i not in ignore, markers))
+
+    return markers, fasta_files
 
 
 def muscle_file(infile, outfile, mode='fyrd', job_name=None,
@@ -397,9 +416,11 @@ def muscle_file(infile, outfile, mode='fyrd', job_name=None,
         job.submit(max_jobs=maxjobs)
     elif mode == 'bash':
         print("Executing:\n>{}".format(command))
-        status = os.sytem(command)
+        status = os.system(command)
         print("Status=", status)
         job = status
+        if not os.path.isfile(outfile):
+            raise FileNotFoundError("Output alignment file not found")
     else:
         raise ValueError("bash or fyrd")
 
