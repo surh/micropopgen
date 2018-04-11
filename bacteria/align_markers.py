@@ -541,93 +541,6 @@ def strip_right(text, suffix):
     return text[:len(text)-len(suffix)]
 
 
-def submit_align_markers(markersdir, args):
-    """Use fyrd to submit alignment jobs"""
-
-    # Create directory for concatenated aligned files
-    alndir = ''.join([args.outdir, '/aln/'])
-    if os.path.isdir(alndir):
-        raise FileExistsError("Alignment dir already exists")
-    else:
-        os.mkdir(alndir)
-
-    catfiles = os.listdir(markersdir)
-
-    res = dict()
-    for f in catfiles:
-        infile = ''.join([markersdir, '/', f])
-        marker = strip_right(f, args.marker_suffix)
-        alnfile = ''.join([alndir, '/', marker, '.aln'])
-        job_name = ''.join([marker, '.aln'])
-        # print(infile)
-        # print(alnfile)
-        n, o, j = muscle_file(infile=infile, outfile=alnfile,
-                              job_name=job_name, outpath=args.logs,
-                              scriptpath=args.scripts,
-                              partition=args.aln_queue,
-                              time=args.aln_time, muscle=args.muscle,
-                              memory=args.aln_mem, maxjobs=args.maxjobs)
-
-        res[n] = [o, j]
-
-    return(res)
-
-
-def submit_filter_alignments(alns, args):
-    """Use fyrd to submit jobs for filtering alignments"""
-
-    # Create output directory
-    fildir = ''.join([args.outdir, '/filtered/'])
-    if os.path.isdir(fildir):
-        raise FileExistsError("Filtered dir already exists")
-    else:
-        os.mkdir(fildir)
-
-    print("=============SUBMITING FILTERING ALIGNMENTS===============")
-    res = []
-    for n, o in alns.items():
-        outfile = ''.join([fildir, '/', n])
-
-        job_name = n + '.filter'
-        print(job_name)
-        print("\tCreating fyrd.Job")
-        job = fyrd.Job(filter_alignment_file, o[0],
-                       {'outfile': outfile,
-                        'gap_prop': args.gap_prop,
-                        'remove_singletons': args.remove_singletons,
-                        'alphabet': generic_protein,
-                        'input_format': 'fasta',
-                        'output_format': 'fasta'},
-                       depends=o[1],
-                       runpath=os.getcwd(),
-                       outpath=args.logs,
-                       syspaths=[os.path.dirname(__file__)],
-                       imports=[('from align_markers import '
-                                 'filter_alignment_file, '
-                                 'filter_alignment, '
-                                 'align2array, array2align')],
-                       scriptpath=args.scripts,
-                       clean_files=False, clean_outputs=False,
-                       mem=args.filter_mem,
-                       name=job_name,
-                       outfile=job_name + ".log",
-                       errfile=job_name + ".err",
-                       partition=args.filter_queue,
-                       nodes=1, cores=1,
-                       time=args.filter_time)
-
-        print("\tSubmitting job")
-        job.submit(max_jobs=args.maxjobs)
-        res.append(job)
-    print("=============DONE SUBMITING FILTERING ALIGNMENTS===============")
-
-    print("=============WAITING FOR FILTERING ALIGNMENTS===============")
-    [j.wait() for j in res]
-    print("=============DONE WAITING FOR FILTERING ALIGNMENTS===============")
-
-    return fildir
-
-
 def submit_concatenate_alignments(indir, args):
     """Takes a directory of alignment files, reads them
     and creates a fyrd job to concatenate them all"""
@@ -741,17 +654,6 @@ if __name__ == "__main__":
         raise FileExistsError("Outdir already exists")
     else:
         os.mkdir(markersdir)
-
-    # old pipeline
-    # concatenate_marker_files(indir=args.indir, suffix=args.marker_suffix,
-    #                          outdir=markersdir, ignore=ignore)
-    #
-    # # Align fasta files per marker
-    # # print(args.muscle)
-    # alns = submit_align_markers(markersdir=markersdir, args=args)
-    #
-    # # Filter alignment per marker
-    # fildir = submit_filter_alignments(alns=alns, args=args)
 
     jobs, fildir = concatenate_and_align_markers(indir=args.indir,
                                                  suffix=args.marker_suffix,
