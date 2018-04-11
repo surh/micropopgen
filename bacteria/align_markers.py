@@ -157,13 +157,13 @@ def concatenate_and_align_markers(indir, suffix, args, outdir='./',
                        scriptpath=args.scripts,
                        clean_files=False,
                        clean_outputs=False,
-                       mem=args.filter_mem,
+                       mem=args.mem,
                        name=job_name,
                        outfile=job_name + ".log",
                        errfile=job_name + ".err",
-                       partition=args.filter_queue,
+                       partition=args.queue,
                        nodes=1, cores=1,
-                       time=args.filter_time)
+                       time=args.time)
 
         print("\tSubmitting job")
         job.submit(max_jobs=args.maxjobs)
@@ -464,17 +464,11 @@ def process_arguments():
     parser.add_argument("--maxjobs", help=("Maximum number of jobs at a "
                                            "given time by fyrd."),
                         type=str, default=1000)
-    parser.add_argument("--aln_mem", help=("Memory for alignment jobs"),
-                        type=str, default="2000mb")
-    parser.add_argument("--aln_time", help=("Time for alignment jobs"),
-                        type=str, default="2:00:00")
-    parser.add_argument("--aln_queue", help=("Qeueue for alignment jobs"),
-                        type=str, default='')
-    parser.add_argument("--filter_mem", help=("Memory for filter jobs"),
-                        type=str, default="1000mb")
-    parser.add_argument("--filter_time", help=("Time for filter jobs"),
-                        type=str, default="1:00:00")
-    parser.add_argument("--filter_queue", help=("Qeueue for filter jobs"),
+    parser.add_argument("--mem", help=("Memory per fyrd job"),
+                        type=str, default="10000mb")
+    parser.add_argument("--time", help=("Time per fyrd job"),
+                        type=str, default="10:00:00")
+    parser.add_argument("--queue", help=("Qeueue for fyrd jobs"),
                         type=str, default='')
     parser.add_argument("--gap_prop", help=("Maximum allowed propotion of "
                                             "gaps when filtering"),
@@ -482,15 +476,6 @@ def process_arguments():
     parser.add_argument("--remove_singletons", help=("If included singletons "
                                                      "will also be filtered"),
                         action="store_true")
-    parser.add_argument("--cat_mem", help=("Memory for alignment "
-                                           "concatentation job"),
-                        type=str, default="500mb")
-    parser.add_argument("--cat_time", help=("Time for alignment "
-                                            "concatenation job"),
-                        type=str, default="2:00:00")
-    parser.add_argument("--cat_queue", help=("Qeueue for alignment "
-                                             "concatenation job"),
-                        type=str, default='')
 
     # Read arguments
     print("Reading arguments")
