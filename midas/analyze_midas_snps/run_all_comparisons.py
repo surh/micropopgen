@@ -217,15 +217,9 @@ if __name__ == '__main__':
                            clean_files=False,
                            clean_outputs=False,
                            nodes=1, cores=1,
-<<<<<<< HEAD
-                           time='04:00:00',
-                           mem='5000mb',
-                           partition='',
-=======
                            time=args.time,
                            mem=args.mem,
                            partition=args.queue,
->>>>>>> mktest
                            name=job_name,
                            runpath=os.getcwd(),
                            outpath=args.logs,
@@ -251,7 +245,7 @@ if __name__ == '__main__':
         if len(failed) > 0:
             print("Writing failed comparisons")
             failed_file = args.outdir + '/failed.txt'
-            with(failed_file) as ff:
+            with(failed_file, 'w') as ff:
                 for f in failed:
                     ff.write("{}\n".format(f))
             ff.close()

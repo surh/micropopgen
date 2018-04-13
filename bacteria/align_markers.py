@@ -470,6 +470,12 @@ def process_arguments():
                         type=str, default="10:00:00")
     parser.add_argument("--queue", help=("Qeueue for fyrd jobs"),
                         type=str, default='')
+    parser.add_argument("--cat_mem", help=("Memory per fyrd job"),
+                        type=str, default="10000mb")
+    parser.add_argument("--cat_time", help=("Time per fyrd job"),
+                        type=str, default="10:00:00")
+    parser.add_argument("--cat_queue", help=("Qeueue for fyrd jobs"),
+                        type=str, default='')
     parser.add_argument("--gap_prop", help=("Maximum allowed propotion of "
                                             "gaps when filtering"),
                         type=float, default=0.99)
