@@ -21,7 +21,7 @@ module load hmmer
 module load hhmer
 module load prodigal
 module load pplacer
-moudule load fraserconda
+module load fraserconda
 source activate python2
 ```
 
