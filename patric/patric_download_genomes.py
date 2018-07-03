@@ -180,25 +180,48 @@ def download_genome_dir(id, name, outdir,
 
     # Download to genome dir
     gdir = '/'.join(['genomes', id])
-    ftp = FTP(url)
+    try:
+        files = download_ftp_dir(ftp_url=url,  ftp_dir=gdir,
+                                 ddir=genome_dir)
+        success = True
+    except:
+        files = []
+        success = False
+
+    print("Downloaded {} files.".format(files))
+
+    return success
+
+
+def download_ftp_dir(ftp_url, ftp_dir, ddir):
+    """Download a directoy via an FTP connection to an specified location.
+    Rerurns list of files from ftp dir."""
+
+    # Establish FTP connection and prepare download
+    ftp = FTP(ftp_url)
     ftp.login()
-    ftp.cwd(gdir)
+    ftp.cwd(ftp_dir)
     ls = ftp.nlst()
     count = len(ls)
     print("found {} files".format(count))
+
+    # Move to destination dir
     cwd = os.getcwd()
-    os.chdir(genome_dir)
+    os.chdir(ddir)
+
+    # Download
     curr = 0
     for fn in ls:
         curr += 1
         print('Processing file {} ... {} of {} ...'.format(fn, curr, count))
         ftp.retrbinary('RETR ' + fn, open(fn, 'wb').write)
+
+    # Close connection and go back
     ftp.quit()
     print("download complete.")
     os.chdir(cwd)
 
-    return
-
+    return ls
 
 def download_genome_table(genomes, outdir, overwrite=False,
                           url="ftp.patricbrc.org/genomes/"):
