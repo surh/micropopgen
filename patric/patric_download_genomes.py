@@ -17,6 +17,7 @@
 import argparse
 import pandas as pd
 import os
+from ftplib import FTP
 
 
 def process_arguments():
@@ -169,7 +170,7 @@ def prepare_outdir(outdir, overwrite=False):
 
 def download_genome_dir(id, name, outdir,
                         overwrite=False,
-                        url="ftp://ftp.patricbrc.org/genomes/"):
+                        url="ftp.patricbrc.org"):
     """Download genome directory from PATRIC database
     FTP server"""
 
@@ -178,19 +179,36 @@ def download_genome_dir(id, name, outdir,
     prepare_outdir(outdir=genome_dir, overwrite=overwrite)
 
     # Download to genome dir
+    gdir = '/'.join(['genomes', id])
+    ftp = FTP(url)
+    ftp.login()
+    ftp.cwd(gdir)
+    ls = ftp.nlst()
+    count = len(ls)
+    print("found {} files".format(count))
+    cwd = os.getcwd()
+    os.chdir(genome_dir)
+    curr = 0
+    for fn in ls:
+        curr += 1
+        print('Processing file {} ... {} of {} ...'.format(fn, curr, count))
+        ftp.retrbinary('RETR ' + fn, open(fn, 'wb').write)
+    ftp.quit()
+    print("download complete.")
+    os.chdir(cwd)
 
     return
 
 
 def download_genome_table(genomes, outdir, overwrite=False,
-                          url="ftp://ftp.patricbrc.org/genomes/"):
+                          url="ftp.patricbrc.org/genomes/"):
     """Takes a pandas data frame where each row is a genomes
     and calls the function to download each one independently"""
 
     for i, r in genomes.iterrows():
         download_genome_dir(id=r['ID'], name=r['Name'],
                             outdir=outdir, overwrite=overwrite,
-                            url="ftp://ftp.patricbrc.org/genomes/")
+                            url="ftp.patricbrc.org")
 
     return
 
@@ -209,11 +227,11 @@ if __name__ == "__main__":
     prepare_outdir(outdir=args.outdir, overwrite=True)
 
     # Download genomes
-    print("Downloadign genomes")
+    print("Downloading genomes")
     if 'Group' in genomes:
         raise NotImplementedError("Group option is not implemented yet.")
     else:
         download_genome_table(genomes=genomes,
                               outdir=args.outdir,
                               overwrite=args.overwrite,
-                              url="ftp://ftp.patricbrc.org/genomes/")
+                              url="ftp.patricbrc.org")
