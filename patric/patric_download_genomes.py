@@ -15,7 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import pandas
+import pandas as pd
+import os
+
 
 def process_arguments():
     # Read arguments
@@ -26,11 +28,11 @@ def process_arguments():
     # Define description
     parser.description = ("Script that takes a list of PATRIC genome "
                           "IDs and downloads the genomes to a specified "
-                          "location.\n"
+                          "location."
                           "It can also take a grouping factor per genome "
                           "and organize the downloads in subdirectories "
                           "according to that grouping factor. Spaces in "
-                          "the name will be converted to underscores.\n"
+                          "the name will be converted to underscores."
                           "A name can also be passed as a column. This "
                           "name will be used to name the subdirectory "
                           "containing each genome data. Spaces in the name "
@@ -50,7 +52,8 @@ def process_arguments():
                                             "one subdirectory per genome. A "
                                             "name for the subdirectory can "
                                             "also be specified in a column "
-                                            "of the genomes file."))
+                                            "of the genomes file."),
+                          required=True, type=str)
 
     # Define other arguments
     parser.add_argument("--id_col", help=("Column number where the genome "
@@ -109,3 +112,108 @@ def process_arguments():
                                      "is passed")
 
     return args
+
+
+def read_genomes_file(file, id_col=0, group_col=0, name_col=0, header=False):
+    """Uses pandas to read a file that contains genome IDs"""
+
+    # Read table and get relevant columns
+    if id_col <= 0:
+        genomes = pd.read_table(file, sep="lnds555sgsg58s", engine='python',
+                                dtype='str')
+        genomes.columns = ['ID']
+        genomes = genomes.assign(Name=genomes.ID)
+    else:
+        dat = pd.read_table(file, sep="\t")
+        columns = [id_col - 1]
+        colnames = ['ID']
+
+        # Find columns
+        if group_col > 0:
+            columns.append(group_col - 1)
+            colnames.append('Group')
+
+        if name_col > 0:
+            columns.append(name_col - 1)
+        else:
+            columns.append(id_col - 1)
+        colnames.append('Name')
+
+        # Get data
+        genomes = dat.iloc[:, columns].astype('str').copy()
+        genomes.columns = colnames
+
+    # Replace whitespaces
+    genomes.Name.replace(" ", "_", regex=True, inplace=True)
+    if 'Group' in genomes.columns:
+        genomes.Group.replace(" ", "_", regex=True, inplace=True)
+
+    return genomes
+
+
+def prepare_outdir(outdir, overwrite=False):
+    """Check if output directory exists, and if not
+    create it or raise error"""
+
+    if os.path.isdir(outdir) and overwrite:
+        print("\tOutput directory ({}) already exists".format(outdir))
+    elif os.path.isdir(outdir) and not overwrite:
+        raise FileExistsError("\tOutput directory {}"
+                              " already exists".format(outdir))
+    else:
+        # If directory doesn't exist
+        os.mkdir(outdir)
+
+    return outdir
+
+
+def download_genome_dir(id, name, outdir,
+                        overwrite=False,
+                        url="ftp://ftp.patricbrc.org/genomes/"):
+    """Download genome directory from PATRIC database
+    FTP server"""
+
+    # Prepare output directory
+    genome_dir = ''.join([outdir, '/', name])
+    prepare_outdir(outdir=genome_dir, overwrite=overwrite)
+
+    # Download to genome dir
+
+    return
+
+
+def download_genome_table(genomes, outdir, overwrite=False,
+                          url="ftp://ftp.patricbrc.org/genomes/"):
+    """Takes a pandas data frame where each row is a genomes
+    and calls the function to download each one independently"""
+
+    for i, r in genomes.iterrows():
+        download_genome_dir(id=r['ID'], name=r['Name'],
+                            outdir=outdir, overwrite=overwrite,
+                            url="ftp://ftp.patricbrc.org/genomes/")
+
+    return
+
+
+if __name__ == "__main__":
+    args = process_arguments()
+
+    genomes = read_genomes_file(file=args.genomes,
+                                id_col=args.id_col,
+                                group_col=args.group_col,
+                                name_col=args.name_col,
+                                header=args.header)
+
+    # Create main output Directory
+    print("Creating overall output directory")
+    prepare_outdir(outdir=args.outdir, overwrite=True)
+
+    # Download genomes
+    print("Downloadign genomes")
+    if 'Group' in genomes:
+        raise NotImplementedError("Group option is not implemented yet.")
+    else:
+        download_genome_table(genomes=genomes,
+                              outdir=args.outdir,
+                              overwrite=args.overwrite,
+                              url="ftp://ftp.patricbrc.org/genomes/")
