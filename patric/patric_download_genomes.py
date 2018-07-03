@@ -223,17 +223,22 @@ def download_ftp_dir(ftp_url, ftp_dir, ddir):
 
     return ls
 
+
 def download_genome_table(genomes, outdir, overwrite=False,
                           url="ftp.patricbrc.org/genomes/"):
     """Takes a pandas data frame where each row is a genomes
     and calls the function to download each one independently"""
 
+    results = []
     for i, r in genomes.iterrows():
-        download_genome_dir(id=r['ID'], name=r['Name'],
-                            outdir=outdir, overwrite=overwrite,
-                            url="ftp.patricbrc.org")
+        success = download_genome_dir(id=r['ID'], name=r['Name'],
+                                      outdir=outdir, overwrite=overwrite,
+                                      url="ftp.patricbrc.org")
+        results.append([r['ID'], r['Name'], outdir, success])
 
-    return
+    results = pd.DataFrame(results, columns=['ID', 'Name', 'Dir', 'Success'])
+
+    return results
 
 
 if __name__ == "__main__":
@@ -252,9 +257,24 @@ if __name__ == "__main__":
     # Download genomes
     print("Downloading genomes")
     if 'Group' in genomes:
-        raise NotImplementedError("Group option is not implemented yet.")
+        # raise NotImplementedError("Group option is not implemented yet.")
+        results = pd.DataFrame()
+        for n, g in genomes.groupby('Group'):
+            print("Processing group {}".format(n))
+            r = download_genome_table(genomes=g,
+                                      outdir=args.outdir,
+                                      overwrite=args.overwrite,
+                                      url="ftp.patricbrc.org")
+            results = results.append(r)
     else:
-        download_genome_table(genomes=genomes,
-                              outdir=args.outdir,
-                              overwrite=args.overwrite,
-                              url="ftp.patricbrc.org")
+        results = download_genome_table(genomes=genomes,
+                                        outdir=args.outdir,
+                                        overwrite=args.overwrite,
+                                        url="ftp.patricbrc.org")
+
+    failed = results[results.Success == 0]
+    if(len(failed.index) > 0):
+        pd.to_csv(args.failed, sep="\t")
+
+    print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
+    print("{} genomes failed.".format(str(sum(results.Success == 0))))
