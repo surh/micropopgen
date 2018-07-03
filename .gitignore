@@ -3,3 +3,5 @@
 .pydevproject
 .ipynb_checkpoints/
 bacteria/__pycache__/
+midas/analyze_midas/__pycache__/
+__pycache__/
