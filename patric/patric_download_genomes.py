@@ -261,8 +261,10 @@ if __name__ == "__main__":
         results = pd.DataFrame()
         for n, g in genomes.groupby('Group'):
             print("Processing group {}".format(n))
+            group_dir = ''.join([args.outdir, '/', n])
+            prepare_outdir(outdir=group_dir, overwrite=True)
             r = download_genome_table(genomes=g,
-                                      outdir=args.outdir,
+                                      outdir=group_dir,
                                       overwrite=args.overwrite,
                                       url="ftp.patricbrc.org")
             results = results.append(r)
@@ -274,7 +276,7 @@ if __name__ == "__main__":
 
     failed = results[results.Success == 0]
     if(len(failed.index) > 0):
-        pd.to_csv(args.failed, sep="\t")
+        failed.to_csv(args.failed, sep="\t")
 
     print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
     print("{} genomes failed.".format(str(sum(results.Success == 0))))
