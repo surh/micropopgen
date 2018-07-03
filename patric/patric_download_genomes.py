@@ -276,6 +276,7 @@ if __name__ == "__main__":
 
     failed = results[results.Success == 0]
     if(len(failed.index) > 0):
+        print("Writing failed genomes file ({})".format(args.failed))
         failed.to_csv(args.failed, sep="\t")
 
     print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
