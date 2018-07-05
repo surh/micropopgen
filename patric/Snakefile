@@ -35,4 +35,4 @@ rule preprocess_patric:
         # "$id =~ s/^ID=fig\|//; print join(\"\t\", ($chr, $pat, $type, "
         # "$start, $end, $point, $strand, $num, $id)) . \"\n\"}}' "
         # "{input} > {output}"
-        BINDIR + 'patric2roary_gff --infile {input} --outfile {output}'
+        BINDIR + '/patric2roary_gff.py --infile {input} --outfile {output}'
