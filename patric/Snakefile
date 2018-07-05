@@ -28,10 +28,11 @@ rule preprocess_patric:
     output:
         OUTDIR + "/preprocess/{species}/{id}/{id}.gff"
     shell:
-        "perl -e 'while(<>){{chomp; "
-        "my ($chr, $pat, $type, $start, $end, $point, "
-        "$strand, $num, $annot) = split(/\t/, $_); "
-        "$chr =~ s/^accn\|//; my ($id, @trash) = split(/;/, $annot); "
-        "$id =~ s/^ID=fig\|//; print join(\"\t\", ($chr, $pat, $type, "
-        "$start, $end, $point, $strand, $num, $id)) . \"\n\"}}' "
-        "{input} > {output}"
+        # "perl -e 'while(<>){{chomp; "
+        # "my ($chr, $pat, $type, $start, $end, $point, "
+        # "$strand, $num, $annot) = split(/\t/, $_); "
+        # "$chr =~ s/^accn\|//; my ($id, @trash) = split(/;/, $annot); "
+        # "$id =~ s/^ID=fig\|//; print join(\"\t\", ($chr, $pat, $type, "
+        # "$start, $end, $point, $strand, $num, $id)) . \"\n\"}}' "
+        # "{input} > {output}"
+        BINDIR + 'patric2roary_gff --infile {input} --outfile {output}'
