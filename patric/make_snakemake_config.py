@@ -76,7 +76,7 @@ def make_snakemake_config(infile, outfile,
             id = LINE[id_col]
 
             filename = species + '-' + id + '.gff'
-            oh.write("\t" + id + ': ' + filename + "\n")
+            oh.write("  " + id + ': ' + filename + "\n")
             i = i + 1
     print("Done")
     ih.close()
