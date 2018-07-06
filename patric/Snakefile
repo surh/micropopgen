@@ -20,9 +20,11 @@ BINDIR = '/home/sur/micropopgen/src/micropopgen/patric'
 rule all:
     input:
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.3/1000570.3.gff",
-        OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.gff"
+        OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.gff",
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.3/1000570.3.fna",
-        OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.fna"
+        OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.fna",
+        OUTDIR + "roary_input/Streptococcus_anginosus-1000570.3.gff"
+        OUTDIR + "roary_input/Streptococcus_anginosus-1000570.8.gff"
 
 rule preprocess_patric_gff:
     input:
@@ -46,3 +48,12 @@ rule preprocess_patric_fna:
         OUTDIR + "/preprocess/{species}/{id}/{id}.fna"
     shell:
         BINDIR + '/fasta_remove_desc.py --infile {input} --outfile {output}'
+
+rule create_patric_fna:
+    input:
+        OUTDIR + "/preprocess/{species}/{id}/{id}.gff"
+        OUTDIR + "/preprocess/{species}/{id}/{id}.fna"
+    output:
+        OUTDIR + "roary_input/{species}-{id}.gff"
+    shell:
+        "cat {input} > {output}"
