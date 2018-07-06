@@ -43,7 +43,7 @@ def gff_patric2roary(infile, outfile):
     """Take a gff file from PATRIC and edit the chromosome and gene
     ID names for simplifying roary's output"""
 
-    with open(args.infile, 'r') as ih, open(args.outfile, 'w') as oh:
+    with open(infile, 'r') as ih, open(outfile, 'w') as oh:
         print("Processing GFF file")
         for line in ih:
             line = line.rstrip()
