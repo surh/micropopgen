@@ -39,8 +39,9 @@ def process_arguments():
     return args
 
 
-if __name__ == "__main__":
-    args = process_arguments()
+def gff_patric2roary(infile, outfile):
+    """Take a gff file from PATRIC and edit the chromosome and gene
+    ID names for simplifying roary's output"""
 
     with open(args.infile, 'r') as ih, open(args.outfile, 'w') as oh:
         print("Processing GFF file")
@@ -60,3 +61,11 @@ if __name__ == "__main__":
                 newline = '\t'.join(LINE)
                 oh.write(newline + "\n")
     print("Done")
+
+    return
+
+
+if __name__ == "__main__":
+    args = process_arguments()
+
+    gff_patric2roary(args.infile, args.outfile)
