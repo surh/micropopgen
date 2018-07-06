@@ -31,11 +31,9 @@ def process_arguments():
     # Define required arguments
     required.add_argument("--infile", help=("Path to fasta input file"),
                           required=True, type=str)
-
-    # Define other arguments
-    parser.add_argument("--outfile", help=("Path to fasta output file"),
-                        type=str,
-                        default="")
+    required.add_argument("--outfile", help=("Path to fasta output file"),
+                          type=str,
+                          required=True)
 
     # Read arguments
     print("Reading arguments")
