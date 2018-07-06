@@ -35,7 +35,7 @@ def process_arguments():
     # Define other arguments
     parser.add_argument("--outfile", help=("Name of the output file"),
                         type=str,
-                        default="config.yml")
+                        default="config.yaml")
     parser.add_argument("--species_col", help=("Columb wheere species is "
                                                "stored"),
                         type=int, default=1)
