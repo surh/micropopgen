@@ -27,29 +27,29 @@ rule all:
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.fna",
         OUTDIR + "/roary_input/Streptococcus_anginosus-1000570.3.gff",
         OUTDIR + "/roary_input/Streptococcus_anginosus-1000570.8.gff",
-        OUTDIR + "/roary/",
-        OUTDIR + "/roary/accessory_binary_genes.fa",
-        OUTDIR + "/roary/accessory_graph.dot",
-        OUTDIR + "/roary/accessory.header.embl",
-        OUTDIR + "/roary/accessory.tab",
-        OUTDIR + "/roary/blast_identity_frequency.Rtab",
-        OUTDIR + "/roary/clustered_proteins",
-        OUTDIR + "/roary/core_accessory_graph.dot",
-        OUTDIR + "/roary/core_accessory.header.embl",
-        OUTDIR + "/roary/core_accessory.tab",
-        OUTDIR + "/roary/gene_presence_absence.csv",
-        OUTDIR + "/roary/gene_presence_absence.Rtab",
-        OUTDIR + "/roary/number_of_conserved_genes.Rtab",
-        OUTDIR + "/roary/number_of_genes_in_pan_genome.Rtab",
-        OUTDIR + "/roary/number_of_new_genes.Rtab",
-        OUTDIR + "/roary/number_of_unique_genes.Rtab",
-        OUTDIR + "/roary/summary_statistics.txt"
+        # OUTDIR + "/roary/",
+        # OUTDIR + "/roary/accessory_binary_genes.fa",
+        # OUTDIR + "/roary/accessory_graph.dot",
+        # OUTDIR + "/roary/accessory.header.embl",
+        # OUTDIR + "/roary/accessory.tab",
+        # OUTDIR + "/roary/blast_identity_frequency.Rtab",
+        # OUTDIR + "/roary/clustered_proteins",
+        # OUTDIR + "/roary/core_accessory_graph.dot",
+        # OUTDIR + "/roary/core_accessory.header.embl",
+        # OUTDIR + "/roary/core_accessory.tab",
+        # OUTDIR + "/roary/gene_presence_absence.csv",
+        # OUTDIR + "/roary/gene_presence_absence.Rtab",
+        # OUTDIR + "/roary/number_of_conserved_genes.Rtab",
+        # OUTDIR + "/roary/number_of_genes_in_pan_genome.Rtab",
+        # OUTDIR + "/roary/number_of_new_genes.Rtab",
+        # OUTDIR + "/roary/number_of_unique_genes.Rtab",
+        # OUTDIR + "/roary/summary_statistics.txt"
 
 rule preprocess_patric_gff:
     input:
         PATRICDATA + "/{species}/{id}/{id}.PATRIC.gff"
     output:
-        OUTDIR + "/preprocess/{species}/{id}/{id}.gff"
+        temp(OUTDIR + "/preprocess/{species}/{id}/{id}.gff")
     shell:
         # "perl -e 'while(<>){{chomp; "
         # "my ($chr, $pat, $type, $start, $end, $point, "
@@ -64,7 +64,7 @@ rule preprocess_patric_fna:
     input:
         PATRICDATA + "/{species}/{id}/{id}.fna"
     output:
-        OUTDIR + "/preprocess/{species}/{id}/{id}.fna"
+        temp(OUTDIR + "/preprocess/{species}/{id}/{id}.fna")
     shell:
         BINDIR + '/fasta_remove_desc.py --infile {input} --outfile {output}'
 
@@ -77,27 +77,27 @@ rule create_patric_gff:
     shell:
         "cat {input} > {output}"
 
-rule roary:
-    input:
-        gffs = expand(OUTDIR + "/roary_input/{species}-{id}.gff", zip,
-                      species=specs, id=ids)
-    output:
-        OUTDIR + "/roary/accessory_binary_genes.fa",
-        OUTDIR + "/roary/accessory_graph.dot",
-        OUTDIR + "/roary/accessory.header.embl",
-        OUTDIR + "/roary/accessory.tab",
-        OUTDIR + "/roary/blast_identity_frequency.Rtab",
-        OUTDIR + "/roary/clustered_proteins",
-        OUTDIR + "/roary/core_accessory_graph.dot",
-        OUTDIR + "/roary/core_accessory.header.embl",
-        OUTDIR + "/roary/core_accessory.tab",
-        OUTDIR + "/roary/gene_presence_absence.csv",
-        OUTDIR + "/roary/gene_presence_absence.Rtab",
-        OUTDIR + "/roary/number_of_conserved_genes.Rtab",
-        OUTDIR + "/roary/number_of_genes_in_pan_genome.Rtab",
-        OUTDIR + "/roary/number_of_new_genes.Rtab",
-        OUTDIR + "/roary/number_of_unique_genes.Rtab",
-        OUTDIR + "/roary/summary_statistics.txt",
-        dir = OUTDIR + "/roary/"
-    shell:
-        "roary -v -f {output.dir} {input.gffs}"
+# rule roary:
+#     input:
+#         gffs = expand(OUTDIR + "/roary_input/{species}-{id}.gff", zip,
+#                       species=specs, id=ids)
+#     output:
+#         OUTDIR + "/roary/accessory_binary_genes.fa",
+#         OUTDIR + "/roary/accessory_graph.dot",
+#         OUTDIR + "/roary/accessory.header.embl",
+#         OUTDIR + "/roary/accessory.tab",
+#         OUTDIR + "/roary/blast_identity_frequency.Rtab",
+#         OUTDIR + "/roary/clustered_proteins",
+#         OUTDIR + "/roary/core_accessory_graph.dot",
+#         OUTDIR + "/roary/core_accessory.header.embl",
+#         OUTDIR + "/roary/core_accessory.tab",
+#         OUTDIR + "/roary/gene_presence_absence.csv",
+#         OUTDIR + "/roary/gene_presence_absence.Rtab",
+#         OUTDIR + "/roary/number_of_conserved_genes.Rtab",
+#         OUTDIR + "/roary/number_of_genes_in_pan_genome.Rtab",
+#         OUTDIR + "/roary/number_of_new_genes.Rtab",
+#         OUTDIR + "/roary/number_of_unique_genes.Rtab",
+#         OUTDIR + "/roary/summary_statistics.txt",
+#         dir = OUTDIR + "/roary/"
+#     shell:
+#         "roary -v -f {output.dir} {input.gffs}"
