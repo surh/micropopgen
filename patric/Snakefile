@@ -14,8 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 PATRICDATA = '/home/sur/micropopgen/exp/2018/today3/patric'
-OUTDIR = '/home/sur/micropopgen/exp/2018/today3/data_for_roary'
+OUTDIR = '/home/sur/micropopgen/exp/2018/today3/roary'
 BINDIR = '/home/sur/micropopgen/src/micropopgen/patric'
+specs = ['Streptococcus_anginosus', 'Streptococcus_anginosus']
+ids = ['1000570.3', '1000570.8']
 
 rule all:
     input:
@@ -23,8 +25,9 @@ rule all:
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.gff",
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.3/1000570.3.fna",
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.fna",
-        OUTDIR + "roary_input/Streptococcus_anginosus-1000570.3.gff"
-        OUTDIR + "roary_input/Streptococcus_anginosus-1000570.8.gff"
+        OUTDIR + "/roary_input/Streptococcus_anginosus-1000570.3.gff",
+        OUTDIR + "/roary_input/Streptococcus_anginosus-1000570.8.gff",
+        OUTDIR + "/roary/"
 
 rule preprocess_patric_gff:
     input:
@@ -49,11 +52,20 @@ rule preprocess_patric_fna:
     shell:
         BINDIR + '/fasta_remove_desc.py --infile {input} --outfile {output}'
 
-rule create_patric_fna:
+rule create_patric_gff:
     input:
-        OUTDIR + "/preprocess/{species}/{id}/{id}.gff"
+        OUTDIR + "/preprocess/{species}/{id}/{id}.gff",
         OUTDIR + "/preprocess/{species}/{id}/{id}.fna"
     output:
-        OUTDIR + "roary_input/{species}-{id}.gff"
+        OUTDIR + "/roary_input/{species}-{id}.gff"
     shell:
         "cat {input} > {output}"
+
+rule roary:
+    input:
+        gffs = expand(OUTDIR + "/roary_input/{species}-{id}.gff", zip,
+                      species=specs, id=ids)
+    output:
+        OUTDIR + "/roary/"
+    shell:
+        "roary -f {output} {input.gffs}"
