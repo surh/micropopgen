@@ -82,7 +82,6 @@ rule roary:
         gffs = expand(OUTDIR + "/roary_input/{species}-{id}.gff", zip,
                       species=specs, id=ids)
     output:
-        dir = OUTDIR + "/roary/",
         OUTDIR + "/roary/accessory_binary_genes.fa",
         OUTDIR + "/roary/accessory_graph.dot",
         OUTDIR + "/roary/accessory.header.embl",
@@ -98,6 +97,7 @@ rule roary:
         OUTDIR + "/roary/number_of_genes_in_pan_genome.Rtab",
         OUTDIR + "/roary/number_of_new_genes.Rtab",
         OUTDIR + "/roary/number_of_unique_genes.Rtab",
-        OUTDIR + "/roary/summary_statistics.txt"
+        OUTDIR + "/roary/summary_statistics.txt",
+        dir = OUTDIR + "/roary/"
     shell:
-        "roary -f {output.dir} {input.gffs}"
+        "roary -v -f {output.dir} {input.gffs}"
