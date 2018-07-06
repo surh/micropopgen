@@ -21,8 +21,10 @@ rule all:
     input:
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.3/1000570.3.gff",
         OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.gff"
+        OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.3/1000570.3.fna",
+        OUTDIR + "/preprocess/Streptococcus_anginosus/1000570.8/1000570.8.fna"
 
-rule preprocess_patric:
+rule preprocess_patric_gff:
     input:
         PATRICDATA + "/{species}/{id}/{id}.PATRIC.gff"
     output:
@@ -36,3 +38,11 @@ rule preprocess_patric:
         # "$start, $end, $point, $strand, $num, $id)) . \"\n\"}}' "
         # "{input} > {output}"
         BINDIR + '/patric2roary_gff.py --infile {input} --outfile {output}'
+
+rule preprocess_patric_fna:
+    input:
+        PATRICDATA + "/{species}/{id}/{id}.fna"
+    output:
+        OUTDIR + "/preprocess/{species}/{id}/{id}.fna"
+    shell:
+        BINDIR + '/fasta_remove_desc.py --infile {input} --outfile {output}'
