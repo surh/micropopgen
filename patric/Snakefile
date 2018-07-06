@@ -38,13 +38,6 @@ rule preprocess_patric_gff:
                     species=config['species'],
                     id=config['ids']))
     shell:
-        # "perl -e 'while(<>){{chomp; "
-        # "my ($chr, $pat, $type, $start, $end, $point, "
-        # "$strand, $num, $annot) = split(/\t/, $_); "
-        # "$chr =~ s/^accn\|//; my ($id, @trash) = split(/;/, $annot); "
-        # "$id =~ s/^ID=fig\|//; print join(\"\t\", ($chr, $pat, $type, "
-        # "$start, $end, $point, $strand, $num, $id)) . \"\n\"}}' "
-        # "{input} > {output}"
         BINDIR + '/patric2roary_gff.py --infile {input} --outfile {output}'
 
 rule preprocess_patric_fna:
@@ -75,28 +68,3 @@ rule create_patric_gff:
                id=config['ids'])
     shell:
         "cat {input} > {output}"
-
-# rule roary:
-#     input:
-#         gffs = expand(OUTDIR + "/roary_input/{species}-{id}.gff", zip,
-#                       species=specs, id=ids)
-#     output:
-#         OUTDIR + "/roary/accessory_binary_genes.fa",
-#         OUTDIR + "/roary/accessory_graph.dot",
-#         OUTDIR + "/roary/accessory.header.embl",
-#         OUTDIR + "/roary/accessory.tab",
-#         OUTDIR + "/roary/blast_identity_frequency.Rtab",
-#         OUTDIR + "/roary/clustered_proteins",
-#         OUTDIR + "/roary/core_accessory_graph.dot",
-#         OUTDIR + "/roary/core_accessory.header.embl",
-#         OUTDIR + "/roary/core_accessory.tab",
-#         OUTDIR + "/roary/gene_presence_absence.csv",
-#         OUTDIR + "/roary/gene_presence_absence.Rtab",
-#         OUTDIR + "/roary/number_of_conserved_genes.Rtab",
-#         OUTDIR + "/roary/number_of_genes_in_pan_genome.Rtab",
-#         OUTDIR + "/roary/number_of_new_genes.Rtab",
-#         OUTDIR + "/roary/number_of_unique_genes.Rtab",
-#         OUTDIR + "/roary/summary_statistics.txt",
-#         dir = OUTDIR + "/roary/"
-#     shell:
-#         "roary -v -f {output.dir} {input.gffs}"
