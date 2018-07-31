@@ -15,15 +15,15 @@ process splitLetters {
 
 process convertToUpper {
 
-    input:
-    file x from letters
+  input:
+     file x from letters
 
-    output:
-    stdout result
+     output:
+     stdout result
 
-    """
-    cat $x | tr '[a-z]' '[A-Z]'
-    """
+     """
+     rev $x
+     """
 }
 
 result.subscribe {
