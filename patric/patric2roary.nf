@@ -57,3 +57,16 @@ process preprocesss_patric_fna{
     --outfile roary.fna
   """
 }
+
+process create_roary_input{
+  input:
+  file gff from roary_gffs
+  file fna from roary_fnas
+
+  output:
+  file 'roary_input.gff' into roary_inputs
+
+  """
+  cat ${gff} ${fna} > roary_input.gff
+  """
+}
