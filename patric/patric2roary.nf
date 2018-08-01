@@ -21,6 +21,8 @@
 // Parameters
 params.indir = "patric/"
 params.bindir = "/home/sur/micropopgen/src/micropopgen/patric"
+params.threads = 2
+params.outdir = 'roary/'
 
 // Get list of files
 patric_gffs = "${params.indir}/*/*/*.PATRIC.gff"
@@ -68,5 +70,19 @@ process create_roary_input{
 
   """
   cat ${gff} ${fna} > roary_input.gff
+  """
+}
+
+process run_roary{
+  cpus params.threads
+
+  input:
+  file '*.gff' from roary_inputs.collect()
+
+  """
+  roary -p ${params.threads} \
+    -f ${params.outdir} \
+    -v \
+    *.gff
   """
 }
