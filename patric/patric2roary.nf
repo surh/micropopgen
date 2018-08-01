@@ -75,9 +75,13 @@ process create_roary_input{
 
 process run_roary{
   cpus params.threads
+  publishDir params.outdir, mode: 'move'
 
   input:
   file '*.gff' from roary_inputs.collect()
+
+  output:
+  file params.outdir
 
   """
   roary -p ${params.threads} \
