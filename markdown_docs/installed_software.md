@@ -20,3 +20,10 @@ Should load it. Test with:
 checkm test ~/test.out
 ```
 ## MIDAS
+
+## Roary
+
+```bash
+module load anaconda
+source activate sur
+```

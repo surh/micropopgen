@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2017 Sur Herrera Paredes
+# Copyright (C) 2018 Sur Herrera Paredes
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -276,6 +276,7 @@ if __name__ == "__main__":
 
     failed = results[results.Success == 0]
     if(len(failed.index) > 0):
+        print("Writing failed genomes file ({})".format(args.failed))
         failed.to_csv(args.failed, sep="\t")
 
     print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
