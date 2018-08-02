@@ -58,6 +58,7 @@ def gff_patric2roary(infile, outfile):
                 gene_id = LINE[8].split(';')[0]
                 # gene_id = gene_id.replace('ID=fig|', '')
                 gene_id = gene_id.replace('fig|', '')
+                gene_id = gene_id + ';'
                 LINE[8] = gene_id
                 newline = '\t'.join(LINE)
                 oh.write(newline + "\n")
