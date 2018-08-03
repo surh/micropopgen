@@ -287,10 +287,8 @@ if __name__ == "__main__":
             except FileNotFoundError as error:
                 print("==Input directory {} does not exist==".format(args.indir))
                 raise FileNotFoundError("ERROR:Input directory {} does not exist".format(args.indir))
-            except (MissingFileError,ProcessError, IntegrityError) as error:
+            except (MissingFileError, ProcessError, IntegrityError) as error:
                 print("\tSkipping sample {}".format(sample))
                 failed.append([sample])
     if len(failed) > 0:
-        write_table(args.failed,failed)
-#/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py --indir runs --fastq_dir fastq --outdir samples --map map2.txt --failed failed.txt --header --keep_intermediate --run_col 2 --sample_col 1 --failed failed.txt
-#/home/sur/micropopgen/src/micropopgen/hmp_metadata/sra2sample.py --indir /godot/hmp/WGS/runs/ --fastq_dir /godot/hmp/WGS/fastq --outdir /godot/hmp/WGS/samples --map /home/sur/micropopgen/data/hmp_download_records/2017-07-17.runs_to_download.txt --failed failed.txt --header --keep_intermediate --run_col 2 --sample_col 1 --method qsub --failed_dir failed --submissions_dir submissions --logdir logs
+        write_table(args.failed, failed)
