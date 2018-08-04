@@ -64,7 +64,8 @@ Channel.from(run_sample_table)
 
 
 process sra2fastq{
-  cpus params.njobs
+  cpus 1
+  maxForks params.njobs
 
   input:
   set sample, runs from runs_groups
@@ -75,13 +76,21 @@ process sra2fastq{
   // Within each group of runs corresponding to the same sample,
   // use fastq-dump to convert them
   process fastqdump{
+    cpus 1
+    maxForks params.njobs
+
+
     input:
     val run from runs
     val sample from sample
     file "${params.indir}/${run}.sra" from runs
 
+    output:
+    set sample, run, file("${params.fastq_dir}/${run}_1.fastq.bz2"), file("${params.fastq_dir}/${run}_1.fastq.bz2") into fastq_files
+
     """
-    cat ${params.indir}/${run}.sra
+    # cat ${params.indir}/${run}.sra
+    fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${params.indir}/${run}.sra
     """
   }
 
