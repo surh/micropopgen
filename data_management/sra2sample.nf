@@ -62,7 +62,7 @@ Channel.from(run_sample_table)
   .groupTuple()
   .set{runs_groups}
 // Get channel with runs
-Channel.from(run_sample_table).map{sample, run -> return run}.set{runs}
+Channel.from(run_sample_table).map{sample, run -> return run, file("${params.indir}/${run}.sra")}.set{runs}
 
 
 // Convert all sra files to fastq
@@ -71,15 +71,15 @@ process fastqdump{
   maxForks params.njobs
 
   input:
-  file "${params.indir}/${run}.sra" from runs
+  set run, run_file from runs
 
   output:
   set file("${params.fastq_dir}/${run}_1.fastq.bz2"),
     file("${params.fastq_dir}/${run}_1.fastq.bz2") into fastq_files
 
   """
-  # cat ${params.indir}/${run}.sra
-  fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${params.indir}/${run}.sra
+  # cat ${run_file}.sra
+  fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${run_file}
   """
 }
 
