@@ -61,9 +61,11 @@ Channel.from(run_sample_table)
     return tuple(sample, run)}
   .groupTuple()
   .set{runs_groups}
-// Get channel with runs
-Channel.from(run_sample_table).map{sample, run -> return tuple(run, file("${params.indir}/${run}.sra"))}.set{runs}
-
+// Get channel with runs and run files
+Channel.from(run_sample_table)
+  .map{sample, run ->
+    return tuple(run, file("${params.indir}/${run}.sra"))}
+  .set{runs}
 
 // Convert all sra files to fastq
 process fastqdump{
@@ -79,11 +81,12 @@ process fastqdump{
 
   """
   # cat ${run_file}.sra
+  vdb-validate ${run_file}
   fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${run_file}
   """
 }
 
-// process sra2fastq{
+// process fastq2sample{
 //   cpus 1
 //   maxForks params.njobs
 //
@@ -93,51 +96,5 @@ process fastqdump{
 //   exec:
 //   println sample + runs
 //
-//   // Within each group of runs corresponding to the same sample,
-//   // use fastq-dump to convert them
-//   process fastqdump{
-//     cpus 1
-//     maxForks params.njobs
 //
-//
-//     input:
-//     val run from runs
-//     val sample from sample
-//     file "${params.indir}/${run}.sra" from runs
-//
-//     output:
-//     set sample, run, file("${params.fastq_dir}/${run}_1.fastq.bz2"), file("${params.fastq_dir}/${run}_1.fastq.bz2") into fastq_files
-//
-//     """
-//     # cat ${params.indir}/${run}.sra
-//     fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${params.indir}/${run}.sra
-//     """
-//   }
-//
-// }
-
-//
-// println runs_per_sample
-// runs_per_sample.groupTuple().set{ run_groups }
-//
-//
-// process fastq_dump_runs{
-//   cpus params.njobs
-//
-//   input:
-//   set sample, runs from run_groups
-//
-//   exec:
-//   println sample
-// }
-//
-// process validate_run{
-//   cpus params.njobs
-//
-//   input:
-//   file "params.indir/$run\.sra" from runs
-//
-//   """
-//   vdb-validate params.indir/$run\.sra
-//   """
 // }
