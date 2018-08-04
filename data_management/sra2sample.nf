@@ -37,51 +37,78 @@ params.submissions_dir = 'submissions/'
 params.logdir = 'logs/'
 
 // Process params
-map = files(params.map)
+map = file(params.map)
 sample_col = params.sample_col - 1
 run_col  = params.run_col - 1
 
-process process_run_list{
+// Read mapping file
+count = 0
+reader = map.newReader()
+run_sample_table = []
+while(str = reader.readLine()){
+  // Skip header
+  if (count == 0 && params.header == true){
+    count++
+    continue
+  }
+  // Extract sample and run IDs
+  (sample, run) = str.split("\t")[sample_col, run_col]
+  run_sample_table = run_sample_table + [tuple(sample, run)]
+}
+// Convert to channel that maps sample to its runs
+Channel.from(run_sample_table)
+  .map{sample, run ->
+    return tuple(sample, run)}
+  .groupTuple()
+  .set{runs_groups}
+
+
+process sra2fastq{
   cpus params.njobs
 
   input:
-  file map from map
-
-  output:
-  set runs_per_sample into runs_per_sample
+  set sample, runs from runs_groups
 
   exec:
-  // Read map file line by line
-  count = 0
-  // map.eachLine{ str, i ->
-  //   // Skip header
-  //   if (count == 0 && params.header == true){
-  //     count++
-  //     return
-  //   }
-  //
-  //   // Extract sample and run IDs
-  //   def (sample, run) = str.split("\t")[sample_col, run_col]
-  //
-  //   // println "$sample\t$run"
-  //   println tuple(sample, run)
-  //   return tuple(sample, run)
-  // }
-  // .groupTuple()
-  // .set{runs_per_sample}
+  println sample + runs
 
-  reader = map.newReader()
-  while(str = reader.readLine()){
-    // Skipe header
-    if (count == 0 && params.header == true){
-      count++
-      continue
-    }
-    // Extract sample and run IDs
-    (sample, run) = str.split("\t")[sample_col, run_col]
+  // Within each group of runs corresponding to the same sample,
+  // use fastq-dump to convert them
+  process fastqdump{
+    input:
+    val run from runs
+    val sample from sample
+    file "${params.indir}/${run}.sra" from runs
 
-    // println "$sample\t$run"
-    // println tuple(sample, run)
-    Channel.from([tuple(sample, run)]).groupTuple().set{ runs_per_sample }
+    """
+    cat ${params.indir}/${run}.sra
+    """
   }
+
 }
+
+//
+// println runs_per_sample
+// runs_per_sample.groupTuple().set{ run_groups }
+//
+//
+// process fastq_dump_runs{
+//   cpus params.njobs
+//
+//   input:
+//   set sample, runs from run_groups
+//
+//   exec:
+//   println sample
+// }
+//
+// process validate_run{
+//   cpus params.njobs
+//
+//   input:
+//   file "params.indir/$run\.sra" from runs
+//
+//   """
+//   vdb-validate params.indir/$run\.sra
+//   """
+// }
