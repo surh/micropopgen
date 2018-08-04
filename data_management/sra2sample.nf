@@ -62,7 +62,7 @@ Channel.from(run_sample_table)
   .groupTuple()
   .set{runs_groups}
 // Get channel with runs
-Channel.from(run_sample_table).map{sample, run -> return run, file("${params.indir}/${run}.sra")}.set{runs}
+Channel.from(run_sample_table).map{sample, run -> return tuple(run, file("${params.indir}/${run}.sra"))}.set{runs}
 
 
 // Convert all sra files to fastq
