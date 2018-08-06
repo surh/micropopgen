@@ -57,34 +57,62 @@ while(str = reader.readLine()){
 }
 
 // Convert to channel that maps sample to its runs
-Channel.from(run_sample_table)
-  .map{sample, run ->
-    return tuple(sample, run)}
-  .groupTuple()
-  .set{runs_groups}
+// Channel.from(run_sample_table)
+//   .map{sample, run ->
+//     return tuple(sample, run)}
+//   .groupTuple()
+//   .set{runs_groups}
 // Get channel with runs and run files
 Channel.from(run_sample_table)
   .map{sample, run ->
-    return tuple(run, file("${params.indir}/${run}.sra"))}
+    return tuple(run, file("${params.indir}/${run}.sra"), sample)}
   .set{runs}
 
 // Convert all sra files to fastq
 process fastqdump{
   cpus 1
   time '1h'
-  memory '500 MMB'
+  memory '500 MB'
   maxForks params.njobs
 
   input:
-  set run, run_file from runs
+  set run, run_file, sample from runs
 
   output:
-  set file("${params.fastq_dir}/${run}_1.fastq.bz2"),
-    file("${params.fastq_dir}/${run}_1.fastq.bz2") into fastq_files
+  set sample, run, file("${run}_1.fastq.bz2") into forward_fastq
+  set sample, run, file("${run}_2.fastq.bz2") into reverse_fastq
 
   """
-  # cat ${run_file}.sra
+  # cat ${run_file} > ${run}_1.fastq.bz2
+  # cat ${run_file} > ${run}_2.fastq.bz2
   vdb-validate ${run_file}
-  fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${run_file}
+  fastq-dump -I -O ./ --split-files --bzip2 ${run_file}
+  """
+}
+
+process concatenate_samples{
+  cpus 1
+  time '1h'
+  memory '500 MB'
+  maxForks params.njobs
+  publishDir params.outdir, mode: 'move'
+
+  input:
+  set sample, file(f_files) from forward_fastq
+    .map{sample, run, file ->
+      return tuple(sample, file)}
+    .groupTuple()
+  set sample, file(r_files) from reverse_fastq
+    .map{sample, run, file ->
+      return tuple(sample, file)}
+    .groupTuple()
+
+  output:
+  file "${sample}_read1.fastq.bz2" into samples_fowrward
+  file "${sample}_read2.fastq.bz2" into samples_reverse
+
+  """
+  cat ${f_files} > ${sample}_read1.fastq.bz2
+  cat ${r_files} > ${sample}_read2.fastq.bz2
   """
 }
