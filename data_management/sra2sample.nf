@@ -55,6 +55,7 @@ while(str = reader.readLine()){
   (sample, run) = str.split("\t")[sample_col, run_col]
   run_sample_table = run_sample_table + [tuple(sample, run)]
 }
+
 // Convert to channel that maps sample to its runs
 Channel.from(run_sample_table)
   .map{sample, run ->
@@ -70,6 +71,8 @@ Channel.from(run_sample_table)
 // Convert all sra files to fastq
 process fastqdump{
   cpus 1
+  time '1h'
+  memory '500 MMB'
   maxForks params.njobs
 
   input:
@@ -85,16 +88,3 @@ process fastqdump{
   fastq-dump -I -O ${params.fastq_dir} --split-files --bzip2 ${run_file}
   """
 }
-
-// process fastq2sample{
-//   cpus 1
-//   maxForks params.njobs
-//
-//   input:
-//   set sample, runs from runs_groups
-//
-//   exec:
-//   println sample + runs
-//
-//
-// }
