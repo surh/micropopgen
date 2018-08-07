@@ -23,6 +23,7 @@ params.indir = "patric/"
 params.bindir = "/home/sur/micropopgen/src/micropopgen/patric"
 params.threads = 2
 params.outdir = 'roary/'
+params.njobs = 10
 
 // Get list of files
 patric_gffs = "${params.indir}/*/*/*.PATRIC.gff"
@@ -33,6 +34,8 @@ patric_fnas = files(patric_fnas)
 
 // PROCESSES
 process preprocess_patric_gff{
+  maxForks params.njobs
+
   input:
   file patric_gff from patric_gffs
 
@@ -47,6 +50,8 @@ process preprocess_patric_gff{
 }
 
 process preprocesss_patric_fna{
+  maxForks params.njobs
+
   input:
   file patric_fna from patric_fnas
 
@@ -61,6 +66,8 @@ process preprocesss_patric_fna{
 }
 
 process create_roary_input{
+  maxForks params.njobs
+
   input:
   file gff from roary_gffs
   file fna from roary_fnas
