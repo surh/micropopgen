@@ -92,8 +92,8 @@ process fastqdump{
 
 process concatenate_samples{
   cpus 1
-  time '1h'
-  memory '500 MB'
+  time '20m'
+  memory '3000 MB'
   maxForks params.njobs
   publishDir params.outdir, mode: 'move'
 
