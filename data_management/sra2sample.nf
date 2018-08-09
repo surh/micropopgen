@@ -72,7 +72,7 @@ Channel.from(run_sample_table)
 process fastqdump{
   cpus 1
   time '1h'
-  memory '500 MB'
+  memory '1000 MB'
   maxForks params.njobs
 
   input:
