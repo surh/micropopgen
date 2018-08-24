@@ -18,7 +18,7 @@ module load hmmer
 ## checkm
 
 ```bash
-module load hhmer
+module load hmmer
 module load prodigal
 module load pplacer
 module load fraserconda
