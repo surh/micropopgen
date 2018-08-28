@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import os
+import math
 
 
 def process_arguments():
@@ -66,5 +68,71 @@ def process_arguments():
     return args
 
 
+def find_genome_files(indir):
+    """Read indir and find all genome files. Check assumptions
+    about tree structure"""
+
+    Genomes = []
+    specname_dirs = os.listdir(indir)
+    for spec in specname_dirs:
+        if os.path.isdir(os.path.join(indir, spec)):
+            print("\tReading genome dirs from {}".format(spec))
+            genome_dirs = os.listdir(os.path.join(indir, spec))
+            for genome in genome_dirs:
+                genome_path = os.path.join(indir,
+                                           spec,
+                                           genome,
+                                           genome + '.fna')
+                if os.path.isfile(genome_path):
+                    Genomes.append(genome_path)
+                else:
+                    raise FileNotFoundError("Genome file ({}) not "
+                                            "found".format(genome_path))
+        else:
+            print("{} is not a directory. Skipping.")
+
+    return Genomes
+
+
+def make_batches(Genomes, outdir, batch_size):
+    """Make batches"""
+
+    # Create output directory
+    os.mkdir(outdir)
+
+    # Iterate over genomes
+    curr_batch = 0
+    curr_batch_size = 0
+    curr_batch_dir = ''
+    batch_name = ''
+    Map = []
+    for genome in Genomes:
+        if (curr_batch_size / batch_size) == 0:
+            # Initialize batch dir
+            batch_name = ''.join(['batch_', curr_batch])
+            curr_batch_dir = ''.join([outdir, '/', batch_name, '/'])
+            os.mkdir(curr_batch_dir)
+            curr_batch = curr_batch + 1
+
+        # Create symlink
+        os.symlink(src=genome, dst=curr_batch_dir, target_is_directory=True)
+        Map.append([batch_name, genome])
+        curr_batch_size = curr_batch_size + 1
+
+    return Map
+
+
 if __name__ == "__main__":
     args = process_arguments()
+
+
+
+    # Get list of genome files
+    print("Getting list of genome files")
+    try:
+        Genomes = find_genome_files(args.indir)
+    except:
+        raise
+
+    Map = make_batches(Genomes, args.outdir, args.batch_size)
+    print(Map)
