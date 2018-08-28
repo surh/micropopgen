@@ -63,7 +63,7 @@ process run_checkm{
   checkm lineage_wf \
     -t ${params.threads} \
     -f checkm_results.txt \
-    --tab_table genomes \
+    --tab_table \
     ${checkm_dir} \
     results
   """
