@@ -53,14 +53,6 @@ def process_arguments():
                                           "symbolic link structure"),
                         type=str, default='genome_links/')
 
-    parser.add_argument("--create_symlinks", help=("Flag indicating whether "
-                                                   "to create a symbolic link "
-                                                   "directory structure "
-                                                   "for the defined batches"),
-                        type=str,
-                        default=False,
-                        action='store_true')
-
     # Read arguments
     print("Reading arguments")
     args = parser.parse_args()
@@ -107,17 +99,22 @@ def make_batches(Genomes, outdir, batch_size):
     batch_name = ''
     Map = []
     for genome in Genomes:
-        if (curr_batch_size / batch_size) == 0:
+        if (curr_batch_size % batch_size) == 0:
             # Initialize batch dir
-            batch_name = ''.join(['batch_', curr_batch])
+            batch_name = ''.join(['batch_', str(curr_batch)])
             curr_batch_dir = ''.join([outdir, '/', batch_name, '/'])
             os.mkdir(curr_batch_dir)
             curr_batch = curr_batch + 1
+            print("\tProcessing batch {}".format(batch_name))
 
         # Create symlink
-        os.symlink(src=genome, dst=curr_batch_dir, target_is_directory=True)
+        print(genome, curr_batch_dir)
+        genome_name = os.path.basename(genome)
+        target_name = ''.join([curr_batch_dir, '/', genome_name])
+        os.symlink(src=genome, dst=target_name)
         Map.append([batch_name, genome])
         curr_batch_size = curr_batch_size + 1
+        print("======", curr_batch_size, batch_size)
 
     return Map
 
@@ -125,12 +122,11 @@ def make_batches(Genomes, outdir, batch_size):
 if __name__ == "__main__":
     args = process_arguments()
 
-
-
     # Get list of genome files
     print("Getting list of genome files")
     try:
         Genomes = find_genome_files(args.indir)
+        # print(Genomes)
     except:
         raise
 
