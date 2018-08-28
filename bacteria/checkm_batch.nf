@@ -56,7 +56,7 @@ process run_checkm{
   queue params.queue
 
   input:
-  file checkm_dir from checkm_dirs
+  file checkm_dir from checkm_dirs.flatten()
 
   """
   checkm lineage_wf \
