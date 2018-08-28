@@ -22,14 +22,15 @@ params.threads = 8
 params.memory = '20GB'
 params.time = '2:00:00'
 params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
-
+params.queue = 'owners,hbfraser,hns'
 
 process create_batch_map{
   cpus 1
   memory '1GB'
-  time 1:00:00
+  time '1:00:00'
   errorStrategy 'retry'
   maxRetries 3
+  queue params.queue
 
   output:
   file('batch_map.txt') into create_batch
@@ -52,6 +53,7 @@ process run_checkm{
   maxForks 200
   module 'prodigal:hmmer:pplacer:fraserconda'
   conda '/share/PI/hbfraser/modules/packages/anaconda3/5.1/envs/python2/'
+  queue params.queue
 
   input:
   file checkm_dir from checkm_dirs
