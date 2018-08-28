@@ -118,6 +118,7 @@ def make_batches(Genomes, outdir, batch_size):
         src_abspath = os.path.abspath(genome)
         genome_name = os.path.basename(genome)
         target_name = ''.join([curr_batch_dir, '/', genome_name])
+        target_name = os.path.abspath(target_name)
         os.symlink(src=src_abspath, dst=target_name)
         Map.append([batch_name, src_abspath, target_name])
         curr_batch_size = curr_batch_size + 1
@@ -142,7 +143,9 @@ if __name__ == "__main__":
 
     print("Writting mapping file")
     # print(Map)
-    with open(args.outfile) as oh:
+    with open(args.outfile, 'w') as oh:
         for l in Map:
-            oh.write('\t'.join(l), "\n")
+            line = '\t'.join(l)
+            line = ''.join([line, "\n"])
+            oh.write(line)
     oh.close()
