@@ -33,7 +33,7 @@ process create_batch_map{
   queue params.queue
 
   input:
-  file("${params.indir/*}") into genomes
+  file("${params.indir}/*")
 
   output:
   file('batch_map.txt') into create_batch
