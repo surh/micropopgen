@@ -59,6 +59,9 @@ process run_checkm{
   input:
   file checkm_dir from checkm_dirs.flatten()
 
+  output:
+  file file("checkm_results.txt") into checkm_results
+
   """
   checkm lineage_wf \
     -t ${params.threads} \
