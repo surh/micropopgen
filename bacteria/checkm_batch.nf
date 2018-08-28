@@ -31,6 +31,7 @@ process create_batch_map{
   errorStrategy 'retry'
   maxRetries 3
   queue params.queue
+  module 'fraserconda'
 
   output:
   file('batch_map.txt') into create_batch
