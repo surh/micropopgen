@@ -16,7 +16,6 @@
 
 import argparse
 import os
-import math
 
 
 def process_arguments():
@@ -26,32 +25,39 @@ def process_arguments():
     required = parser.add_argument_group("Required arguments")
 
     # Define description
-    parser.description = ("It creates a mapping file that groups genomes "
-                          "into batches. This file can be used by Nextflow "
-                          "to decide how to split the genomes for "
-                          "processing.\n"
+    parser.description = ("It splits a collection of genomes into batches of "
+                          "the specified size."
+                          "It creates a directory structure at the specified "
+                          "outdir with one subdirectory per batch and "
+                          "symlinks within each subdirectory to absolute "
+                          "paths of the "
+                          "genome files in the corresponding batch."
+                          "It writes a mapping file that groups genomes "
+                          "into batches.\n"
                           "It assumes that the directory passed has a set "
                           "of subdirectories corresponding to some arbitrary "
                           "group. Then each group subdirectory has one "
                           "subdirectory per genome where the only .fna "
                           "file in the genome subdirectory corresponds to "
-                          "the contigs file")
+                          "the contigs file.")
 
     # Define required arguments
     required.add_argument("--indir", help=("Directory that containes genomes. "
                                            "See above for the expected "
                                            "directory structure."),
                           required=True, type=str)
-    required.add_argument("--outfile", help=("Name of the mapping file to be "
-                                             "created."),
-                          required=True, type=str)
-    required.add_argument("--batch_size", help=("Number of genomes per batch"),
-                          required=True, type=int)
-
-    # Define other arguments
-    parser.add_argument("--outdir", help=("Directory where to create "
+    required.add_argument("--outdir", help=("Directory where to create "
                                           "symbolic link structure"),
-                        type=str, default='genome_links/')
+                          type=str,
+                          required=True)
+
+    # Optional arguments
+    parser.add_argument("--outfile", help=("Name of the mapping file to be "
+                                             "created."),
+                        type=str, default='batch_map.txt')
+    parser.add_argument("--batch_size", help=("Number of genomes per batch"),
+                        required=True, type=int, default=100)
+
 
     # Read arguments
     print("Reading arguments")
@@ -109,14 +115,14 @@ def make_batches(Genomes, outdir, batch_size):
             print("\tProcessing batch {}".format(batch_name))
 
         # Create symlink
-        print(genome, curr_batch_dir)
+        # print(genome, curr_batch_dir)
         src_abspath = os.path.abspath(genome)
         genome_name = os.path.basename(genome)
         target_name = ''.join([curr_batch_dir, '/', genome_name])
         os.symlink(src=src_abspath, dst=target_name)
-        Map.append([batch_name, genome])
+        Map.append([batch_name, src_abspath, target_name])
         curr_batch_size = curr_batch_size + 1
-        print("======", curr_batch_size, batch_size)
+        # print("======", curr_batch_size, batch_size)
 
     return Map
 
@@ -132,5 +138,12 @@ if __name__ == "__main__":
     except:
         raise
 
+    print("Making batches")
     Map = make_batches(Genomes, args.outdir, args.batch_size)
-    print(Map)
+
+    print("Writting mapping file")
+    # print(Map)
+    with open(args.outfile) as oh:
+        for l in Map:
+            oh.write('\t'.join(l),"\n")
+    oh.close()
