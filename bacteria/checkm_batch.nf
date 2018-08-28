@@ -20,6 +20,8 @@ params.indir = 'genomes'
 params.batch_size = 200
 params.threads = 8
 params.memory = '20GB'
+params.time = '2:00:00'
+params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
 
 
 process create_batch_map{
@@ -34,7 +36,7 @@ process create_batch_map{
   file('checkm_batches/batch_*') into checkm_dirs
 
   """
-  create_batches.py --indir ${params.indir} \
+  ${params.bindir}/create_batches.py --indir ${params.indir} \
     --outdir checkm_batches \
     --outfile batch_map.txt \
     --batch_size ${params.batch_size}
@@ -43,8 +45,8 @@ process create_batch_map{
 
 process run_checkm{
   cpus params.threads
-  memory '10GB'
-  time '2:00:00'
+  memory params.memory
+  time params.time
   errorStrategy 'retry'
   maxRetries 3
   maxForks 200
@@ -62,5 +64,4 @@ process run_checkm{
     ${checkm_dir} \
     results
   """
-
 }
