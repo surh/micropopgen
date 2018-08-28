@@ -32,6 +32,9 @@ process create_batch_map{
   maxRetries 3
   queue params.queue
 
+  input:
+  file("${params.indir/*}") into genomes
+
   output:
   file('batch_map.txt') into create_batch
   file('checkm_batches/batch_*') into checkm_dirs
