@@ -105,13 +105,15 @@ def make_batches(Genomes, outdir, batch_size):
             curr_batch_dir = ''.join([outdir, '/', batch_name, '/'])
             os.mkdir(curr_batch_dir)
             curr_batch = curr_batch + 1
+            curr_batch_size = 0
             print("\tProcessing batch {}".format(batch_name))
 
         # Create symlink
         print(genome, curr_batch_dir)
+        src_abspath = os.path.abspath(genome)
         genome_name = os.path.basename(genome)
         target_name = ''.join([curr_batch_dir, '/', genome_name])
-        os.symlink(src=genome, dst=target_name)
+        os.symlink(src=src_abspath, dst=target_name)
         Map.append([batch_name, genome])
         curr_batch_size = curr_batch_size + 1
         print("======", curr_batch_size, batch_size)
