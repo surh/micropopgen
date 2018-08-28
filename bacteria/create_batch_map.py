@@ -47,17 +47,16 @@ def process_arguments():
                                            "directory structure."),
                           required=True, type=str)
     required.add_argument("--outdir", help=("Directory where to create "
-                                          "symbolic link structure"),
+                                            "symbolic link structure"),
                           type=str,
                           required=True)
 
     # Optional arguments
     parser.add_argument("--outfile", help=("Name of the mapping file to be "
-                                             "created."),
+                                           "created."),
                         type=str, default='batch_map.txt')
     parser.add_argument("--batch_size", help=("Number of genomes per batch"),
                         required=True, type=int, default=100)
-
 
     # Read arguments
     print("Reading arguments")
@@ -145,5 +144,5 @@ if __name__ == "__main__":
     # print(Map)
     with open(args.outfile) as oh:
         for l in Map:
-            oh.write('\t'.join(l),"\n")
+            oh.write('\t'.join(l), "\n")
     oh.close()
