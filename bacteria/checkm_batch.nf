@@ -29,7 +29,7 @@ process create_batch_map{
   memory '1GB'
   time '1:00:00'
   errorStrategy 'retry'
-  maxRetries 3
+  maxRetries 2
   queue params.queue
   module 'fraserconda'
 
@@ -50,7 +50,7 @@ process run_checkm{
   memory params.memory
   time params.time
   errorStrategy 'retry'
-  maxRetries 3
+  maxRetries 2
   maxForks 200
   module 'prodigal:hmmer:pplacer:fraserconda'
   conda '/share/PI/hbfraser/modules/packages/anaconda3/5.1/envs/python2/'
