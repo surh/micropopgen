@@ -82,6 +82,6 @@ process run_checkm{
   """
 }
 
-checkm_results_noheader.
+checkm_results_noheader
   .collectFile()
   .println{ it.text }
