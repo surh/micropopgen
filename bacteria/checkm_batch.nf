@@ -19,7 +19,7 @@
 params.indir = 'genomes'
 params.batch_size = 200
 params.threads = 8
-params.memory = '20GB'
+params.memory = '40GB'
 params.time = '2:00:00'
 params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
 params.queue = 'owners,hbfraser,hns'
