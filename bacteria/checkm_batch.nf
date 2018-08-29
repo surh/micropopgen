@@ -23,6 +23,7 @@ params.memory = '40GB'
 params.time = '2:00:00'
 params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
 params.queue = 'owners,hbfraser,hns'
+params.max_forks = 200
 
 process create_batch_map{
   cpus 1
@@ -51,7 +52,7 @@ process run_checkm{
   time params.time
   errorStrategy 'retry'
   maxRetries 2
-  maxForks 200
+  maxForks params.max_forks
   module 'prodigal:hmmer:pplacer:fraserconda'
   conda '/share/PI/hbfraser/modules/packages/anaconda3/5.1/envs/python2/'
   queue params.queue
