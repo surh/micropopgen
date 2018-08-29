@@ -25,6 +25,9 @@ params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
 params.queue = 'owners,hbfraser,hns'
 params.max_forks = 200
 
+// Process params
+indir = file(params.indir)
+
 process create_batch_map{
   cpus 1
   memory '1GB'
@@ -33,6 +36,9 @@ process create_batch_map{
   maxRetries 2
   queue params.queue
   module 'fraserconda'
+
+  input:
+  file indir
 
   output:
   file('batch_map.txt') into create_batch
