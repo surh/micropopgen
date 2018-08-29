@@ -68,6 +68,7 @@ process run_checkm{
 
   output:
   file "checkm_results.txt" into checkm_results
+  file "checkm_results_noheader.txt" into checkm_results_noheader
 
   """
   checkm lineage_wf \
@@ -76,5 +77,11 @@ process run_checkm{
     --tab_table \
     ${checkm_dir} \
     results
+  
+  tail -n +2 checkm_results.txt > checkm_results_noheader.txt
   """
 }
+
+checkm_results_noheader.
+  .collectFile()
+  .println{ it.text }
