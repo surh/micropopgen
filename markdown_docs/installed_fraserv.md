@@ -28,3 +28,19 @@ checkm test ~/test.out
 module load anaconda
 source activate sur
 ```
+
+
+# MAFFT
+Multiple sequence alignment. Compiled on fraserv
+
+```bash
+module load mafft
+```
+
+# Clustal Omega
+
+Multiple sequence alignment. Compiled on fraserv
+
+```bash
+module load clustalO
+```
