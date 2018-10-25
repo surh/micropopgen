@@ -44,3 +44,12 @@ Multiple sequence alignment. Compiled on fraserv
 ```bash
 module load clustalO
 ```
+
+# Prokka
+Installed as conda package. Seemed to conflict with roary but it works
+after updating.
+
+```bash
+module load anaconda
+source activate sur
+```
