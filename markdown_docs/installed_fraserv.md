@@ -53,3 +53,18 @@ after updating.
 module load anaconda
 source activate sur
 ```
+
+# AntiSMASH
+Istalled as conda environment. Conflicted with something on sur evironment.
+Created dedicated module which can be loaded with modules. Current version 4.1
+
+```bash
+module load antismash
+```
+
+or via anaconda
+
+```bash
+module load anaconda/3.6
+source activate antismash
+```
