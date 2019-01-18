@@ -231,10 +231,12 @@ def download_genome_table(genomes, outdir, overwrite=False,
 
     results = []
     for i, r in genomes.iterrows():
+        print("====== Downloading genome {} ======".format(r['ID']))
         success = download_genome_dir(id=r['ID'], name=r['Name'],
                                       outdir=outdir, overwrite=overwrite,
                                       url="ftp.patricbrc.org")
         results.append([r['ID'], r['Name'], outdir, success])
+        print("===================================")
 
     results = pd.DataFrame(results, columns=['ID', 'Name', 'Dir', 'Success'])
 
