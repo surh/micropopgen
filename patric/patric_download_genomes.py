@@ -262,6 +262,7 @@ if __name__ == "__main__":
         # raise NotImplementedError("Group option is not implemented yet.")
         results = pd.DataFrame()
         for n, g in genomes.groupby('Group'):
+            print("------------------------------------------------")
             print("Processing group {}".format(n))
             group_dir = ''.join([args.outdir, '/', n])
             prepare_outdir(outdir=group_dir, overwrite=True)
@@ -270,6 +271,7 @@ if __name__ == "__main__":
                                       overwrite=args.overwrite,
                                       url="ftp.patricbrc.org")
             results = results.append(r)
+            print("------------------------------------------------")
     else:
         results = download_genome_table(genomes=genomes,
                                         outdir=args.outdir,
