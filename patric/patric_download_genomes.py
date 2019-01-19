@@ -125,7 +125,7 @@ def read_genomes_file(file, id_col=0, group_col=0, name_col=0, header=False):
         genomes.columns = ['ID']
         genomes = genomes.assign(Name=genomes.ID)
     else:
-        dat = pd.read_table(file, sep="\t")
+        dat = pd.read_table(file, sep="\t", dtype={id_col - 1: str})
         columns = [id_col - 1]
         colnames = ['ID']
 
