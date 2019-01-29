@@ -44,14 +44,14 @@ process snps_to_genes{
   set genome, lmm_file, feat_file from GENOMES
 
   output:
-  // file 'snps.bed' optional true
-  // file 'genome.features.bed'
+  file 'snps.bed' optional true
+  file 'genome.features.bed'
   file "${genome}.closest" optional true
 
   """
   # Convert snps to BED
   awk '(\$6 <= ${params.pval_thres}){print \$1 "\\t" \$2 "\\t" \$2}' \
-    ${lmm_file} | sort -k1,1 -k2,2n | grep -v chr > snps.bed
+    ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
 
   # Convert features to BED
   zcat ${feat_file} | awk '{print \$2 "\t" \$3 "\t" \$4 "\t" \$1}' | \
