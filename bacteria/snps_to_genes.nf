@@ -44,8 +44,8 @@ process snps_to_genes{
   set genome, lmm_file, feat_file from GENOMES
 
   output:
-  file 'snps.bed' optional true
-  file 'genome.features.bed'
+  // file 'snps.bed' optional true
+  // file 'genome.features.bed'
   file "${genome}.closest" optional true
 
   """
