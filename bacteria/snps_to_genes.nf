@@ -28,7 +28,7 @@ params.outdir = 'output/'
 // process params
 genomes_file = file(params.genomes_file)
 
-reader = genome_file.newReader()
+reader = genomes_file.newReader()
 GENOMES = []
 while( line = reader.readLine() ) {
   GENOMES = GENOMES + [tuple(line,
