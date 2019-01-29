@@ -37,7 +37,7 @@ while( line = reader.readLine() ) {
 }
 
 process snps_to_genes{
-  publisDir params.outdir, mode: 'copy', pattern: "*.closest"
+  publishDir params.outdir, mode: 'copy', pattern: "*.closest"
   maxForks 10
 
   input:
