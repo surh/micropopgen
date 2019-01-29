@@ -54,7 +54,7 @@ process snps_to_genes{
     ${lmm_file} | sort -k1,1 -k2,2n | grep -v chr > snps.bed
 
   # Convert features to BED
-  zcat ${feat_file} | awk '{print $2 "\t" $3 "\t" $4 "\t" $1}' | \
+  zcat ${feat_file} | awk '{print \$2 "\t" \$3 "\t" \$4 "\t" \$1}' | \
     grep -v scaffold_id | sort -k1,1 -k2,2n > genome.features.bed
 
   # Find closest
