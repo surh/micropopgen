@@ -46,7 +46,7 @@ process snps_to_genes{
   output:
   file 'snps.bed' optional true
   file 'genome.features.bed'
-  file "${genome}.closest" otpional true
+  file "${genome}.closest" optional true
 
   """
   # Convert snps to BED
