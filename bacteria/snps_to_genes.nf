@@ -58,7 +58,7 @@ process snps_to_genes{
     grep -v scaffold_id | sort -k1,1 -k2,2n > genome.features.bed
 
   # Find closest
-  closestBed -D a -a temp.snps.bed -b genome.features.bed > ${genome}.closest
+  closestBed -D a -a snps.bed -b genome.features.bed > ${genome}.closest
   """
 }
 
