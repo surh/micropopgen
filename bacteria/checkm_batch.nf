@@ -22,7 +22,6 @@ params.batch_size = 200
 params.threads = 8
 params.memory = '40GB'
 params.time = '2:00:00'
-params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
 params.queue = 'owners,hbfraser,hns'
 params.max_forks = 200
 
@@ -46,7 +45,7 @@ process create_batch_map{
   file('checkm_batches/batch_*') into checkm_dirs
 
   """
-  ${params.bindir}/create_batches.py --indir ${params.indir} \
+  ${workflow.projectDir}/create_batches.py --indir ${params.indir} \
     --outdir checkm_batches \
     --outfile batch_map.txt \
     --batch_size ${params.batch_size}
