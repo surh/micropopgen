@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:surh/sutilspy
+	branch = master
+	commit = 891ee510ed66107053c396283f4d34af73e1ebb3
+	parent = ca8cb3d3a9962b8f1e7dcf1152d9d99d5bf0f5a0
+	method = merge
+	cmdver = 0.4.0

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2018 Sur Herrera Paredes
+# Copyright (C) 2018-2019 Sur Herrera Paredes
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,12 +26,12 @@ def process_arguments():
 
     # Define description
     parser.description = ("It splits a collection of genomes into batches of "
-                          "the specified size."
+                          "the specified size. "
                           "It creates a directory structure at the specified "
                           "outdir with one subdirectory per batch and "
                           "symlinks within each subdirectory to absolute "
                           "paths of the "
-                          "genome files in the corresponding batch."
+                          "genome files in the corresponding batch. "
                           "It writes a mapping file that groups genomes "
                           "into batches.\n"
                           "It assumes that the directory passed has a set "

@@ -14,16 +14,45 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// Nextflow pipeline that runs a directory of genomes through checkm
+// Nextflow pipeline that runs a directory of genomes through checkm.
+// Combines results in single table
 
+// Parameters:
+// --indir
+// Input directory with GENOME files. Assumes genomes are organized in
+// an an arbitrary number of subdirectories. And each genome is in a
+// second level subdirectory, where there is an '.fna' file with the
+// same name as the genome directory. For example, the following structure
+// would be acceptable:
+// genomes/group1/genome1/genome1.fna
+// genomes/group1/genome2/genome2.fna
+// genomes/group2/genome3/genome3.fna
+// genomes/group2/genome4/genome4.fna
+
+// --outfile
+// Name of file for checkm results.
+
+// --conda_checkm
+// Path to conda environment where checkm is installed. Default for fraserv
+
+// --batch_size
+// Number of genomes to analyze by batch
+
+// --threads, --memory, --time, --queue, --max_forks
+// Parameters for checkm jobs.
+
+
+// Params
 params.indir = 'genomes'
+params.outfile = 'checkm_results.txt'
+params.conda_checkm = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
 params.batch_size = 200
 params.threads = 8
 params.memory = '40GB'
 params.time = '2:00:00'
-params.bindir = '/home/users/surh/src/micropopgen/bacteria/'
 params.queue = 'owners,hbfraser,hns'
 params.max_forks = 200
+
 
 // Process params
 indir = file(params.indir)
@@ -45,7 +74,7 @@ process create_batch_map{
   file('checkm_batches/batch_*') into checkm_dirs
 
   """
-  ${params.bindir}/create_batches.py --indir ${params.indir} \
+  ${workflow.projectDir}/create_batches.py --indir ${params.indir} \
     --outdir checkm_batches \
     --outfile batch_map.txt \
     --batch_size ${params.batch_size}
@@ -60,7 +89,7 @@ process run_checkm{
   maxRetries 2
   maxForks params.max_forks
   module 'prodigal:hmmer:pplacer:fraserconda'
-  conda '/share/PI/hbfraser/modules/packages/anaconda3/5.1/envs/python2/'
+  conda params.conda_checkm
   queue params.queue
 
   input:
@@ -68,7 +97,7 @@ process run_checkm{
 
   output:
   file "checkm_results.txt" into checkm_results
-  file "checkm_results_noheader.txt" into checkm_results_noheader
+  // file "checkm_results_noheader.txt" into checkm_results_noheader
 
   """
   checkm lineage_wf \
@@ -77,11 +106,28 @@ process run_checkm{
     --tab_table \
     ${checkm_dir} \
     results
-  
-  tail -n +2 checkm_results.txt > checkm_results_noheader.txt
+
+  # tail -n +2 checkm_results.txt > checkm_results_noheader.txt
   """
 }
 
-checkm_results_noheader
-  .collectFile()
-  .println{ it.text }
+process collect_results{
+  cpus 1
+  memory '1GB'
+  time '00:30:00'
+  module 'fraserconda'
+  queue params.queue
+  publishDir './'
+
+  input:
+  file '*.txt' from checkm_results.collect()
+
+  output:
+  file "${params.outfile}"
+
+  """
+  ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
+    *.txt \
+    --outfile ${params.outfile}
+  """
+}
