@@ -17,6 +17,7 @@
 // Nextflow pipeline that runs a directory of genomes through checkm
 
 params.indir = 'genomes'
+params.outfile = 'checkm_results.txt'
 params.batch_size = 200
 params.threads = 8
 params.memory = '40GB'
@@ -68,7 +69,7 @@ process run_checkm{
 
   output:
   file "checkm_results.txt" into checkm_results
-  file "checkm_results_noheader.txt" into checkm_results_noheader
+  // file "checkm_results_noheader.txt" into checkm_results_noheader
 
   """
   checkm lineage_wf \
@@ -77,11 +78,32 @@ process run_checkm{
     --tab_table \
     ${checkm_dir} \
     results
-  
-  tail -n +2 checkm_results.txt > checkm_results_noheader.txt
+
+  // tail -n +2 checkm_results.txt > checkm_results_noheader.txt
   """
 }
 
-checkm_results_noheader
-  .collectFile()
-  .println{ it.text }
+process collect_results{
+  cpus 1
+  memory '1GB'
+  time '00:30:00'
+  module 'fraserconda'
+  queue params.queue
+  publishDir './'
+
+  input:
+  file '*.txt' from checkm_results.collect()
+
+  output:
+  file "${params.outfile}"
+
+  """
+  ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
+    *.txt \
+    --outfile ${params.outfile}
+  """
+}
+
+// checkm_results_noheader
+//   .collectFile()
+//   .println{ it.text }
