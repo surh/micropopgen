@@ -125,7 +125,7 @@ def read_genomes_file(file, id_col=0, group_col=0, name_col=0, header=False):
         genomes.columns = ['ID']
         genomes = genomes.assign(Name=genomes.ID)
     else:
-        dat = pd.read_table(file, sep="\t")
+        dat = pd.read_table(file, sep="\t", dtype={id_col - 1: str})
         columns = [id_col - 1]
         colnames = ['ID']
 
@@ -231,10 +231,12 @@ def download_genome_table(genomes, outdir, overwrite=False,
 
     results = []
     for i, r in genomes.iterrows():
+        print("====== Downloading genome {} ======".format(r['ID']))
         success = download_genome_dir(id=r['ID'], name=r['Name'],
                                       outdir=outdir, overwrite=overwrite,
                                       url="ftp.patricbrc.org")
         results.append([r['ID'], r['Name'], outdir, success])
+        print("===================================")
 
     results = pd.DataFrame(results, columns=['ID', 'Name', 'Dir', 'Success'])
 
@@ -260,6 +262,7 @@ if __name__ == "__main__":
         # raise NotImplementedError("Group option is not implemented yet.")
         results = pd.DataFrame()
         for n, g in genomes.groupby('Group'):
+            print("------------------------------------------------")
             print("Processing group {}".format(n))
             group_dir = ''.join([args.outdir, '/', n])
             prepare_outdir(outdir=group_dir, overwrite=True)
@@ -268,6 +271,7 @@ if __name__ == "__main__":
                                       overwrite=args.overwrite,
                                       url="ftp.patricbrc.org")
             results = results.append(r)
+            print("------------------------------------------------")
     else:
         results = download_genome_table(genomes=genomes,
                                         outdir=args.outdir,
