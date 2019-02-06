@@ -78,7 +78,7 @@ process run_checkm{
     ${checkm_dir} \
     results
 
-  // tail -n +2 checkm_results.txt > checkm_results_noheader.txt
+  # tail -n +2 checkm_results.txt > checkm_results_noheader.txt
   """
 }
 
