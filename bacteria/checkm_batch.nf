@@ -60,7 +60,7 @@ process run_checkm{
   maxRetries 2
   maxForks params.max_forks
   module 'prodigal:hmmer:pplacer:fraserconda'
-  conda '/share/PI/hbfraser/modules/packages/anaconda3/5.1/envs/python2/'
+  conda 'python2'
   queue params.queue
 
   input:
