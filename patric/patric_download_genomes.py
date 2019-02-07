@@ -266,7 +266,7 @@ def check_genomes_dirs(indir):
             else:
                 success = False
 
-            res.append(spec, success)
+            res.append([spec, success])
 
         res = pd.DataFrame(res, columns=['ID', 'fna'])
     else:
