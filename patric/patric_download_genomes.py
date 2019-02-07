@@ -321,7 +321,7 @@ if __name__ == "__main__":
 
     # fna.to_csv("test.txt", sep="\t")
     results = pd.merge(results, fna)
-    failed = results[(results.Success == 0) & (results.fna == False)]
+    failed = results[(results.Success == 0) | (results.fna == False)]
     if(len(failed.index) > 0):
         print("Writing failed genomes file ({})".format(args.failed))
         failed.to_csv(args.failed, sep="\t", index=False)
