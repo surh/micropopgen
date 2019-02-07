@@ -319,12 +319,13 @@ if __name__ == "__main__":
                              ignore_index=True,
                              sort=False)
 
-    fna.to_csv("test.txt", sep="\t")
-
-    failed = results[results.Success == 0]
+    # fna.to_csv("test.txt", sep="\t")
+    results = pd.merge(results, fna)
+    failed = results[(results.Success == 0) & (failed.fna == False)]
     if(len(failed.index) > 0):
         print("Writing failed genomes file ({})".format(args.failed))
-        failed.to_csv(args.failed, sep="\t")
+        failed.to_csv(args.failed, sep="\t", index=False)
 
     print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
     print("{} genomes failed.".format(str(sum(results.Success == 0))))
+    print("{} genomes have no .fna file.".format(str(sum(results.fna == False))))
