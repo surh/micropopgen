@@ -328,4 +328,4 @@ if __name__ == "__main__":
 
     print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
     print("{} genomes failed.".format(str(sum(results.Success == 0))))
-    print("{} genomes have no .fna file.".format(str(sum(results.fna == Farlse))))
+    print("{} genomes have no .fna file.".format(str(sum(results.fna == False))))
