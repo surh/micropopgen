@@ -101,7 +101,7 @@ if __name__ == "__main__":
     print("Writing results table")
     Res.to_csv(args.outfile, sep="\t", index=False)
 
-    if args.check:
+    if args.clean:
         print("Cleaning")
         Res = Res[Res.fna != True]
         if Res.shape[0] > 0:
