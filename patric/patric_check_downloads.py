@@ -37,7 +37,7 @@ def process_arguments():
                                          "level is some arbitrary grouping "
                                          "and the second level contains one "
                                          "genome per directory."),
-                          required=True, type=str)
+                          type=str)
 
     # Define other arguments
     parser.add_argument("--outfile", help=("Name of file for output"),
