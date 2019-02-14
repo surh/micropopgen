@@ -91,12 +91,14 @@ if __name__ == "__main__":
 
     Res = pd.DataFrame()
     for s in specdirs:
+        print("Processing {}".format(s))
         s_dir = os.path.join(args.indir, s)
         res = check_genomes_dirs(s_dir)
         res['path'] = s_dir + '/' + res.ID
         Res = Res.append(res)
 
     # Write results
+    print("Writing results table")
     Res.to_csv(args.outfile, sep="\t", index=False)
 
     if args.check:
