@@ -49,7 +49,7 @@ process download{
   publishDir params.outdir, pattern: 'patric/*'
 
   input:
-  file 'genomes_chunk.txt' from CHUNKS
+  file 'genomes_chunk.txt' from CHUNKS.flatten()
 
   output:
   file 'failed.txt' into FAILED
