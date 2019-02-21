@@ -18,7 +18,7 @@ import argparse
 import pandas as pd
 import os
 from ftplib import FTP
-import shutil
+# import shutil
 
 
 def process_arguments():
