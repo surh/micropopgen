@@ -48,7 +48,7 @@ process download{
   memory '2GB'
   time '5:00:00'
   module 'fraserconda'
-  publishDir params.outdir, pattern: 'patric/*'
+  publishDir params.outdir, pattern: 'patric/*', overwrite: false
   maxForks params.max_forks
 
   input:
