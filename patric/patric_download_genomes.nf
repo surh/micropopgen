@@ -38,7 +38,7 @@ process split_genomes{
   """
   ${workflow.projectDir}/../sutilspy/bin/split_tables.py \
     ${genomes} \
-    --nlines${params.chunk_size}
+    --nlines ${params.chunk_size}
   """
 }
 
