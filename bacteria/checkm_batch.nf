@@ -120,14 +120,14 @@ process collect_results{
   publishDir './'
 
   input:
-  file failed_files from checkm_results.collect()
+  file "*.txt" from checkm_results.collect()
 
   output:
   file "${params.outfile}"
 
   """
   ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
-    $failed_files \
+    *.txt \
     --outfile ${params.outfile}
   """
 }
