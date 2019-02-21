@@ -56,7 +56,7 @@ process download{
 
   output:
   file 'failed.txt' optional true into FAILED
-  file 'patric/*'
+  file 'patric/*/*'
 
 
   """
