@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:surh/sutilspy
 	branch = master
-	commit = 69754ce5ac7e311dc580639902d8a025270e381c
-	parent = 768ce083d19c89bdfb7d39cd607e3a05f81abb75
+	commit = 558a4e0a9eb9adf62d5246d6b0333772dae1d463
+	parent = 16d701134890b6f31ce782c1f04ed4e2c8ee8226
 	method = merge
 	cmdver = 0.4.0
