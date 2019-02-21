@@ -87,7 +87,7 @@ process collect_failed{
   file failed_genomes from FAILED.collect()
 
   output:
-  file "${params.outfile}"
+  file "${params.failed}"
 
   """
   ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
