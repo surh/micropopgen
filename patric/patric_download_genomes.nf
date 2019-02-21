@@ -84,14 +84,14 @@ process collect_failed{
   publishDir './'
 
   input:
-  file '*.txt' from FAILED.collect()
+  file failed_genomes from FAILED.collect()
 
   output:
   file "${params.outfile}"
 
   """
   ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
-    *.txt \
+    $failed_downloads \
     --outfile ${params.failed}
   """
 }
