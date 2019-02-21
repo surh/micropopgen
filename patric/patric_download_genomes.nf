@@ -52,7 +52,7 @@ process download{
   file 'genomes_chunk.txt' from CHUNKS.flatten()
 
   output:
-  file 'failed.txt' into FAILED
+  file 'failed.txt' optional true into FAILED
   file 'patric/*'
 
 
