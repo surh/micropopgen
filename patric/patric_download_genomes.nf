@@ -91,7 +91,7 @@ process collect_failed{
 
   """
   ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
-    $failed_downloads \
+    $failed_genomes \
     --outfile ${params.failed}
   """
 }
