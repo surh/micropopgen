@@ -27,6 +27,8 @@ params.outdir = 'patric'
 genomes = file(genomes)
 
 process split_genomes{
+  module 'fraserconda'
+
   input:
   file genomes
 
