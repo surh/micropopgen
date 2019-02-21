@@ -23,6 +23,8 @@ params.group_col = 5
 params.name_col = 0
 params.failed = 'failed.txt'
 params.outdir = 'patric'
+params.max_forks = 2
+
 
 genomes = file(params.genomes)
 
@@ -47,6 +49,7 @@ process download{
   time '5:00:00'
   module 'fraserconda'
   publishDir params.outdir, pattern: 'patric/*'
+  maxForks params.max_forks
 
   input:
   file 'genomes_chunk.txt' from CHUNKS.flatten()
