@@ -44,14 +44,14 @@ process download{
   memory '2GB'
   time '5:00:00'
   module 'fraserconda'
-  publishDir params.outdir,
+  publishDir params.outdir, pattern: 'patric/*'
 
   input:
   file 'genomes_chunk.txt' from CHUNKS
 
   output:
   file 'failed.txt' into FAILED
-  output
+  file 'patric/*'
 
 
   """
