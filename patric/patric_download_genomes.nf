@@ -24,7 +24,7 @@ params.name_col = 0
 params.failed = 'failed.txt'
 params.outdir = 'patric'
 
-genomes = file(genomes)
+genomes = file(params.genomes)
 
 process split_genomes{
   module 'fraserconda'
