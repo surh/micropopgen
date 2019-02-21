@@ -120,7 +120,7 @@ process collect_results{
   publishDir './'
 
   input:
-  file '*.txt' from checkm_results.collect()
+  file "*.txt" from checkm_results.collect()
 
   output:
   file "${params.outfile}"
