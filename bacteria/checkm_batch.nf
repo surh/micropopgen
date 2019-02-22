@@ -151,7 +151,29 @@ process filter_checkm{
   memory '2GB'
   time '00:30:00'
   queue params.queue
-  publishDir "${params.outdir}/checkm"
+  publishDir params.outdir, pattern: "output/all_completeness_histogram.svg",
+    saveAs: {"checkm/all_completeness_histogram.svg"}
+  publishDir params.outdir, pattern: "output/all_contamination_histogram.svg",
+    saveAs: {"checkm/all_contamination_histogram.svg"}
+  publishDir params.outdir, pattern: "output/all_heterogeneity_histogram.svg",
+    saveAs: {"checkm/all_heterogeneity_histogram.svg"}
+  publishDir params.outdir,
+    pattern: "output/all_completeness_vs_contamination.svg",
+    saveAs: {"checkm/all_completeness_vs_contamination.svg"}
+  publishDir params.outdir,
+    pattern: "output/chosen_completeness_histogram.svg",
+    saveAs: {"checkm/chosen_completeness_histogram.svg"}
+  publishDir params.outdir,
+    pattern: "output/chosen_contamination_histogram.svg",
+    saveAs: {"checkm/chosen_contamination_histogram.svg"}
+  publishDir params.outdir,
+    pattern: "output/chosen_heterogeneity_histogram.svg",
+    saveAs: {"checkm/chosen_heterogeneity_histogram.svg"}
+  publishDir params.outdir,
+    pattern: "output/chosen_completeness_vs_contamination.svg",
+    saveAs: {"checkm/chosen_completeness_vs_contamination.svg"}
+  publishDir params.outdir, pattern: "output/chosen_checkm_results.txt",
+  saveAs: {"checkm/chosen_checkm_results.txt"}
 
   input:
   file "checkm_results.txt" from CHECKM
