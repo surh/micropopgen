@@ -151,7 +151,7 @@ process filter_checkm{
   memory '2GB'
   time '00:30:00'
   queue params.queue
-  publishDir "${params.outdir}/checkm}"
+  publishDir "${params.outdir}/checkm"
 
   input:
   file "checkm_results.txt" from CHECKM
