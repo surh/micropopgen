@@ -187,6 +187,7 @@ def download_genome_dir(id, name, outdir,
 
     # Download to genome dir
     gdir = '/'.join(['genomes', id])
+    cwd = os.getcwd()
     try:
         files = download_ftp_dir(ftp_url=url,  ftp_dir=gdir,
                                  ddir=genome_dir)
@@ -194,6 +195,7 @@ def download_genome_dir(id, name, outdir,
     except:
         files = []
         success = False
+        os.chdir(cwd)
 
     print("Downloaded {} files.".format(files))
 
