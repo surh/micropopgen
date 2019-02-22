@@ -29,8 +29,8 @@
 // genomes/group2/genome3/genome3.fna
 // genomes/group2/genome4/genome4.fna
 
-// --outfile
-// Name of file for checkm results.
+// --outdir
+// Name of output directory
 
 // --conda_checkm
 // Path to conda environment where checkm is installed. Default for fraserv
@@ -44,7 +44,11 @@
 
 // Params
 params.indir = 'genomes'
-params.outfile = 'checkm_results.txt'
+// params.outfile = 'checkm_results.txt'
+params.outdir = 'output/'
+params.contamination = 2
+params.completeness = 98
+
 params.conda_checkm = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
 params.batch_size = 200
 params.threads = 8
@@ -117,17 +121,46 @@ process collect_results{
   time '00:30:00'
   module 'fraserconda'
   queue params.queue
-  publishDir './'
+  publishDir params.outdir
 
   input:
   file "*.txt" from checkm_results.collect()
 
   output:
-  file "${params.outfile}"
+  file "checkm_results.txt" into CHECKM
 
   """
   ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
     *.txt \
-    --outfile ${params.outfile}
+    --outfile checkm_results.txt
+  """
+}
+
+process filter_checkm{
+  cpus 1
+  memory '2GB'
+  time '00:30:00'
+  queue params.queue
+  publishDir "${params.outdir}/checkm}"
+
+  input:
+  file "checkm_results.txt" from CHECKM
+
+  output:
+  file "output/all_completeness_histogram.svg"
+  file "output/all_contamination_histogram.svg"
+  file "output/all_heterogeneity_histogram.svg"
+  file "output/all_completeness_vs_contamination.svg"
+  file "output/chosen_completeness_histogram.svg"
+  file "output/chosen_contamination_histogram.svg"
+  file "output/chosen_heterogeneity_histogram.svg"
+  file "output/chosen_completeness_vs_contamination.svg"
+  file "output/chosen_checkm_results.txt" into CHOSEN
+
+  """
+  ${workflow.projectDir}/process_checkm_results.r \
+    checkm_results.txt \
+    --contamination ${params.contamination} \
+    --completeness ${params.completeness}
   """
 }
