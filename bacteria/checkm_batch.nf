@@ -174,3 +174,21 @@ process filter_checkm{
     --completeness ${params.completeness}
   """
 }
+
+
+// Example nextflow.config
+/*
+process {
+  executor = 'slurm'
+  withLabel: py3 {
+    module = 'fraserconda'
+  }
+  withLabel: checkm {
+    module = 'prodigal:hmmer:pplacer:fraserconda'
+    conda = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
+  }
+  withLabel: r {
+    module = 'R/3.5.1server'
+  }
+}
+*/
