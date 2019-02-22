@@ -168,7 +168,7 @@ def prepare_outdir(outdir, overwrite=False):
                               " already exists".format(outdir))
     else:
         # If directory doesn't exist
-        print("\tCurrently at {}".format(os.getwd()))
+        print("\tCurrently at {}".format(os.getcwd()))
         print("\tCreating directory {}".format(outdir))
         os.mkdir(outdir)
 
