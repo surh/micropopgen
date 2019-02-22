@@ -95,20 +95,20 @@ process_arguments <- function(){
   p <- add_argument(p, "--outdir",
                     help = paste0("Directory to write (and create if needed) to write ",
                                   "the output. Must not exist."),
-                    default = "results/",
+                    default = "output/",
                     type = "character")
-  p <- add_argument(p, "--completenes",
+  p <- add_argument(p, "--completeness",
                     help = paste0("Minumum completeness for a genome to pass the threshold."),
                     default = 98,
                     type = "integer")
   p <- add_argument(p, "--contamination",
                     help = paste0("Maximum contamination for a genome to pass the threshold"),
                     type = "integer",
-                    dedfault = 2)
+                    default = 2)
   p <- add_argument(p, "--heterogeneity",
                     help = paste0("Maximim heterogeneity for a genome to pass the threshold"),
                     type = "integer",
-                    default = NULL)
+                    default = NA)
   
   
   # Read arguments
@@ -121,12 +121,13 @@ process_arguments <- function(){
 }
 
 #############################
-args <- list(file = "checkm_results.txt",
-             outdir = "output/",
-             completeness = 98,
-             contamination = 2,
-             heterogeneity = NULL)
-
+# args <- list(file = "checkm_results.txt",
+#              outdir = "output/",
+#              completeness = 98,
+#              contamination = 2,
+#              heterogeneity = NULL)
+args <- process_arguments()
+# print(args)
 
 # Read data and prepater output directory
 Res <- read_tsv(file = args$file, col_types = 'ccnnnnnnnnnnnn')
@@ -144,7 +145,7 @@ plot_checkm_results(x = Res, completeness = args$completeness,
 # Filter
 n_genomes <- nrow(Res)
 Res <- Res %>% filter(Completeness >= args$completeness & Contamination <= args$contamination)
-if(!is.null(args$heterogeneity)){
+if(!is.na(args$heterogeneity)){
   Res <- Res %>% filter(`Strain heterogeneity` <= args$heterogeneity)
 }
 n_passed <- nrow(Res)
@@ -158,3 +159,7 @@ plot_checkm_results(x = Res, completeness = args$completeness,
 # Write results
 filename <- paste0(args$outdir, "/chosen_checkm_results.txt")
 write_tsv(Res, filename)
+
+cat(n_genomes, " genomes analyzed by checkM.\n")
+cat(n_discarded, " genomes discarded.\n")
+cat(n_passed, " genomes passed the thresholds.\n")
