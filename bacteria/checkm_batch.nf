@@ -32,8 +32,8 @@
 // --outdir
 // Name of output directory
 
-// --conda_checkm
-// Path to conda environment where checkm is installed. Default for fraserv
+// --contamination, --completeness
+// Thresholds for checkM statistics
 
 // --batch_size
 // Number of genomes to analyze by batch
@@ -41,6 +41,10 @@
 // --threads, --memory, --time, --queue, --max_forks
 // Parameters for checkm jobs.
 
+// Configuration and dependencies:
+// The processes here might require access to python 3, checkm, and R.
+// Use the labeles 'py3', 'checkm', and 'r' in your nextflow.config
+// file to provide access. See the end of this pipeline for an example file.
 
 // Params
 params.indir = 'genomes'
@@ -49,7 +53,7 @@ params.outdir = 'output/'
 params.contamination = 2
 params.completeness = 98
 
-params.conda_checkm = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
+// params.conda_checkm = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
 params.batch_size = 200
 params.threads = 8
 params.memory = '40GB'
@@ -62,13 +66,15 @@ params.max_forks = 200
 indir = file(params.indir)
 
 process create_batch_map{
+  label 'py3'
+  // module 'fraserconda'
   cpus 1
   memory '1GB'
   time '1:00:00'
   errorStrategy 'retry'
   maxRetries 2
   queue params.queue
-  module 'fraserconda'
+
 
   input:
   file indir
@@ -86,14 +92,16 @@ process create_batch_map{
 }
 
 process run_checkm{
+  label 'checkm'
+  // module 'prodigal:hmmer:pplacer:fraserconda'
+  // conda params.conda_checkm
   cpus params.threads
   memory params.memory
   time params.time
   errorStrategy 'retry'
   maxRetries 2
   maxForks params.max_forks
-  module 'prodigal:hmmer:pplacer:fraserconda'
-  conda params.conda_checkm
+
   queue params.queue
 
   input:
@@ -116,10 +124,11 @@ process run_checkm{
 }
 
 process collect_results{
+  label 'py3'
+  // module 'fraserconda'
   cpus 1
   memory '1GB'
   time '00:30:00'
-  module 'fraserconda'
   queue params.queue
   publishDir params.outdir
 
@@ -137,6 +146,7 @@ process collect_results{
 }
 
 process filter_checkm{
+  label 'r'
   cpus 1
   memory '2GB'
   time '00:30:00'
