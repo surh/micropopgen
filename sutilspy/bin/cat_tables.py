@@ -55,7 +55,7 @@ if __name__ == "__main__":
     i = 0
     for file in args.FILES:
         print("\tProcessing {}".format(file))
-        tab = pd.read_csv(file, sep="\t", index_col=False)
+        tab = pd.read_csv(file, sep="\t", index_col=False, dtype=str)
         res = res.append(tab)
         i = i + 1
     print("Processed {} files".format(str(i)))
