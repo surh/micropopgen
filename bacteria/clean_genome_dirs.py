@@ -47,6 +47,8 @@ def process_arguments():
                                           "genomes."),
                         type=str,
                         default="output/")
+    parser.add_argument("--records", help=("Filename of action records"),
+                        type=str, default='records.txt')
     parser.add_argument("--copy", help=("Copy wanted genomes instead of link"),
                         default=False, action="store_true")
 
@@ -180,3 +182,12 @@ if __name__ == "__main__":
         else:
             # No specification
             raise ValueError("At least one of keep or discard must be passed")
+
+    print("Writing records")
+    with open(args.records, 'w') as oh:
+        for k in Record:
+            fields = Record[k]
+            fields = [k] + fields
+            fields = "\t".join(fields) + "\n"
+            oh.write(fields)
+    oh.close()
