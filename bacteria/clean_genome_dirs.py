@@ -102,10 +102,11 @@ def keep_dir(src_dir, dest_dir, copy=False):
     if not os.path.isdir(dest_dir):
         os.mkdir(dest_dir)
 
+    dirname = os.path.basename(src_dir)
     if copy:
-        shutil.copytree(src_dir, dest_dir)
+        shutil.copytree(src_dir, os.path.join(dest_dir, dirname))
     else:
-        os.symlink(src_dir, dest_dir)
+        os.symlink(src_dir, os.path.join(dest_dir, dirname))
 
     return
 
