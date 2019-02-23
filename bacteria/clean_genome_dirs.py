@@ -140,8 +140,8 @@ if __name__ == "__main__":
         src_dir = os.path.join(args.indir, gdir)
         dest_dir = os.path.join(args.outdir, group_dir)
 
-        keep_flag = gdir in keep
-        discard_flag = gdir in discard
+        keep_flag = genome in keep
+        discard_flag = genome in discard
 
         # Consider all the cases
         if len(keep) > 0 and len(discard) > 0:
