@@ -34,7 +34,7 @@ def process_arguments():
 
     # Define required arguments
     required.add_argument("indir", help=("Directory with genome direcetories"),
-                          required=True, type=str)
+                          type=str)
 
     # Define other arguments
     parser.add_argument("--keep", help=("File with genomes to keep, one per "
