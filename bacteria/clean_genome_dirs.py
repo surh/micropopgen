@@ -93,12 +93,60 @@ def read_list(path):
     return(res)
 
 
+def keep_dir(src_dir, dest_dir, copy=False):
+    """Make symlink or copy of dir"""
+    # Check if the dest_dir already exists
+
+    if not os.path.isdir(dest_dir):
+        os.mkdir(dest_dir)
+
+    if copy:
+        shutil.copytree(src_dir, dest_dir)
+    else:
+        os.symlink(src_dir, dest_dir)
+
+    return
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
     keep = []
     discard = []
+    print("Reading list of genomes to keep/discard.")
     if args.keep is not None:
         keep = read_list(args.keep)
     if args.discard is not None:
         discard = read_list(args.discard)
+
+    print("Reading genome dirs.")
+    genome_dirs = list_level_dirs(args.indir, 2)
+
+    print("Preparing output directory.")
+    if os.path.isdir(args.outdir):
+        raise ValueError("The output directory already exists.")
+    else:
+        os.mkdir(args.outdir)
+
+    print("Processing genome dirs")
+    Record = dict()
+    for gdir in genome_dirs:
+        genome = os.path.basename(gdir)
+        print("\tEvaluating genome {} at {}".format(genome, gdir))
+
+        group_dir = os.path.dirname(gdir)
+        src_dir = os.path.join(args.indir, gdir)
+        dest_dir = os.path.join(args.outdir, group_dir)
+
+        keep_flag = gdir in keep
+        discard_flag = gdir in discard
+
+        if keep_flag and discard_flag:
+            raise ValueError("Genome {} is marked for both discard and keep")
+        elif keep_flag:
+            print("\t\tKeeping...")
+            keep_dirs(src_dir, dest_dir, args.copy)
+            Record[genome] = [gdir, group_dir, 'Kept']
+        elif discard_flag:
+            print("\t\tDiscarding...")
+            Record[genome] = [gdir, group_dir, 'Discarded']
