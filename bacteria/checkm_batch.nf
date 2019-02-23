@@ -197,6 +197,33 @@ process filter_checkm{
   """
 }
 
+process clean_genome_dirs{
+  label 'py3'
+  cpus 1
+  memory '2GB'
+  // If copying, need to increase time
+  time '00:45:00'
+  queue params.queue
+  publishDir params.outdir,
+    pattern: "clean/",
+    saveAs: {"checkm/clean/"}
+
+  input:
+  file indir
+  file 'checkm_results.txt' from CHOSEN
+
+  output:
+  file 'clean/'
+
+  """
+  grep -v "# genomes" checkm_results.txt | cut -f 1 > keep.txt
+
+  ${workflow.projectDir}/clean_genome_dirs.py ${params.indir} \
+    --outdir clean/ \
+    --keep keep.txt
+  """
+}
+
 
 // Example nextflow.config
 /*
