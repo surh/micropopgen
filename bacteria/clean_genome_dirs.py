@@ -141,12 +141,42 @@ if __name__ == "__main__":
         keep_flag = gdir in keep
         discard_flag = gdir in discard
 
-        if keep_flag and discard_flag:
-            raise ValueError("Genome {} is marked for both discard and keep")
-        elif keep_flag:
-            print("\t\tKeeping...")
-            keep_dirs(src_dir, dest_dir, args.copy)
-            Record[genome] = [gdir, group_dir, 'Kept']
-        elif discard_flag:
-            print("\t\tDiscarding...")
-            Record[genome] = [gdir, group_dir, 'Discarded']
+        # Consider all the cases
+        if len(keep) > 0 and len(discard) > 0:
+            # Both keep and discard specifications
+            if keep_flag and discard_flag:
+                # genome marked for opposite actions
+                raise ValueError("Genome {} is marked for both "
+                                 "discard and keep")
+            elif keep_flag:
+                print("\t\tKeeping...")
+                keep_dir(src_dir, dest_dir, args.copy)
+                Record[genome] = [gdir, group_dir, 'Kept']
+            elif discard_flag:
+                print("\t\tDiscarding...")
+                Record[genome] = [gdir, group_dir, 'Discarded']
+            else:
+                # Equivalent to discard but with different record
+                raise ValueError("Genome not included in keep or discard")
+                Record[genome] = [gdir, group_dir, 'Skipped']
+        elif len(keep) > 0:
+            # Only keep specification
+            if keep_flag:
+                print("\t\tKeeping...")
+                keep_dir(src_dir, dest_dir, args.copy)
+                Record[genome] = [gdir, group_dir, 'Kept']
+            else:
+                print("\t\tDiscarding...")
+                Record[genome] = [gdir, group_dir, 'Discarded']
+        elif len(discard) > 0:
+            # Only discard specification
+            if discard_flag:
+                print("\t\tDiscarding...")
+                Record[genome] = [gdir, group_dir, 'Discarded']
+            else:
+                print("\t\tKeeping...")
+                keep_dir(src_dir, dest_dir, args.copy)
+                Record[genome] = [gdir, group_dir, 'Kept']
+        else:
+            # No specification
+            raise ValueError("At least one of keep or discard must be passed")
