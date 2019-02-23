@@ -106,7 +106,8 @@ def keep_dir(src_dir, dest_dir, copy=False):
     if copy:
         shutil.copytree(src_dir, os.path.join(dest_dir, dirname))
     else:
-        os.symlink(src_dir, os.path.join(dest_dir, dirname))
+        os.symlink(os.path.realpath(src_dir),
+                   os.path.join(dest_dir, dirname))
 
     return
 
