@@ -205,15 +205,15 @@ process clean_genome_dirs{
   time '00:45:00'
   queue params.queue
   publishDir params.outdir,
-    pattern: "clean/",
-    saveAs: {"checkm/clean/"}
+    pattern: "clean",
+    saveAs: {"checkm/clean"}
 
   input:
   file indir
   file 'checkm_results.txt' from CHOSEN
 
   output:
-  file 'clean/'
+  file 'clean'
 
   """
   grep -v "# genomes" checkm_results.txt | cut -f 1 > keep.txt
