@@ -206,7 +206,7 @@ process clean_genome_dirs{
   queue params.queue
   publishDir params.outdir,
     pattern: "clean",
-    saveAs: {"checkm/clean"}
+    saveAs: {"clean"}
 
   input:
   file indir
