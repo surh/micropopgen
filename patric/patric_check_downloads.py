@@ -86,16 +86,21 @@ def check_genomes_dirs(indir):
 
     return res
 
+
 def check_patric_gff(file, contig_sizes):
+    """Confirming that gffs downloaded from patric have
+    only features that fit into the contig sizes and that
+    all the features belong to contigs present"""
+
     gffs = pd.read_csv(gff_file, sep="\t", header=None, comment="#",
-                       names = ['seqname', 'source', 'feature',
-                                'start', 'end', 'score', 'strand',
-                                'frame', 'attribute'],
-                       dtype = {'seqname': str, 'source': str,
-                                'feature': str,
-                                'start':int, 'end': int,
-                                'score': str, 'strand': str,
-                                'frame': int, 'attribute': str})
+                       names=['seqname', 'source', 'feature',
+                              'start', 'end', 'score', 'strand',
+                              'frame', 'attribute'],
+                       dtype={'seqname': str, 'source': str,
+                              'feature': str,
+                              'start': int, 'end': int,
+                              'score': str, 'strand': str,
+                              'frame': int, 'attribute': str})
     # Process accession name
     accession = pd.Series([re.sub( '\w+\|', '', s) for s in gffs.seqname])
 
@@ -108,10 +113,18 @@ def check_patric_gff(file, contig_sizes):
             correct = False
             break
 
+    if len(set(accession.unique()) - contig_sizes.keys()):
+        correct = False
+
     return correct
 
 
 def check_patric_features(file, contig_sizes):
+    """Confirming that features.tab files downloaded from
+    patric have only features that fit into the contig sizes,
+    and that all the features belong to contigs present"""
+
+
     feats = pd.read_csv(file, sep="\t",
                         dtype = {'genome_id': str, 'genome_name': str,
                         'accession': str, 'annotation': str,
@@ -132,7 +145,11 @@ def check_patric_features(file, contig_sizes):
             correct = False
             break
 
+    if len(set(feats.accession.unique()) - contig_sizes.keys()):
+        correct = False
+
     return correct
+
 
 
 def get_record_lengths(file, file_type='fasta'):
