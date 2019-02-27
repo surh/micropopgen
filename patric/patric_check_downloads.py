@@ -71,7 +71,7 @@ def process_arguments():
     return args
 
 
-def check_genomes_dirs(indir):
+def check_genomes_dirs(indir, features=False, gff=False):
     """Takes a directory that contains a number of genome subdirectories,
     and checks that every genome subdirtectory has a .fna file
 
@@ -91,9 +91,40 @@ def check_genomes_dirs(indir):
             else:
                 success = False
 
-            res.append([spec, success])
+            # If needed get contig sizes
+            if features or gff:
+                contig_sizes = get_record_lengths(fna_filename, 'fasta')
 
-        res = pd.DataFrame(res, columns=['ID', 'fna'])
+            # Check features
+            if features:
+                feat_files = glob.glob(indir + "/" + spec + "/*.features.tab")
+                n_feats = len(feat_files)
+                if n_feats > 0:
+                    s = []
+                    for f in feat_files:
+                        s.append(check_patric_features(f, contig_sizes))
+                    feat_success = all(s)
+                else:
+                    feat_success = 'NA'
+
+            if gff:
+                gff_files = glob.glob(indir + "/" + spec + "/*.gff")
+                n_gff = len(gff_files)
+                if n_gff > 0:
+                    s = []
+                    for f in gff_files:
+                        s.append(check_patric_gff(f, contig_sizes))
+                    gff_success = all(s)
+                else:
+                    gff_success = 'NA'
+
+            res.append([spec, success,
+                        n_feats, feat_success,
+                        n_gff, gff_success])
+
+        res = pd.DataFrame(res, columns=['ID', 'fna',
+                                         "feat_files", 'feats',
+                                         'gff_files', 'gff'])
     else:
         raise FileNotFoundError("Genome directory does not exist")
 
