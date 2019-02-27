@@ -153,6 +153,7 @@ def check_patric_gff(file, contig_sizes):
                               'score': str, 'strand': str,
                               'frame': int, 'attribute': str})
     # Process accession name
+    print("\t=>{}".format(file))
     accession = pd.Series([re.sub('\w+\|', '', s) for s in gffs.seqname])
     print(accession.unique())
 
