@@ -152,10 +152,15 @@ def check_patric_gff(file, contig_sizes):
                               'start': int, 'end': int,
                               'score': str, 'strand': str,
                               'frame': int, 'attribute': str})
+
+    if gffs.shape[0] == 0:
+        # No features is consistent with genome annotations
+        return True
+
     # Process accession name
-    print("\t=>{}".format(file))
+    # print("\t=>{}".format(file))
     accession = pd.Series([re.sub('\w+\|', '', s) for s in gffs.seqname])
-    print(accession.unique())
+    # print(accession.unique())
 
     correct = True
     for contig in contig_sizes:
@@ -188,6 +193,11 @@ def check_patric_features(file, contig_sizes):
                                'figfam_id': str, 'plfam_id': str,
                                'pgfam_id': str, 'go': str, 'ec': str,
                                'pathway': str})
+
+    if feats.shape[0] == 0:
+        # No features is consistent with genome annotations
+        return True
+
 
     correct = True
     for contig in contig_sizes:
