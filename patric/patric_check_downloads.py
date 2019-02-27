@@ -83,6 +83,7 @@ def check_genomes_dirs(indir, features=False, gff=False):
         specdirs = os.listdir(indir)
         for spec in specdirs:
             # Check if an fna file with the same name as the directory exists
+            print("\tChecking genome {}".format(spec))
             fna_filename = os.path.join(indir,
                                         spec,
                                         ''.join([spec, '.fna']))
@@ -153,6 +154,7 @@ def check_patric_gff(file, contig_sizes):
                               'frame': int, 'attribute': str})
     # Process accession name
     accession = pd.Series([re.sub('\w+\|', '', s) for s in gffs.seqname])
+    pring(accession.unique())
 
     correct = True
     for contig in contig_sizes:
