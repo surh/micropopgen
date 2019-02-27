@@ -24,3 +24,8 @@ a new connection (default 30 seconds). It depends on
 [sutilspy](https://wwww.github.com/surh/sutilspy) executable scripts
 `split_tables.py` and `cat_tables.py` which are managed via subrepo at
 relative path `../sutilspy/bin/` from the pipeline projectDir.
+
+* The script `patric_check_downloads.py` checks that a directory contains an
+.fna file and that all the `*.gff` files and `*.features.tab` files contain
+only features that exist within the sequences that exist in the `.fna` file.
+It can also delete directories that have no .fna file
