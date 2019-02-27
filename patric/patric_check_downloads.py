@@ -154,7 +154,7 @@ def check_patric_gff(file, contig_sizes):
                               'frame': int, 'attribute': str})
     # Process accession name
     accession = pd.Series([re.sub('\w+\|', '', s) for s in gffs.seqname])
-    pring(accession.unique())
+    print(accession.unique())
 
     correct = True
     for contig in contig_sizes:
