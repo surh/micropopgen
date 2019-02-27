@@ -91,6 +91,9 @@ def check_genomes_dirs(indir, features=False, gff=False):
             else:
                 success = False
 
+            r = [spec, success]
+            colnames = ['ID', 'fna']
+
             # If needed get contig sizes
             if features or gff:
                 contig_sizes = get_record_lengths(fna_filename, 'fasta')
@@ -107,6 +110,9 @@ def check_genomes_dirs(indir, features=False, gff=False):
                 else:
                     feat_success = 'NA'
 
+                r.extend([n_feats, feat_success])
+                colnames.extend(["feat_files", 'feats'])
+
             if gff:
                 gff_files = glob.glob(indir + "/" + spec + "/*.gff")
                 n_gff = len(gff_files)
@@ -118,13 +124,13 @@ def check_genomes_dirs(indir, features=False, gff=False):
                 else:
                     gff_success = 'NA'
 
-            res.append([spec, success,
-                        n_feats, feat_success,
-                        n_gff, gff_success])
+                r.extend([n_gff, gff_success])
+                colnames.extend(["gff_files", 'gff'])
 
-        res = pd.DataFrame(res, columns=['ID', 'fna',
-                                         "feat_files", 'feats',
-                                         'gff_files', 'gff'])
+            res.append(r)
+
+        # colnames don't need to be calculated every time
+        res = pd.DataFrame(res, columns=colnames)
     else:
         raise FileNotFoundError("Genome directory does not exist")
 
