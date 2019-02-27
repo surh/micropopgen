@@ -81,7 +81,7 @@ if __name__ == "__main__":
     args = process_arguments()
 
     print(args.FILE)
-    Tab = pd.read_csv(args.FILE, sep="\t")
+    Tab = pd.read_csv(args.FILE, sep="\t", dtype=str)
     nrows = Tab.shape[0]
     print("read")
     if args.nchunks > 0:

@@ -18,6 +18,9 @@ import argparse
 import os
 import pandas as pd
 import shutil
+import glob
+from Bio import SeqIO
+import re
 
 
 def process_arguments():
@@ -47,6 +50,19 @@ def process_arguments():
                                          "folders"),
                         action="store_true",
                         default=False)
+    parser.add_argument("--features", help=("If included, check fetures.tab "
+                                            "file in genome dirs, and confirm "
+                                            "that features are consistent with "
+                                            ".fna"),
+                        action="store_true",
+                        default=False)
+
+    parser.add_argument("--gff", help=("If included, check .gff file in genome "
+                                       "dirs, and confirm "
+                                       "that features are consistent with "
+                                       ".fna"),
+                        action="store_true",
+                        default=False)
 
     # Read arguments
     print("Reading arguments")
@@ -55,7 +71,7 @@ def process_arguments():
     return args
 
 
-def check_genomes_dirs(indir):
+def check_genomes_dirs(indir, features=False, gff=False):
     """Takes a directory that contains a number of genome subdirectories,
     and checks that every genome subdirtectory has a .fna file
 
@@ -67,6 +83,7 @@ def check_genomes_dirs(indir):
         specdirs = os.listdir(indir)
         for spec in specdirs:
             # Check if an fna file with the same name as the directory exists
+            print("\tChecking genome {}".format(spec))
             fna_filename = os.path.join(indir,
                                         spec,
                                         ''.join([spec, '.fna']))
@@ -75,13 +92,136 @@ def check_genomes_dirs(indir):
             else:
                 success = False
 
-            res.append([spec, success])
+            r = [spec, success]
+            colnames = ['ID', 'fna']
 
-        res = pd.DataFrame(res, columns=['ID', 'fna'])
+            # If needed get contig sizes
+            if features or gff:
+                contig_sizes = get_record_lengths(fna_filename, 'fasta')
+
+            # Check features
+            if features:
+                feat_files = glob.glob(indir + "/" + spec + "/*.features.tab")
+                n_feats = len(feat_files)
+                if n_feats > 0:
+                    s = []
+                    for f in feat_files:
+                        s.append(check_patric_features(f, contig_sizes))
+                    feat_success = all(s)
+                else:
+                    feat_success = 'NA'
+
+                r.extend([n_feats, feat_success])
+                colnames.extend(["feat_files", 'feats'])
+
+            if gff:
+                gff_files = glob.glob(indir + "/" + spec + "/*.gff")
+                n_gff = len(gff_files)
+                if n_gff > 0:
+                    s = []
+                    for f in gff_files:
+                        s.append(check_patric_gff(f, contig_sizes))
+                    gff_success = all(s)
+                else:
+                    gff_success = 'NA'
+
+                r.extend([n_gff, gff_success])
+                colnames.extend(["gff_files", 'gff'])
+
+            res.append(r)
+
+        # colnames don't need to be calculated every time
+        res = pd.DataFrame(res, columns=colnames)
     else:
         raise FileNotFoundError("Genome directory does not exist")
 
     return res
+
+
+def check_patric_gff(file, contig_sizes):
+    """Confirming that gffs downloaded from patric have
+    only features that fit into the contig sizes and that
+    all the features belong to contigs present"""
+
+    gffs = pd.read_csv(file, sep="\t", header=None, comment="#",
+                       names=['seqname', 'source', 'feature',
+                              'start', 'end', 'score', 'strand',
+                              'frame', 'attribute'],
+                       dtype={'seqname': str, 'source': str,
+                              'feature': str,
+                              'start': int, 'end': int,
+                              'score': str, 'strand': str,
+                              'frame': int, 'attribute': str})
+
+    if gffs.shape[0] == 0:
+        # No features is consistent with genome annotations
+        return True
+
+    # Process accession name
+    # print("\t=>{}".format(file))
+    accession = pd.Series([re.sub('\w+\|', '', s) for s in gffs.seqname])
+    # print(accession.unique())
+
+    correct = True
+    for contig in contig_sizes:
+        # print("Checking contig {}".format(contig))
+        starts = gffs.start[accession == contig]
+        ends = gffs.end[accession == contig]
+        if any(starts < 1) or any(ends > contig_sizes[contig]):
+            correct = False
+            break
+
+    if len(set(accession.unique()) - contig_sizes.keys()):
+        correct = False
+
+    return correct
+
+
+def check_patric_features(file, contig_sizes):
+    """Confirming that features.tab files downloaded from
+    patric have only features that fit into the contig sizes,
+    and that all the features belong to contigs present"""
+
+    feats = pd.read_csv(file, sep="\t",
+                        dtype={'genome_id': str, 'genome_name': str,
+                               'accession': str, 'annotation': str,
+                               'feature_type': str, 'patric_id': str,
+                               'refseq_locus_tag': str, 'alt_locus_tag': str,
+                               'uniprotkb_accession': str, 'start': int,
+                               'end': int, 'strand': str, 'na_length': int,
+                               'gene': str, 'product': str,
+                               'figfam_id': str, 'plfam_id': str,
+                               'pgfam_id': str, 'go': str, 'ec': str,
+                               'pathway': str})
+
+    if feats.shape[0] == 0:
+        # No features is consistent with genome annotations
+        return True
+
+
+    correct = True
+    for contig in contig_sizes:
+        # print("Checking contig {}".format(contig))
+        starts = feats.start[feats.accession == contig]
+        ends = feats.end[feats.accession == contig]
+        if any(starts < 1) or any(ends > contig_sizes[contig]):
+            correct = False
+            break
+
+    if len(set(feats.accession.unique()) - contig_sizes.keys()):
+        correct = False
+
+    return correct
+
+
+def get_record_lengths(file, file_type='fasta'):
+    """Read sequence file and get the length of each sequence"""
+
+    record_lengths = dict()
+    for record in SeqIO.parse(file, file_type):
+        record_lengths[record.id] = len(record.seq)
+
+    return record_lengths
 
 
 if __name__ == "__main__":
@@ -93,7 +233,7 @@ if __name__ == "__main__":
     for s in specdirs:
         print("Processing {}".format(s))
         s_dir = os.path.join(args.indir, s)
-        res = check_genomes_dirs(s_dir)
+        res = check_genomes_dirs(s_dir, features=args.features, gff=args.gff)
         res['path'] = s_dir + '/' + res.ID
         Res = Res.append(res)
 

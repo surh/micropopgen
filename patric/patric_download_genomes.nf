@@ -24,6 +24,7 @@ params.name_col = 0
 params.failed = 'failed.txt'
 params.outdir = 'patric'
 params.max_forks = 2
+params.sleep = 30
 
 
 genomes = file(params.genomes)
@@ -60,6 +61,7 @@ process download{
 
 
   """
+  sleep ${params.sleep}
   ${workflow.projectDir}/patric_download_genomes.py \
     --genomes genomes_chunk.txt \
     --outdir patric \
@@ -84,14 +86,14 @@ process collect_failed{
   publishDir './'
 
   input:
-  file failed_genomes from FAILED.collect()
+  file "*.failed" from FAILED.collect()
 
   output:
   file "${params.failed}"
 
   """
   ${workflow.projectDir}/../sutilspy/bin/cat_tables.py \
-    $failed_genomes \
+    *.failed \
     --outfile ${params.failed}
   """
 }
