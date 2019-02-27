@@ -220,7 +220,7 @@ if __name__ == "__main__":
     for s in specdirs:
         print("Processing {}".format(s))
         s_dir = os.path.join(args.indir, s)
-        res = check_genomes_dirs(s_dir)
+        res = check_genomes_dirs(s_dir, features=args.features, gff=args.gff)
         res['path'] = s_dir + '/' + res.ID
         Res = Res.append(res)
 
