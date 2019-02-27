@@ -50,19 +50,19 @@ def process_arguments():
                                          "folders"),
                         action="store_true",
                         default=False)
-    parser.add_action("--features", help=("If included, check fetures.tab "
-                                          "file in genome dirs, and confirm "
-                                          "that features are consistent with "
-                                          ".fna"),
-                      action="store_true",
-                      default=False)
+    parser.add_argument("--features", help=("If included, check fetures.tab "
+                                            "file in genome dirs, and confirm "
+                                            "that features are consistent with "
+                                            ".fna"),
+                        action="store_true",
+                        default=False)
 
-    parser.add_action("--gff", help=("If included, check .gff file in genome "
-                                     "dirs, and confirm "
-                                     "that features are consistent with "
-                                     ".fna"),
-                      action="store_true",
-                      default=False)
+    parser.add_argument("--gff", help=("If included, check .gff file in genome "
+                                       "dirs, and confirm "
+                                       "that features are consistent with "
+                                       ".fna"),
+                        action="store_true",
+                        default=False)
 
     # Read arguments
     print("Reading arguments")
