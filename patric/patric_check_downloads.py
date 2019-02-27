@@ -92,7 +92,7 @@ def check_patric_gff(file, contig_sizes):
     only features that fit into the contig sizes and that
     all the features belong to contigs present"""
 
-    gffs = pd.read_csv(gff_file, sep="\t", header=None, comment="#",
+    gffs = pd.read_csv(file, sep="\t", header=None, comment="#",
                        names=['seqname', 'source', 'feature',
                               'start', 'end', 'score', 'strand',
                               'frame', 'attribute'],
@@ -102,13 +102,13 @@ def check_patric_gff(file, contig_sizes):
                               'score': str, 'strand': str,
                               'frame': int, 'attribute': str})
     # Process accession name
-    accession = pd.Series([re.sub( '\w+\|', '', s) for s in gffs.seqname])
+    accession = pd.Series([re.sub('\w+\|', '', s) for s in gffs.seqname])
 
     correct = True
     for contig in contig_sizes:
-        #print("Checking contig {}".format(contig))
-        starts = gffs.start[ accession == contig ]
-        ends = gffs.end[ accession == contig ]
+        # print("Checking contig {}".format(contig))
+        starts = gffs.start[accession == contig]
+        ends = gffs.end[accession == contig]
         if any(starts < 1) or any(ends > contig_sizes[contig]):
             correct = False
             break
@@ -124,23 +124,23 @@ def check_patric_features(file, contig_sizes):
     patric have only features that fit into the contig sizes,
     and that all the features belong to contigs present"""
 
-
     feats = pd.read_csv(file, sep="\t",
-                        dtype = {'genome_id': str, 'genome_name': str,
-                        'accession': str, 'annotation': str,
-                        'feature_type': str, 'patric_id': str,
-                        'refseq_locus_tag': str, 'alt_locus_tag': str,
-                        'uniprotkb_accession': str, 'start': int,
-                        'end': int, 'strand': str, 'na_length': int,
-                        'gene': str, 'product': str,
-                        'figfam_id': str, 'plfam_id': str,
-                        'pgfam_id': str, 'go': str, 'ec': str,
-                        'pathway': str})
+                        dtype={'genome_id': str, 'genome_name': str,
+                               'accession': str, 'annotation': str,
+                               'feature_type': str, 'patric_id': str,
+                               'refseq_locus_tag': str, 'alt_locus_tag': str,
+                               'uniprotkb_accession': str, 'start': int,
+                               'end': int, 'strand': str, 'na_length': int,
+                               'gene': str, 'product': str,
+                               'figfam_id': str, 'plfam_id': str,
+                               'pgfam_id': str, 'go': str, 'ec': str,
+                               'pathway': str})
+
     correct = True
     for contig in contig_sizes:
         # print("Checking contig {}".format(contig))
-        starts = feats.start[ feats.accession == contig ]
-        ends = feats.end[ feats.accession == contig ]
+        starts = feats.start[feats.accession == contig]
+        ends = feats.end[feats.accession == contig]
         if any(starts < 1) or any(ends > contig_sizes[contig]):
             correct = False
             break
@@ -149,7 +149,6 @@ def check_patric_features(file, contig_sizes):
         correct = False
 
     return correct
-
 
 
 def get_record_lengths(file, file_type='fasta'):
