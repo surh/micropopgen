@@ -46,19 +46,19 @@ def process_arguments():
     parser.add_argument("--outfile", help=("Name of file for output"),
                         type=str,
                         default="results.txt")
-    parser.add_argument("--clean", help=("If included, remove failed "
-                                         "folders"),
+    parser.add_argument("--clean", help=("If included, remove diecrories that "
+                                         "do not have an .fna file"),
                         action="store_true",
                         default=False)
     parser.add_argument("--features", help=("If included, check fetures.tab "
                                             "file in genome dirs, and confirm "
-                                            "that features are consistent with "
-                                            ".fna"),
+                                            "that features are consistent "
+                                            "with .fna"),
                         action="store_true",
                         default=False)
 
-    parser.add_argument("--gff", help=("If included, check .gff file in genome "
-                                       "dirs, and confirm "
+    parser.add_argument("--gff", help=("If included, check .gff file in "
+                                       "genome dirs, and confirm "
                                        "that features are consistent with "
                                        ".fna"),
                         action="store_true",
@@ -90,10 +90,18 @@ def check_genomes_dirs(indir, features=False, gff=False):
             if os.path.isfile(fna_filename):
                 success = True
             else:
+                # IF there is no .fna file, skip rest of tests
                 success = False
+                r = [spec, success]
+                if features:
+                    r.extend(['NA', 'NA'])
+                if gff:
+                    r.extend(['NA', 'NA'])
+
+                continue
 
             r = [spec, success]
-            colnames = ['ID', 'fna']
+            # colnames = ['ID', 'fna']
 
             # If needed get contig sizes
             if features or gff:
@@ -112,7 +120,7 @@ def check_genomes_dirs(indir, features=False, gff=False):
                     feat_success = 'NA'
 
                 r.extend([n_feats, feat_success])
-                colnames.extend(["feat_files", 'feats'])
+                # colnames.extend(["feat_files", 'feats'])
 
             if gff:
                 gff_files = glob.glob(indir + "/" + spec + "/*.gff")
@@ -126,11 +134,16 @@ def check_genomes_dirs(indir, features=False, gff=False):
                     gff_success = 'NA'
 
                 r.extend([n_gff, gff_success])
-                colnames.extend(["gff_files", 'gff'])
+                # colnames.extend(["gff_files", 'gff'])
 
             res.append(r)
 
         # colnames don't need to be calculated every time
+        colnames = ['ID', 'fna']
+        if features:
+            colnames.extend(['feat_files', 'feats'])
+        if gff:
+            colnames.extend(['gff_files', 'gff'])
         res = pd.DataFrame(res, columns=colnames)
     else:
         raise FileNotFoundError("Genome directory does not exist")
@@ -188,7 +201,8 @@ def check_patric_features(file, contig_sizes):
                                'feature_type': str, 'patric_id': str,
                                'refseq_locus_tag': str, 'alt_locus_tag': str,
                                'uniprotkb_accession': str, 'start': int,
-                               'end': int, 'strand': str, 'na_length': int,
+                               'end': int, 'strand': str,
+                               'na_length': 'float64',
                                'gene': str, 'product': str,
                                'figfam_id': str, 'plfam_id': str,
                                'pgfam_id': str, 'go': str, 'ec': str,
@@ -197,7 +211,6 @@ def check_patric_features(file, contig_sizes):
     if feats.shape[0] == 0:
         # No features is consistent with genome annotations
         return True
-
 
     correct = True
     for contig in contig_sizes:
