@@ -94,9 +94,9 @@ def check_genomes_dirs(indir, features=False, gff=False):
                 success = False
                 r = [spec, success]
                 if features:
-                    r.extend('NA', 'NA')
+                    r.extend(['NA', 'NA'])
                 if gff:
-                    r.extend('NA', 'NA')
+                    r.extend(['NA', 'NA'])
 
                 continue
 
