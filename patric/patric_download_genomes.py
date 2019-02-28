@@ -18,6 +18,7 @@ import argparse
 import pandas as pd
 import os
 from ftplib import FTP
+# import shutil
 
 
 def process_arguments():
@@ -57,6 +58,10 @@ def process_arguments():
                           required=True, type=str)
 
     # Define other arguments
+    parser.add_argument("--check", help=("Check whether an fna file was "
+                                         "downloaded for each genome"),
+                        default=False,
+                        action="store_true")
     parser.add_argument("--id_col", help=("Column number where the genome "
                                           "ID is stored. If not passed, "
                                           "the script will assume that the "
@@ -163,6 +168,8 @@ def prepare_outdir(outdir, overwrite=False):
                               " already exists".format(outdir))
     else:
         # If directory doesn't exist
+        print("\tCurrently at {}".format(os.getcwd()))
+        print("\tCreating directory {}".format(outdir))
         os.mkdir(outdir)
 
     return outdir
@@ -180,6 +187,7 @@ def download_genome_dir(id, name, outdir,
 
     # Download to genome dir
     gdir = '/'.join(['genomes', id])
+    cwd = os.getcwd()
     try:
         files = download_ftp_dir(ftp_url=url,  ftp_dir=gdir,
                                  ddir=genome_dir)
@@ -187,6 +195,7 @@ def download_genome_dir(id, name, outdir,
     except:
         files = []
         success = False
+        os.chdir(cwd)
 
     print("Downloaded {} files.".format(files))
 
@@ -226,7 +235,7 @@ def download_ftp_dir(ftp_url, ftp_dir, ddir):
 
 def download_genome_table(genomes, outdir, overwrite=False,
                           url="ftp.patricbrc.org/genomes/"):
-    """Takes a pandas data frame where each row is a genomes
+    """Takes a pandas data frame where each row is a genome
     and calls the function to download each one independently"""
 
     results = []
@@ -241,6 +250,33 @@ def download_genome_table(genomes, outdir, overwrite=False,
     results = pd.DataFrame(results, columns=['ID', 'Name', 'Dir', 'Success'])
 
     return results
+
+
+def check_genomes_dirs(indir):
+    """Takes a directory that contains a number of genome subdirectories,
+    and checks that every genome subdirtectory has a .fna file"""
+
+    res = []
+    if os.path.isdir(indir):
+        # Find all genome subdirs
+        specdirs = os.listdir(indir)
+        for spec in specdirs:
+            # Check if an fna file with the same name as the directory exists
+            fna_filename = os.path.join(indir,
+                                        spec,
+                                        ''.join([spec, '.fna']))
+            if os.path.isfile(fna_filename):
+                success = True
+            else:
+                success = False
+
+            res.append([spec, success])
+
+        res = pd.DataFrame(res, columns=['ID', 'fna'])
+    else:
+        raise FileNotFoundError("Genome directory does not exist")
+
+    return res
 
 
 if __name__ == "__main__":
@@ -261,6 +297,7 @@ if __name__ == "__main__":
     if 'Group' in genomes:
         # raise NotImplementedError("Group option is not implemented yet.")
         results = pd.DataFrame()
+        fna = pd.DataFrame()
         for n, g in genomes.groupby('Group'):
             print("------------------------------------------------")
             print("Processing group {}".format(n))
@@ -270,6 +307,10 @@ if __name__ == "__main__":
                                       outdir=group_dir,
                                       overwrite=args.overwrite,
                                       url="ftp.patricbrc.org")
+            if(args.check):
+                fna = fna.append(check_genomes_dirs(group_dir),
+                                 ignore_index=True,
+                                 sort=False)
             results = results.append(r)
             print("------------------------------------------------")
     else:
@@ -277,11 +318,18 @@ if __name__ == "__main__":
                                         outdir=args.outdir,
                                         overwrite=args.overwrite,
                                         url="ftp.patricbrc.org")
+        if(args.check):
+            fna = fna.append(check_genomes_dirs(args.outdir),
+                             ignore_index=True,
+                             sort=False)
 
-    failed = results[results.Success == 0]
+    # fna.to_csv("test.txt", sep="\t")
+    results = pd.merge(results, fna)
+    failed = results[(results.Success == 0) | (results.fna == False)]
     if(len(failed.index) > 0):
         print("Writing failed genomes file ({})".format(args.failed))
-        failed.to_csv(args.failed, sep="\t")
+        failed.to_csv(args.failed, sep="\t", index=False)
 
     print("{} genomes downloaded.".format(str(sum(results.Success == 1))))
     print("{} genomes failed.".format(str(sum(results.Success == 0))))
+    print("{} genomes have no .fna file.".format(str(sum(results.fna == False))))
