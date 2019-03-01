@@ -98,7 +98,7 @@ def patric_features_to_roary(fna_file, features_file, outfile):
             id = re.sub('\w+\|', '', LINE[5])
 
             # Create attributes
-            attr = "ID={};locus_tag={}".format([id, id])
+            attr = "ID={0};locus_tag={0}".format(id)
 
             # Create new line
             gff_line = '\t'.join([seqid, source, type, start, end, strand,
