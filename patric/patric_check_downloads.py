@@ -71,6 +71,57 @@ def process_arguments():
     return args
 
 
+def check_patric_genome(fna_file, features_file=[], gff_file=[]):
+    """Checks if features defined in .features.tab and gff file are
+    consistent with sequences in fna file"""
+
+    if os.path.isfile(fna_file):
+        fna_file_exists = True
+    else:
+        fna_file_exists = False
+
+    # If needed calculate contig sizes
+    n_feats = len(features_file)
+    n_gff = len(gff_file)
+    if fna_file_exists and (n_feats > 0 or n_gff > 0):
+        contig_sizes = get_record_lengths(fna_file, 'fasta')
+        if len(contig_sizes) > 0:
+            fna_file_has_contigs = True
+        else:
+            fna_file_has_contigs = False
+
+    # Check features if needed
+    checked_features = False
+    feat_success = 'NA'
+    if n_feats > 0 & fna_file_has_contigs:
+        checked_features = True
+        for f in features_file:
+            try:
+                feat_success = check_patric_features(f, contig_sizes)
+            except:
+                feat_success = "FAILED"
+
+            if feat_success is False or feat_success == "FAILED":
+                break
+
+    # Check gff if needed
+    checked_gffs = False
+    gff_success = 'NA'
+    if n_gff > 0 & fna_file_has_contigs:
+        checked_gffs = True
+        for f in gff_file:
+            try:
+                gff_success = check_patric_gff(f, contig_sizes)
+            except:
+                gff_success = "FAILED"
+
+            if gff_success is False or gff_success == "FAILED":
+                break
+
+    return fna_file_exists, fna_file_has_contigs, checked_features,
+    feat_success, checked_gffs, gff_success
+
+
 def check_genomes_dirs(indir, features=False, gff=False):
     """Takes a directory that contains a number of genome subdirectories,
     and checks that every genome subdirtectory has a .fna file
