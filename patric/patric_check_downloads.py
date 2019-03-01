@@ -83,6 +83,7 @@ def check_patric_genome(fna_file, features_file=[], gff_file=[]):
     # If needed calculate contig sizes
     n_feats = len(features_file)
     n_gff = len(gff_file)
+    fna_file_has_contigs = 'NA'
     if fna_file_exists and (n_feats > 0 or n_gff > 0):
         contig_sizes = get_record_lengths(fna_file, 'fasta')
         if len(contig_sizes) > 0:
