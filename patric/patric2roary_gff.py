@@ -113,7 +113,7 @@ def patric_features_to_roary(fna_file, features_file, outfile):
         out.write("##FASTA\n")
         for record in SeqIO.parse(fna_file, 'fasta'):
             out.write(''.join(['>', record.id, '\n',
-                               record.seq, '\n']))
+                               str(record.seq), '\n']))
     out.close()
 
     return
