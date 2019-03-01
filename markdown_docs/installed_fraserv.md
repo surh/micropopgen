@@ -1,6 +1,13 @@
 # Software installed in fraser-server
 
-# AntiSMASH
+## ANIcalculator
+version  1 Installed
+
+```bash
+module load ANIcalculator
+```
+
+## AntiSMASH
 Istalled as conda environment. Conflicted with something on sur evironment.
 Created dedicated module which can be loaded with modules. Current version 4.1
 
