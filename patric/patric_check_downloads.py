@@ -93,7 +93,7 @@ def check_patric_genome(fna_file, features_file=[], gff_file=[]):
     # Check features if needed
     checked_features = False
     feat_success = 'NA'
-    if n_feats > 0 & fna_file_has_contigs:
+    if n_feats > 0 and fna_file_has_contigs:
         checked_features = True
         for f in features_file:
             try:
@@ -107,7 +107,7 @@ def check_patric_genome(fna_file, features_file=[], gff_file=[]):
     # Check gff if needed
     checked_gffs = False
     gff_success = 'NA'
-    if n_gff > 0 & fna_file_has_contigs:
+    if n_gff > 0 and fna_file_has_contigs:
         checked_gffs = True
         for f in gff_file:
             try:
