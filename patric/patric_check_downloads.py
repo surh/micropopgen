@@ -119,7 +119,7 @@ def check_patric_genome(fna_file, features_file=[], gff_file=[]):
                 break
 
     return fna_file_exists, fna_file_has_contigs, n_feats, checked_features,
-    feat_success, n_gff, checked_gffs, gff_success
+           feat_success, n_gff, checked_gffs, gff_success
 
 
 def check_genomes_dirs(indir, features=False, gff=False):
