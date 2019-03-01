@@ -113,4 +113,4 @@ if __name__ == "__main__":
     args = process_arguments()
 
     # gff_patric2roary(args.infile, args.outfile)
-    patric_features_to_roary(args.fna, args.feaures, args.outfile)
+    patric_features_to_roary(args.fna, args.features, args.outfile)
