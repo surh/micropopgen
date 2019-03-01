@@ -126,7 +126,7 @@ def break_seq_for_pring(seq, length=60):
 
     newseq = []
     for i in range(0, len(seq), length):
-        print(i)
+        # print(i)
         newseq.append(seq[i:i+length])
     newseq = '\n'.join(newseq)
 
