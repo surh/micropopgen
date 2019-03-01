@@ -94,6 +94,7 @@ def patric_features_to_roary(fna_file, features_file, outfile):
             type = LINE[4]
             start = LINE[9]
             end = LINE[10]
+            score = '0'
             strand = LINE[11]
             phase = '0'
             id = re.sub('\w+\|', '', LINE[5])
@@ -102,7 +103,8 @@ def patric_features_to_roary(fna_file, features_file, outfile):
             attr = "ID={0};locus_tag={0}".format(id)
 
             # Create new line
-            gff_line = '\t'.join([seqid, source, type, start, end, strand,
+            gff_line = '\t'.join([seqid, source, type,
+                                  start, end, score, strand,
                                   phase, attr])
             out.write(''.join([gff_line, '\n']))
         feat.close()
