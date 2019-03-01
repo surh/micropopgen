@@ -112,11 +112,25 @@ def patric_features_to_roary(fna_file, features_file, outfile):
         print("Processing fasta file")
         out.write("##FASTA\n")
         for record in SeqIO.parse(fna_file, 'fasta'):
+            formatted_seq = break_seq_for_pring(str(record.seq), 60)
             out.write(''.join(['>', record.id, '\n',
-                               str(record.seq), '\n']))
+                               str(formatted_seq), '\n']))
     out.close()
 
     return
+
+
+def break_seq_for_pring(seq, length=60):
+    """Take a string sequence and adds breaks lines at a
+    regular interval"""
+
+    newseq = []
+    for i in range(0, len(seq), length):
+        print(i)
+        newseq.append(seq[i:i+length])
+    newseq = '\n'.join(newseq)
+
+    return newseq
 
 
 if __name__ == "__main__":
