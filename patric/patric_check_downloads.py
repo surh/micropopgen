@@ -273,7 +273,8 @@ if __name__ == "__main__":
 
     if args.clean:
         print("Cleaning")
-        Res = Res[Res.fna != True]
+        Res = Res[Res.fna_file_exists != True]
+        Res = Res[Res.fna_file_has_contigs != True]
         if Res.shape[0] > 0:
             for d in Res.path:
                 print("Removing {}".format(d))
