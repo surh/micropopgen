@@ -84,7 +84,7 @@ def patric_features_to_roary(fna_file, features_file, outfile):
     with open(features_file, 'r') as feat, open(outfile, 'w') as out:
         print("Processsing features file")
         feat.readline()
-        oh.write("##gff-version 3\n")
+        out.write("##gff-version 3\n")
         for line in feat:
             # Read line
             line = line.rstrip()
