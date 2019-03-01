@@ -151,16 +151,16 @@ def check_genomes_dirs(indir, features=False, gff=False):
             else:
                 gff_files = []
 
-
             # Check genome
             check = check_patric_genome(fna_filename, feat_files, gff_files)
             Res.append([spec] + check)
     else:
         raise FileNotFoundError("Directory doesn't exist ({})".format(indir))
 
+    # Create data frame with results
     colnames = ['ID', 'fna_file_exists', 'fna_file_has_contigs',
-                    'n_feats', 'checked_features', 'feat_success',
-                    'n_gff', 'checked_gffs', 'gff_success']
+                'n_feats', 'checked_features', 'feat_success',
+                'n_gff', 'checked_gffs', 'gff_success']
     Res = pd.DataFrame(Res, columns=colnames)
 
     return Res
