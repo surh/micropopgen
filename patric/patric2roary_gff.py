@@ -94,7 +94,7 @@ def patric_features_to_roary(fna_file, features_file, outfile):
             type = LINE[4]
             start = LINE[9]
             end = LINE[10]
-            score = '0'
+            score = '.'
             strand = LINE[11]
             phase = '0'
             id = re.sub('\w+\|', '', LINE[5])
