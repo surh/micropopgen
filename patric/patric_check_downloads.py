@@ -118,8 +118,9 @@ def check_patric_genome(fna_file, features_file=[], gff_file=[]):
             if gff_success is False or gff_success == "FAILED":
                 break
 
-    return fna_file_exists, fna_file_has_contigs, n_feats, checked_features,
-           feat_success, n_gff, checked_gffs, gff_success
+    res = [fna_file_exists, fna_file_has_contigs, n_feats, checked_features,
+           feat_success, n_gff, checked_gffs, gff_success]
+    return res
 
 
 def check_genomes_dirs(indir, features=False, gff=False):
