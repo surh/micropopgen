@@ -32,13 +32,14 @@ reader = genomes_file.newReader()
 GENOMES = []
 while( line = reader.readLine() ) {
   GENOMES = GENOMES + [tuple(line,
-    file("${params.lmm_res}/${line}_lmm.assoc.txt"),
+    // file("${params.lmm_res}/${line}_lmm.assoc.txt"),
+    file("${params.lmm_res}/${line}_lmm.results.txt")
     file("${params.midas_db}/rep_genomes/${line}/genome.features.gz"))]
 }
 
 process snps_to_genes{
   publishDir params.outdir, mode: 'copy', pattern: "*.closest"
-  maxForks 10
+  maxForks 20
 
   input:
   set genome, lmm_file, feat_file from GENOMES
