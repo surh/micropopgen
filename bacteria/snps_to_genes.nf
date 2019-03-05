@@ -33,7 +33,7 @@ GENOMES = []
 while( line = reader.readLine() ) {
   GENOMES = GENOMES + [tuple(line,
     // file("${params.lmm_res}/${line}_lmm.assoc.txt"),
-    file("${params.lmm_res}/${line}_lmm.results.txt")
+    file("${params.lmm_res}/${line}_lmm.results.txt"),
     file("${params.midas_db}/rep_genomes/${line}/genome.features.gz"))]
 }
 
