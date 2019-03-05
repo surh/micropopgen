@@ -71,84 +71,101 @@ def process_arguments():
     return args
 
 
+def check_patric_genome(fna_file, features_file=[], gff_file=[]):
+    """Checks if features defined in .features.tab and gff file are
+    consistent with sequences in fna file"""
+
+    if os.path.isfile(fna_file):
+        fna_file_exists = True
+    else:
+        fna_file_exists = False
+
+    # If needed calculate contig sizes
+    n_feats = len(features_file)
+    n_gff = len(gff_file)
+    fna_file_has_contigs = 'NA'
+    if fna_file_exists and (n_feats > 0 or n_gff > 0):
+        contig_sizes = get_record_lengths(fna_file, 'fasta')
+        if len(contig_sizes) > 0:
+            fna_file_has_contigs = True
+        else:
+            fna_file_has_contigs = False
+
+    # Check features if needed
+    checked_features = False
+    feat_success = 'NA'
+    if n_feats > 0 and fna_file_has_contigs:
+        checked_features = True
+        for f in features_file:
+            try:
+                feat_success = check_patric_features(f, contig_sizes)
+            except:
+                feat_success = "FAILED"
+
+            if feat_success is False or feat_success == "FAILED":
+                break
+
+    # Check gff if needed
+    checked_gffs = False
+    gff_success = 'NA'
+    if n_gff > 0 and fna_file_has_contigs:
+        checked_gffs = True
+        for f in gff_file:
+            try:
+                gff_success = check_patric_gff(f, contig_sizes)
+            except:
+                gff_success = "FAILED"
+
+            if gff_success is False or gff_success == "FAILED":
+                break
+
+    res = [fna_file_exists, fna_file_has_contigs, n_feats, checked_features,
+           feat_success, n_gff, checked_gffs, gff_success]
+    return res
+
+
 def check_genomes_dirs(indir, features=False, gff=False):
     """Takes a directory that contains a number of genome subdirectories,
     and checks that every genome subdirtectory has a .fna file
 
     Taken from patric_download_genomes.py"""
 
-    res = []
     if os.path.isdir(indir):
         # Find all genome subdirs
         specdirs = os.listdir(indir)
+        Res = []
         for spec in specdirs:
             # Check if an fna file with the same name as the directory exists
             print("\tChecking genome {}".format(spec))
+
+            # Build filenames
             fna_filename = os.path.join(indir,
                                         spec,
                                         ''.join([spec, '.fna']))
-            if os.path.isfile(fna_filename):
-                success = True
-            else:
-                # IF there is no .fna file, skip rest of tests
-                success = False
-                r = [spec, success]
-                if features:
-                    r.extend(['NA', 'NA'])
-                if gff:
-                    r.extend(['NA', 'NA'])
 
-                continue
-
-            r = [spec, success]
-            # colnames = ['ID', 'fna']
-
-            # If needed get contig sizes
-            if features or gff:
-                contig_sizes = get_record_lengths(fna_filename, 'fasta')
-
-            # Check features
             if features:
                 feat_files = glob.glob(indir + "/" + spec + "/*.features.tab")
-                n_feats = len(feat_files)
-                if n_feats > 0:
-                    s = []
-                    for f in feat_files:
-                        s.append(check_patric_features(f, contig_sizes))
-                    feat_success = all(s)
-                else:
-                    feat_success = 'NA'
-
-                r.extend([n_feats, feat_success])
-                # colnames.extend(["feat_files", 'feats'])
+            else:
+                feat_files = []
 
             if gff:
                 gff_files = glob.glob(indir + "/" + spec + "/*.gff")
-                n_gff = len(gff_files)
-                if n_gff > 0:
-                    s = []
-                    for f in gff_files:
-                        s.append(check_patric_gff(f, contig_sizes))
-                    gff_success = all(s)
-                else:
-                    gff_success = 'NA'
+            else:
+                gff_files = []
 
-                r.extend([n_gff, gff_success])
-                # colnames.extend(["gff_files", 'gff'])
-
-            res.append(r)
-
-        # colnames don't need to be calculated every time
-        colnames = ['ID', 'fna']
-        if features:
-            colnames.extend(['feat_files', 'feats'])
-        if gff:
-            colnames.extend(['gff_files', 'gff'])
-        res = pd.DataFrame(res, columns=colnames)
+            # Check genome
+            check = check_patric_genome(fna_filename, feat_files, gff_files)
+            Res.append([spec] + check)
     else:
-        raise FileNotFoundError("Genome directory does not exist")
+        raise FileNotFoundError("Directory doesn't exist ({})".format(indir))
 
-    return res
+    # Create data frame with results
+    colnames = ['ID', 'fna_file_exists', 'fna_file_has_contigs',
+                'n_feats', 'checked_features', 'feat_success',
+                'n_gff', 'checked_gffs', 'gff_success']
+    Res = pd.DataFrame(Res, columns=colnames)
+
+    return Res
 
 
 def check_patric_gff(file, contig_sizes):
@@ -256,7 +273,8 @@ if __name__ == "__main__":
 
     if args.clean:
         print("Cleaning")
-        Res = Res[Res.fna != True]
+        Res = Res[Res.fna_file_exists != True]
+        Res = Res[Res.fna_file_has_contigs != True]
         if Res.shape[0] > 0:
             for d in Res.path:
                 print("Removing {}".format(d))
