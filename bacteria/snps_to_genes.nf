@@ -53,7 +53,7 @@ process snps_to_genes{
   # Convert snps to BED
   #awk '(\$6 <= ${params.pval_thres}){print \$1 "\\t" \$2 "\\t" \$2}' \
   #  ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
-  awk '(\$10 != "none" && \$2 != "rs"){print \$1 "\\t" \$2 "\\t" \$2}' \
+  awk '(\$10 != "none" && \$3 != "ps"){print \$1 "\\t" \$3 "\\t" \$3}' \
   ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
 
   # Convert features to BED
