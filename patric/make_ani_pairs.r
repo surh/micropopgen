@@ -57,6 +57,8 @@ dirs
 table(dirs$dir_genus)
 
 dirs <- dirs %>% left_join(lineage, by = "genome_id") %>%
-  select(-taxon_lineage_ids, taxon_lineage_names, taxon_id)
+  select(-taxon_lineage_ids, -taxon_lineage_names, -taxon_id)
+dirs
 
 
+dirs %>% filter(dir_genus != genus)
