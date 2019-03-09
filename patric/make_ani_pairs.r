@@ -49,6 +49,14 @@ dirs <- dirs %>%
   mutate(dir = dirname(.$path)) %>%
   mutate(dir = basename(dir)) %>%
   mutate(dir = str_split(string = .$dir, pattern = "_", n = 2)) %>%
-  mutate(genus = unlist(dir)[1], species = unlist(dir)[2]) %>%
+  rowwise() %>%
+  mutate(dir_genus = unlist(dir)[1], dir_species = unlist(dir)[2]) %>%
   select(-dir)
 dirs
+
+table(dirs$dir_genus)
+
+dirs <- dirs %>% left_join(lineage, by = "genome_id") %>%
+  select(-taxon_lineage_ids, taxon_lineage_names, taxon_id)
+
+
