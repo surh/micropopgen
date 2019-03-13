@@ -28,7 +28,15 @@ params.njobs = 10
 
 // Get list of files
 files = file(params.files)
+PATRIC = Channel.fromPath(files).
+  splitCsv(sep: "\t")
 
+// reader = files.newReader()
+// PATRIC = []
+// while( line = reader.readLine() ) {
+//   PATRIC = PATRIC + [tuple(file("${params.lmm_res}/${line}_lmm.results.txt"),
+//     file("${params.midas_db}/rep_genomes/${line}/genome.features.gz"))]
+// }
 
 
 // PROCESSES
@@ -36,15 +44,16 @@ process preprocess_patric_gff{
   maxForks params.njobs
 
   input:
-  file patric_gff from patric_gffs
+  set id, file(features_file), file(fna_file) from PATRIC
 
   output:
-  file 'roary.gff' into roary_gffs
+  file "${id}_roary.gff" into GFFS
 
   """
   ${workflow.projectDir}/patric2roary_gff.py \
-    --infile ${patric_gff} \
-    --outfile roary.gff
+    --fna ${fna_file} \
+    --features ${features_file} \
+    --outfile ${id}_roary.gff
   """
 }
 
@@ -64,27 +73,27 @@ process preprocess_patric_gff{
 //   """
 // }
 
-process create_roary_input{
-  maxForks params.njobs
-
-  input:
-  file gff from roary_gffs
-  file fna from roary_fnas
-
-  output:
-  file 'roary_input.gff' into roary_inputs
-
-  """
-  cat ${gff} ${fna} > roary_input.gff
-  """
-}
+// process create_roary_input{
+//   maxForks params.njobs
+//
+//   input:
+//   file gff from roary_gffs
+//   file fna from roary_fnas
+//
+//   output:
+//   file 'roary_input.gff' into roary_inputs
+//
+//   """
+//   cat ${gff} ${fna} > roary_input.gff
+//   """
+// }
 
 process run_roary{
   cpus params.threads
   publishDir params.outdir, mode: 'move'
 
   input:
-  file '*.gff' from roary_inputs.collect()
+  file '*.gff' from GFFS.collect()
 
   output:
   file params.outdir
