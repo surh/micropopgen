@@ -21,17 +21,15 @@
 
 // Parameters
 params.indir = "patric/"
-params.bindir = "/home/sur/micropopgen/src/micropopgen/patric"
-params.threads = 2
+params.files = 'files.txt'
+params.threads = 8
 params.outdir = 'roary/'
 params.njobs = 10
 
 // Get list of files
-patric_gffs = "${params.indir}/*/*/*.PATRIC.gff"
-patric_gffs = file(patric_gffs)
+files = file(params.files)
 
-patric_fnas = "${params.indir}/*/*/*.fna"
-patric_fnas = files(patric_fnas)
+
 
 // PROCESSES
 process preprocess_patric_gff{
@@ -44,27 +42,27 @@ process preprocess_patric_gff{
   file 'roary.gff' into roary_gffs
 
   """
-  ${params.bindir}/patric2roary_gff.py \
+  ${workflow.projectDir}/patric2roary_gff.py \
     --infile ${patric_gff} \
     --outfile roary.gff
   """
 }
 
-process preprocesss_patric_fna{
-  maxForks params.njobs
-
-  input:
-  file patric_fna from patric_fnas
-
-  output:
-  file 'roary.fna' into roary_fnas
-
-  """
-  ${params.bindir}/fasta_remove_desc.py \
-    --infile ${patric_fna} \
-    --outfile roary.fna
-  """
-}
+// process preprocesss_patric_fna{
+//   maxForks params.njobs
+//
+//   input:
+//   file patric_fna from patric_fnas
+//
+//   output:
+//   file 'roary.fna' into roary_fnas
+//
+//   """
+//   ${params.bindir}/fasta_remove_desc.py \
+//     --infile ${patric_fna} \
+//     --outfile roary.fna
+//   """
+// }
 
 process create_roary_input{
   maxForks params.njobs
