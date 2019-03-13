@@ -29,7 +29,8 @@ params.njobs = 10
 // Get list of files
 files = file(params.files)
 PATRIC = Channel.fromPath(files).
-  splitCsv(sep: "\t")
+  splitCsv(sep: "\t").
+  map{row -> tuple(row[0], file(row[1]), file(row[2]))}
 
 // reader = files.newReader()
 // PATRIC = []
