@@ -41,6 +41,7 @@ PATRIC = Channel.fromPath(files).
 
 // PROCESSES
 process preprocess_patric_gff{
+  label 'py3'
   maxForks params.njobs
 
   input:
@@ -89,6 +90,7 @@ process preprocess_patric_gff{
 // }
 
 process run_roary{
+  label 'roary'
   cpus params.threads
   publishDir params.outdir, mode: 'move'
 
@@ -105,3 +107,19 @@ process run_roary{
     *.gff
   """
 }
+
+
+
+// Example nextflow.config
+/*
+process {
+  executor = 'local'
+  withLabel: py3 {
+    module = 'fraserconda'
+  }
+  withLabel: roary {
+    module = 'fraserconda'
+    conda = '/home/sur/.conda/envs/sur'
+  }
+}
+*/
