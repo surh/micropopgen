@@ -1,4 +1,5 @@
 #!/usr/bin/env nextflow
+// Copyright (C) 2019 Sur Herrera Paredes
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,72 +21,82 @@
 
 // Parameters
 params.indir = "patric/"
-params.bindir = "/home/sur/micropopgen/src/micropopgen/patric"
-params.threads = 2
+params.files = 'files.txt'
+params.threads = 8
 params.outdir = 'roary/'
 params.njobs = 10
 
 // Get list of files
-patric_gffs = "${params.indir}/*/*/*.PATRIC.gff"
-patric_gffs = file(patric_gffs)
+files = file(params.files)
+PATRIC = Channel.fromPath(files).
+  splitCsv(sep: "\t").
+  map{row -> tuple(row[0], file(row[1]), file(row[2]))}
 
-patric_fnas = "${params.indir}/*/*/*.fna"
-patric_fnas = files(patric_fnas)
+// reader = files.newReader()
+// PATRIC = []
+// while( line = reader.readLine() ) {
+//   PATRIC = PATRIC + [tuple(file("${params.lmm_res}/${line}_lmm.results.txt"),
+//     file("${params.midas_db}/rep_genomes/${line}/genome.features.gz"))]
+// }
+
 
 // PROCESSES
 process preprocess_patric_gff{
+  label 'py3'
   maxForks params.njobs
 
   input:
-  file patric_gff from patric_gffs
+  set id, file(features_file), file(fna_file) from PATRIC
 
   output:
-  file 'roary.gff' into roary_gffs
+  file "${id}_roary.gff" into GFFS
 
   """
-  ${params.bindir}/patric2roary_gff.py \
-    --infile ${patric_gff} \
-    --outfile roary.gff
+  ${workflow.projectDir}/patric2roary_gff.py \
+    --fna ${fna_file} \
+    --features ${features_file} \
+    --outfile ${id}_roary.gff
   """
 }
 
-process preprocesss_patric_fna{
-  maxForks params.njobs
+// process preprocesss_patric_fna{
+//   maxForks params.njobs
+//
+//   input:
+//   file patric_fna from patric_fnas
+//
+//   output:
+//   file 'roary.fna' into roary_fnas
+//
+//   """
+//   ${params.bindir}/fasta_remove_desc.py \
+//     --infile ${patric_fna} \
+//     --outfile roary.fna
+//   """
+// }
 
-  input:
-  file patric_fna from patric_fnas
-
-  output:
-  file 'roary.fna' into roary_fnas
-
-  """
-  ${params.bindir}/fasta_remove_desc.py \
-    --infile ${patric_fna} \
-    --outfile roary.fna
-  """
-}
-
-process create_roary_input{
-  maxForks params.njobs
-
-  input:
-  file gff from roary_gffs
-  file fna from roary_fnas
-
-  output:
-  file 'roary_input.gff' into roary_inputs
-
-  """
-  cat ${gff} ${fna} > roary_input.gff
-  """
-}
+// process create_roary_input{
+//   maxForks params.njobs
+//
+//   input:
+//   file gff from roary_gffs
+//   file fna from roary_fnas
+//
+//   output:
+//   file 'roary_input.gff' into roary_inputs
+//
+//   """
+//   cat ${gff} ${fna} > roary_input.gff
+//   """
+// }
 
 process run_roary{
+  label 'roary'
   cpus params.threads
   publishDir params.outdir, mode: 'move'
 
   input:
-  file '*.gff' from roary_inputs.collect()
+  file '*.gff' from GFFS.collect()
 
   output:
   file params.outdir
@@ -97,3 +108,19 @@ process run_roary{
     *.gff
   """
 }
+
+
+
+// Example nextflow.config
+/*
+process {
+  executor = 'local'
+  withLabel: py3 {
+    module = 'fraserconda'
+  }
+  withLabel: roary {
+    module = 'fraserconda'
+    conda = '/home/sur/.conda/envs/sur'
+  }
+}
+*/

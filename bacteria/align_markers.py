@@ -387,7 +387,8 @@ def muscle_file(infile, outfile, mode='fyrd', job_name=None,
     # Build muscle command
     command = ' '.join([muscle,
                         "-in", infile,
-                        "-out", outfile])
+                        "-out", outfile,
+                        "-quiet"])
 
     # Build fyrd filenames
     if job_name is None:
