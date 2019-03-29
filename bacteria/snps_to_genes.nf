@@ -69,7 +69,7 @@ process snps_to_genes{
   else
     """
     # Convert snps to BED
-    awk '{print \$1 "\\t" \$3 "\\t" \$3}' \
+    awk '!(\$1 == "chr" && \$2 == "rs" && \$3 == "ps"){print \$1 "\\t" \$3 "\\t" \$3}' \
     ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
 
     # Convert features to BED
