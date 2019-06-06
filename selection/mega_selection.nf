@@ -45,7 +45,7 @@ process mega_dnds{
   set gene, file(aln) from ALNS_dnds
 
   output:
-  file "${gene}.meg"
+  file("{gene}.meg") optional true
 
   """
   nseqs=\$(grep -c '>' $aln)
@@ -68,7 +68,7 @@ process mega_tajima{
   set gene, file(aln) from ALNS_tajima
 
   output:
-  file "${gene}_summary.txt" optional true
+  file("${gene}_summary.txt") optional true
 
   """
   nseqs=\$(grep -c '>' $aln)
