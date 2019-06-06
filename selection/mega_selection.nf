@@ -63,10 +63,10 @@ process mega_tajima{
   set gene, file(aln) from ALNS_tajima
 
   output:
-  file("${gene}_summary.txt") optional true into OUT
+  file "${gene}_summary.txt" optional true
 
   """
-  nseqs=$(grep -c '>' $aln)
+  nseqs=\$(grep -c '>' $aln)
   if [ $nseqs -ge 3 ]; then
     megacc -a $tajima_mao -d $aln -o ${gene}.dummysuffix
   else
