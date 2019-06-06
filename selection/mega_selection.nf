@@ -48,7 +48,12 @@ process mega_dnds{
   file "${gene}.meg"
 
   """
-  megacc -a $dnds_mao -d $aln -o ${gene}.dummysuffix
+  nseqs=\$(grep -c '>' $aln)
+  if [ \$nseqs -ge 2 ]; then
+    megacc -a $dnds_mao -d $aln -o ${gene}.dummysuffix
+  else
+    echo "Not enough sequences for Tajima's D"
+  fi
   """
 
 }
