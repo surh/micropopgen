@@ -67,7 +67,7 @@ process mega_tajima{
 
   """
   nseqs=\$(grep -c '>' $aln)
-  if [ $nseqs -ge 3 ]; then
+  if [ \$nseqs -ge 3 ]; then
     megacc -a $tajima_mao -d $aln -o ${gene}.dummysuffix
   else
     echo "Not enough sequences for Tajima's D"
