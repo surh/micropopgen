@@ -45,10 +45,6 @@ process mega_dnds{
   output:
   file "${gene}.meg"
 
-  // exec:
-  // println gene
-  // println aln
-
   """
   megacc -a $dnds_mao -d $aln -o ${gene}.dummysuffix
   """
