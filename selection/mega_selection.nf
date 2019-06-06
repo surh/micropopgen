@@ -63,7 +63,7 @@ process mega_tajima{
   set gene, file(aln) from ALNS_tajima
 
   output:
-  file "${gene}_summary.txt" optional true
+  file("${gene}_summary.txt") optional true
 
   """
   nseqs=$(grep -c '>' $aln)
