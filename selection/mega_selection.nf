@@ -19,6 +19,7 @@ params.indir = ''
 params.outdir = './output/'
 params.dnds_mao = 'dnds.mao'
 params.tajima_mao = 'tajima.mao'
+params.njobs = 4
 
 dnds_mao = file(params.dnds_mao)
 tajima_mao = file(params.tajima_mao)
@@ -37,6 +38,7 @@ println "==============="
 process mega_dnds{
   label 'mega'
   publishDir "${params.outdir}/dnds"
+  maxForks params.njobs
 
   input:
   file dnds_mao
@@ -54,6 +56,7 @@ process mega_dnds{
 process mega_tajima{
   label 'mega'
   publishDir "${params.outdir}/tajima"
+  maxForks params.njobs
 
   input:
   file tajima_mao
