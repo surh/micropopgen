@@ -45,7 +45,7 @@ process mega_dnds{
   set gene, file(aln) from ALNS_dnds
 
   output:
-  file("{gene}*.meg") optional true
+  file("${gene}.meg") optional true
 
   """
   nseqs=\$(grep -c '>' $aln)
