@@ -33,10 +33,13 @@ process eggnog{
 
   script:
   """
-  emapper.py --database bact --data_dir /opt/pkgs/eggnog/1.0.3/data/ --output_dir ./ -i ${faa} --cpu 1 --output ${genome}
-
+  emapper.py --database bact \
+    --data_dir /opt/pkgs/eggnog/1.0.3/data/ \
+    --output_dir ./ \
+    -i ${faa} \
+    --cpu 1 \
+    --output ${genome}
   """
-
 }
 
 
