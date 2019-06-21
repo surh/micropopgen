@@ -18,6 +18,8 @@
 // and zipped genome feature files from midas db, and associates
 // every SNP below a certain p-value threshold with a gene.
 
+// Copied into Anchurus process_metawas.nf
+
 // Params
 params.midas_db = ''
 params.lmm_res = ''
