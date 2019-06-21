@@ -37,9 +37,9 @@ process extract_fna {
   file "${spec.name}.CDS.fna" into FNAS
 
   """
-  # Convert features to BED
+  # Convert CDS features to BED
   zcat $spec/genome.features.gz | \
-    grep -v scaffold_id | \
+    awk '(\$6 == "CDS")' | \
     awk '{print \$2 "\t" \$3 - 1 "\t" \$4 "\t" \$1 "\t.\t" \$5}' | \
     sort -k1,1 -k2,2n > genome.features.bed
 
