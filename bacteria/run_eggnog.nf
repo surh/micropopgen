@@ -1,9 +1,10 @@
 #!/usr/bin/env nextflow
-// Copyright (C) 2018 Sur Herrera Paredes
+// Copyright (C) 2018-2019 Sur Herrera Paredes
 
 
-params.genomes = 'genome_list.txt'
-params.outdir = 'CDS'
+params.genomes = 'genomes.txt'
+params.outdir = 'annots'
+params.njobs = 20
 
 genomes = file(params.genomes)
 reader = genomes.newReader()
@@ -16,10 +17,9 @@ while(str = reader.readLine()){
 }
 
 process eggnog{
-  module 'eggnog'
+  label 'eggnog'
   publishDir params.outdir
-  time 24.h
-  memory 2.GB
+  maxForks params.njobs
 
   input:
   val genome from GENOMES
@@ -33,10 +33,24 @@ process eggnog{
 
   script:
   """
-  emapper.py --database bact --data_dir /opt/pkgs/eggnog/1.0.3/data/ --output_dir ./ -i ${faa} --cpu 1 --output ${genome}
-
+  emapper.py --database bact \
+    --data_dir /opt/pkgs/eggnog/1.0.3/data/ \
+    --output_dir ./ \
+    -i ${faa} \
+    --cpu 1 \
+    --output ${genome}
   """
-
 }
 
 
+// Example nextflow.config
+/*
+process {
+  executor = 'slurm'
+  withLabel: eggnog{
+    module = 'eggnog'
+    time = '24h'
+    memory = '2G'
+  }
+}
+*/

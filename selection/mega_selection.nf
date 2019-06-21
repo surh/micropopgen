@@ -37,7 +37,7 @@ println "==============="
 
 process mega_dnds{
   label 'mega'
-  publishDir "${params.outdir}/dnds"
+  publishDir "${params.outdir}/dnds", mode: 'rellink'
   maxForks params.njobs
 
   input:
@@ -60,7 +60,7 @@ process mega_dnds{
 
 process mega_tajima{
   label 'mega'
-  publishDir "${params.outdir}/tajima"
+  publishDir "${params.outdir}/tajima", mode: 'rellink'
   maxForks params.njobs
 
   input:
