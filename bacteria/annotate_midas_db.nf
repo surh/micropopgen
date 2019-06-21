@@ -25,6 +25,7 @@ params.outdir = 'output'
 indir = file(params.indir)
 println indir
 GENOMEDIRS = Channel.fromPath("${params.indir}/*", type: 'dir', maxDepth: 0)
+
 process extract_fna {
   label 'bedtools'
   maxForks params.njobs
@@ -34,7 +35,7 @@ process extract_fna {
   file spec from GENOMEDIRS
 
   output:
-  file "${spec.name}.CDS.fna" into FNAS
+  set spec.name, file("${spec.name}.CDS.fna") into FNAS
 
   """
   # Convert CDS features to BED
@@ -56,5 +57,25 @@ process extract_fna {
 
   # Clean
   rm genome.features.bed genome.fna
+  """
+}
+
+process translate{
+  label 'py3'
+  maxForks params.njobs
+  publishDir "${params.outdir}/FAA", mode: 'rellink'
+
+  input:
+  set spec, file("fna.file") from FNAS
+
+  output:
+  set spec, file("${spec.name}.CDS.faa") into FAA
+
+  """
+  python ${workflow.projectDir}/translate.py \
+    --infile fna.file \
+    --check_cds \
+    --remove_stops \
+    --outfile ${spec}.CDS.faa
   """
 }
