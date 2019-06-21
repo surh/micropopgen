@@ -17,7 +17,7 @@
 // Nextflow pipeline that runs a directory of genomes through checkm.
 // Combines results in single table
 
-
+// Params
 params.genomes = 'genomes.txt'
 params.outdir = 'annots'
 params.njobs = 20
