@@ -35,7 +35,8 @@ process extract_fna {
   file spec from GENOMEDIRS
 
   output:
-  set spec.name, file("${spec.name}.CDS.fna") into FNAS
+  file "${spec.getName()}.CDS.fna" into FNAS
+  val "$spec" into SPECS
 
   """
   # Convert CDS features to BED
@@ -53,7 +54,7 @@ process extract_fna {
     -bed genome.features.bed \
     -s \
     -name | \
-    sed 's/([\\+\\-])//' > ${spec.name}.CDS.fna
+    sed 's/([\\+\\-])//' > ${spec.getName()}.CDS.fna
 
   # Clean
   rm genome.features.bed genome.fna
@@ -66,15 +67,15 @@ process translate{
   publishDir "${params.outdir}/FAA", mode: 'rellink'
 
   input:
-  set spec, file("fna.file") from FNAS
+  file fna_file from FNAS
+  val spec from SPECS
 
   output:
-  set spec, file("${spec.name}.CDS.faa") into FAA
+  file "${spec}.CDS.faa" into FAAS
 
   """
   python ${workflow.projectDir}/translate.py \
-    --infile fna.file \
-    --check_cds \
+    --infile $fna_file \
     --remove_stops \
     --outfile ${spec}.CDS.faa
   """
