@@ -21,6 +21,8 @@
 params.indir = ''
 params.njobs = 20
 params.outdir = 'output'
+params.eggnog_threads = 4
+params.eggnog_db = 'bact'
 
 indir = file(params.indir)
 println indir
@@ -78,5 +80,33 @@ process translate{
     --infile $fna_file \
     --remove_stops \
     --outfile ${spec}.CDS.faa
+  """
+}
+
+process eggnog{
+  label 'eggnog'
+  maxForks params.njobs
+  publishDir "params.outdir/eggnog", mode: 'rellink'
+  cpus params.eggnog_threads
+
+  input:
+  file faa_file from FAAS
+  val spec from SPECS
+
+  output:
+  file "${spec}.emapper.annotations" into ANNOTS
+
+  exec:
+  println genome
+
+  script:
+  """
+  emapper.py \
+    --database ${params.eggnog_db} \
+    --data_dir /opt/pkgs/eggnog/1.0.3/data/ \
+    --output_dir ./ \
+    -i $faa_file \
+    --cpu ${params.eggnog_threads} \
+    --output $spec
   """
 }
