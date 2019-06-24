@@ -18,11 +18,14 @@
 // and zipped genome feature files from midas db, and associates
 // every SNP below a certain p-value threshold with a gene.
 
+// Copied into Anchurus process_metawas.nf
+
 // Params
 params.midas_db = ''
 params.lmm_res = ''
 params.genomes_file = ''
-params.pval_thres = '1e-8'
+params.filter = false
+// params.pval_thres = '1e-8'
 params.outdir = 'output/'
 
 // process params
@@ -49,20 +52,35 @@ process snps_to_genes{
   file 'genome.features.bed'
   file "${genome}.closest" optional true
 
-  """
-  # Convert snps to BED
-  #awk '(\$6 <= ${params.pval_thres}){print \$1 "\\t" \$2 "\\t" \$2}' \
-  #  ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
-  awk '(\$10 != "none" && \$3 != "ps"){print \$1 "\\t" \$3 "\\t" \$3}' \
-  ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
+  script:
+  if(params.filter)
+    """
+    # Convert snps to BED
+    #awk '(\$6 <= ${params.pval_thres}){print \$1 "\\t" \$2 "\\t" \$2}' \
+    #  ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
+    awk '(\$14 != "none" && \$3 != "ps"){print \$1 "\\t" \$3 "\\t" \$3}' \
+    ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
 
-  # Convert features to BED
-  zcat ${feat_file} | awk '{print \$2 "\t" \$3 "\t" \$4 "\t" \$1}' | \
-    grep -v scaffold_id | sort -k1,1 -k2,2n > genome.features.bed
+    # Convert features to BED
+    zcat ${feat_file} | awk '{print \$2 "\t" \$3 "\t" \$4 "\t" \$1}' | \
+      grep -v scaffold_id | sort -k1,1 -k2,2n > genome.features.bed
 
-  # Find closest
-  closestBed -D a -a snps.bed -b genome.features.bed > ${genome}.closest
-  """
+    # Find closest
+    closestBed -D a -a snps.bed -b genome.features.bed > ${genome}.closest
+    """
+  else
+    """
+    # Convert snps to BED
+    awk '!(\$1 == "chr" && \$2 == "rs" && \$3 == "ps"){print \$1 "\\t" \$3 "\\t" \$3}' \
+    ${lmm_file} | sort -k1,1 -k2,2n > snps.bed
+
+    # Convert features to BED
+    zcat ${feat_file} | awk '{print \$2 "\t" \$3 "\t" \$4 "\t" \$1}' | \
+      grep -v scaffold_id | sort -k1,1 -k2,2n > genome.features.bed
+
+    # Find closest
+    closestBed -D a -a snps.bed -b genome.features.bed > ${genome}.closest
+    """
 }
 
 

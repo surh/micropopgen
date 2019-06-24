@@ -95,7 +95,7 @@ def get_fna(Feat, fasta_file, genome, args):
         if not os.path.isfile(fasta_file):
             print("ERROR: Could not find fasta file")
             raise FileNotFoundError
-    except:
+    except FileNotFoundError():
         print(("ERROR: Could not find fasta file "
                "for genome ({})").format(genome))
         raise
