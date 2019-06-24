@@ -36,7 +36,7 @@ process extract_fna {
 
   output:
   file "${spec.getName()}.CDS.fna" into FNAS
-  val "$spec" into {SPECS_TRANSLATE, SPECS_EGGNOG}
+  val "$spec" into SPECS_TRANSLATE, SPECS_EGGNOG
 
   """
   # Convert CDS features to BED
