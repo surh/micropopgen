@@ -18,15 +18,13 @@
 // translate to faa, and run eggnog on all of them.
 
 // Params
-params.indir = ''
+params.midas_dir = ''
 params.njobs = 20
 params.outdir = 'output'
 params.eggnog_threads = 4
 params.eggnog_db = 'bact'
 
-indir = file(params.indir)
-println indir
-GENOMEDIRS = Channel.fromPath("${params.indir}/*", type: 'dir', maxDepth: 0)
+GENOMEDIRS = Channel.fromPath("${params.midas_dir}/*", type: 'dir', maxDepth: 0)
 
 process extract_fna {
   label 'bedtools'
@@ -103,7 +101,7 @@ process eggnog{
   """
   emapper.py \
     --database ${params.eggnog_db} \
-    --data_dir /opt/pkgs/eggnog/1.0.3/data/ \
+    --data_dir $DATA_PATH \
     --output_dir ./ \
     -i $faa_file \
     --cpu ${params.eggnog_threads} \
