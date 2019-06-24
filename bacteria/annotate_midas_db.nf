@@ -123,8 +123,7 @@ process {
   }
   withLabel: 'py3' {
     module = 'anaconda'
-    conda = '/opt/modules/pkgs/anaconda/3.6/envs/fraserconda/bin/python'
-    cpu = 1
+    conda = '/opt/modules/pkgs/anaconda/3.6/envs/fraserconda/'
     time = '1h'
     memory = '1G'
   }
