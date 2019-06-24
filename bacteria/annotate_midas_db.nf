@@ -36,7 +36,7 @@ process extract_fna {
 
   output:
   file "${spec.getName()}.CDS.fna" into FNAS
-  val "$spec" into SPECS
+  val "$spec" into {SPECS_TRANSLATE, SPECS_EGGNOG}
 
   """
   # Convert CDS features to BED
@@ -68,7 +68,7 @@ process translate{
 
   input:
   file fna_file from FNAS
-  val spec from SPECS
+  val spec from SPECS_TRANSLATE
 
   output:
   file "${spec}.CDS.faa" into FAAS
@@ -89,7 +89,7 @@ process eggnog{
 
   input:
   file faa_file from FAAS
-  val spec from SPECS
+  val spec from SPECS_EGGNOG
 
   output:
   file "${spec}.emapper.annotations" into ANNOTS
