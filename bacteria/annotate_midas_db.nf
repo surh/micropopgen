@@ -95,7 +95,7 @@ process eggnog{
   file "${spec}.emapper.annotations" into ANNOTS
 
   exec:
-  println genome
+  println spec
 
   script:
   """
