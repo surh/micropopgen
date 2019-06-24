@@ -97,15 +97,15 @@ process eggnog{
   exec:
   println spec
 
-  script:
+  shell:
   """
   emapper.py \
-    --database ${params.eggnog_db} \
+    --database !{params.eggnog_db} \
     --data_dir $DATA_PATH \
     --output_dir ./ \
-    -i $faa_file \
-    --cpu ${params.eggnog_threads} \
-    --output $spec
+    -i !faa_file \
+    --cpu !{params.eggnog_threads} \
+    --output !spec
   """
 }
 
