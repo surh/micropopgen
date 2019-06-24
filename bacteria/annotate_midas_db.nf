@@ -114,21 +114,21 @@ process eggnog{
 process {
   executor = 'slurm'
   queue = 'hbfraser'
-  label: 'bedtools' {
+  withLabel: 'bedtools' {
     module = 'anaconda'
     conda = 'fraserconda'
     cpu = 1
     time = '1h'
     memory = '1G'
   }
-  label: 'py3' {
+  withLabel: 'py3' {
     module = 'anaconda'
     conda = 'fraserconda'
     cpu = 1
     time = '1h'
     memory = '1G'
   }
-  label: 'eggnog'{
+  withLabel: 'eggnog'{
     module = 'eggnog'
     time = '24h'
     memory = '2G'
