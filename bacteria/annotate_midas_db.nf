@@ -116,14 +116,14 @@ process {
   queue = 'hbfraser'
   withLabel: 'bedtools' {
     module = 'anaconda'
-    conda = 'fraserconda'
+    conda = '/opt/modules/pkgs/anaconda/3.6/envs/fraserconda/'
     cpu = 1
     time = '1h'
     memory = '1G'
   }
   withLabel: 'py3' {
     module = 'anaconda'
-    conda = 'fraserconda'
+    conda = '/opt/modules/pkgs/anaconda/3.6/envs/fraserconda/bin/python'
     cpu = 1
     time = '1h'
     memory = '1G'
