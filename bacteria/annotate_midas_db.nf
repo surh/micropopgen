@@ -117,7 +117,7 @@ process {
   withLabel: 'bedtools' {
     module = 'anaconda'
     conda = '/opt/modules/pkgs/anaconda/3.6/envs/fraserconda/'
-    cpu = 1
+    cpus = 1
     time = '1h'
     memory = '1G'
   }
