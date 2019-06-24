@@ -108,3 +108,30 @@ process eggnog{
     --output $spec
   """
 }
+
+// example nextflow.config
+/*
+process {
+  executor = 'slurm'
+  queue = 'hbfraser'
+  label: 'bedtools' {
+    module = 'anaconda'
+    conda = 'fraserconda'
+    cpu = 1
+    time = '1h'
+    memory = '1G'
+  }
+  label: 'py3' {
+    module = 'anaconda'
+    conda = 'fraserconda'
+    cpu = 1
+    time = '1h'
+    memory = '1G'
+  }
+  label: 'eggnog'{
+    module = 'eggnog'
+    time = '24h'
+    memory = '2G'
+  }
+}
+*/
