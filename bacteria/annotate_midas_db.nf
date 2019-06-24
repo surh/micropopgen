@@ -84,7 +84,7 @@ process translate{
 process eggnog{
   label 'eggnog'
   maxForks params.njobs
-  publishDir "params.outdir/eggnog", mode: 'rellink'
+  publishDir "${params.outdir}/eggnog", mode: 'rellink'
   cpus params.eggnog_threads
 
   input:
