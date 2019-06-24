@@ -42,7 +42,7 @@ process extract_fna {
   # Convert CDS features to BED
   zcat $spec/genome.features.gz | \
     awk '(\$6 == "CDS")' | \
-    awk '{print \$2 "\t" \$3 - 1 "\t" \$4 "\t" \$1 "\t.\t" \$5}' | \
+    awk '{print \$2 "\\t" \$3 - 1 "\\t" \$4 "\\t" \$1 "\\t.\\t" \$5}' | \
     sort -k1,1 -k2,2n > genome.features.bed
 
   # Uncompress genome
