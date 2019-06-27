@@ -74,7 +74,7 @@ process sparcc_bootstraps{
 
   """
   export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
-  MakeBootraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
+  MakeBootstraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
   """
 }
 
