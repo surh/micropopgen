@@ -53,7 +53,7 @@ process sparcc_cor{
   file input
 
   output:
-  file 'cor_mat_SparCC.out'
+  file 'cor_mat_SparCC.out' into COR
   file 'cov_mat_SparCC.out'
 
   """
@@ -75,3 +75,45 @@ process sparcc_bootstraps{
   MakeBootraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
   """
 }
+
+process sparcc_perm_cor{
+  label 'sparcc'
+
+  input:
+  file perm from PERMS.flatten()
+
+  output:
+  file "perm_cor.txt" into PERMCORS
+
+  """
+  SparCC.py $perm -i ${params.iter} --cor_file=perm_cor.txt
+  """
+}
+
+process sparcc_pval{
+  label 'sparcc'
+  publisDir "${params.outdir}/pvals", mode: 'rellink'
+
+  input:
+  file "perm_cor_*.txt" from PERMCORS.collect()
+  file cor from COR
+
+  output:
+  file 'pvals.txt'
+
+  """
+  PseudoPvals.py $cor perm_cor_#.txt ${params.perms} -o pvals.txt
+  """
+}
+
+/*
+process{
+  executor = 'slurm'
+  withLabel sparcc{
+    module = 'anaconda'
+    conda = /opt/modules/pkgs/anaconda/3.6/envs/sparcc
+    maxForks = 20
+    env.PATH = '/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:$PATH'
+  }
+}
+*/
