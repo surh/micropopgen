@@ -20,6 +20,10 @@
 34423* cd /opt/modules/pkgs/anaconda/3.6/envs/sparcc
 34429  python ../SparCC.py fake_data.txt -i 5
 34431  more cor_mat_SparCC.out
+
+34432  python ../MakeBootstraps.py -h
+34433  python ../MakeBootstraps.py fake_data.txt -n 5 -t permutation_#.txt -p pvals/
+
 34438  python ../SparCC.py pvals/permutation_1.txt -i 5 --cor_file=pvals/perm_cor_1.txt
 34439  python ../SparCC.py pvals/permutation_0.txt -i 5 --cor_file=pvals/perm_cor_0.txt
 34440  python ../SparCC.py pvals/permutation_2.txt -i 5 --cor_file=pvals/perm_cor_2.txt
@@ -32,3 +36,42 @@
 34449  python ../PseudoPvals.py cor_mat_SparCC.out pvals/permutation_#.txt 5 -o pvals.txt
 34453  python ../PseudoPvals.py cor_mat_SparCC.out pvals/perm_cor_#.txt 5 -o pvals.txt
 */
+
+// Params
+params.input = ''
+params.iter = 20
+params.perms = 100
+params.outdir = 'output'
+
+input = file(params.input)
+
+process sparcc_cor{
+  label 'sparcc'
+  publisDir "${params.outdir}/cor", mode: 'rellink'
+
+  input:
+  file input
+
+  output:
+  file 'cor_mat_SparCC.out'
+  file 'cov_mat_SparCC.out'
+
+  """
+  SparCC.py $input -i ${params.iter}
+  """
+}
+
+process sparcc_bootstraps{
+  label 'sparcc'
+  publisDir "${params.outdir}", mode: 'rellink'
+
+  input:
+  file input
+
+  output:
+  file 'perms/permutation_*.txt' into PERMS
+
+  """
+  MakeBootraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
+  """
+}
