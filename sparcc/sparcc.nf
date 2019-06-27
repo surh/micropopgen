@@ -106,7 +106,7 @@ process sparcc_pval{
 
   """
   export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
-  ln -s perm_cor_${perms}.txt perm_cor_0.txt
+  ln -s perm_cor_${params.perms}.txt perm_cor_0.txt
   PseudoPvals.py $cor perm_cor_#.txt ${params.perms} -o pvals.txt
   """
 }
