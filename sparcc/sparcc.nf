@@ -43,8 +43,6 @@ params.iter = 20
 params.perms = 100
 params.outdir = 'output'
 
-env.PATH = "/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:$PATH"
-
 input = file(params.input)
 
 process sparcc_cor{
@@ -59,6 +57,7 @@ process sparcc_cor{
   file 'cov_mat_SparCC.out'
 
   """
+  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
   SparCC.py $input -i ${params.iter}
   """
 }
@@ -74,6 +73,7 @@ process sparcc_bootstraps{
   file 'perms/permutation_*.txt' into PERMS
 
   """
+  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
   MakeBootraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
   """
 }
@@ -88,6 +88,7 @@ process sparcc_perm_cor{
   file "perm_cor.txt" into PERMCORS
 
   """
+  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
   SparCC.py $perm -i ${params.iter} --cor_file=perm_cor.txt
   """
 }
@@ -104,6 +105,7 @@ process sparcc_pval{
   file 'pvals.txt'
 
   """
+  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
   PseudoPvals.py $cor perm_cor_#.txt ${params.perms} -o pvals.txt
   """
 }
@@ -115,7 +117,6 @@ process{
     module = 'anaconda'
     conda = "/opt/modules/pkgs/anaconda/3.6/envs/sparcc"
     maxForks = 20
-    env.PATH = "/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:$PATH"
   }
 }
 */
