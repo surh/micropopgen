@@ -43,6 +43,8 @@ params.iter = 20
 params.perms = 100
 params.outdir = 'output'
 
+env.PATH = "/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:$PATH"
+
 input = file(params.input)
 
 process sparcc_cor{
