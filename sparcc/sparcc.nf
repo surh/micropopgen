@@ -47,7 +47,7 @@ input = file(params.input)
 
 process sparcc_cor{
   label 'sparcc'
-  publisDir "${params.outdir}/cor", mode: 'rellink'
+  publishDir "${params.outdir}/cor", mode: 'rellink'
 
   input:
   file input
@@ -63,7 +63,7 @@ process sparcc_cor{
 
 process sparcc_bootstraps{
   label 'sparcc'
-  publisDir "${params.outdir}", mode: 'rellink'
+  publishDir "${params.outdir}", mode: 'rellink'
 
   input:
   file input
@@ -92,7 +92,7 @@ process sparcc_perm_cor{
 
 process sparcc_pval{
   label 'sparcc'
-  publisDir "${params.outdir}/pvals", mode: 'rellink'
+  publishDir "${params.outdir}/pvals", mode: 'rellink'
 
   input:
   file "perm_cor_*.txt" from PERMCORS.collect()
@@ -109,11 +109,11 @@ process sparcc_pval{
 /*
 process{
   executor = 'slurm'
-  withLabel sparcc{
+  withLabel: 'sparcc' {
     module = 'anaconda'
-    conda = /opt/modules/pkgs/anaconda/3.6/envs/sparcc
+    conda = "/opt/modules/pkgs/anaconda/3.6/envs/sparcc"
     maxForks = 20
-    env.PATH = '/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:$PATH'
+    env.PATH = "/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:$PATH"
   }
 }
 */
