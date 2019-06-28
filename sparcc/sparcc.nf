@@ -34,8 +34,7 @@ process sparcc_cor{
   file 'cov_mat_SparCC.out'
 
   """
-  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
-  SparCC.py $input -i ${params.iter}
+  python ${workflow.projectDir}/SparCC.py $input -i ${params.iter}
   """
 }
 
@@ -50,8 +49,7 @@ process sparcc_bootstraps{
   file 'perms/permutation_*.txt' into PERMS
 
   """
-  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
-  MakeBootstraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
+  python ${workflow.projectDir}/MakeBootstraps.py $input -n ${params.perms} -t permutation_#.txt -p perms/
   """
 }
 
@@ -65,8 +63,7 @@ process sparcc_perm_cor{
   file "perm_cor.txt" into PERMCORS
 
   """
-  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
-  SparCC.py $perm -i ${params.perms} --cor_file=perm_cor.txt
+  python ${workflow.projectDir}/SparCC.py $perm -i ${params.perms} --cor_file=perm_cor.txt
   """
 }
 
@@ -82,9 +79,9 @@ process sparcc_pval{
   file 'pvals.txt'
 
   """
-  export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
+  # Need to start the permutations with 0-index.
   ln -s perm_cor_${params.perms}.txt perm_cor_0.txt
-  PseudoPvals.py $cor perm_cor_#.txt ${params.perms} -o pvals.txt
+  python ${workflow.projectDir}/PseudoPvals.py $cor perm_cor_#.txt ${params.perms} -o pvals.txt
   """
 }
 
