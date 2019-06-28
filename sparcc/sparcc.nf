@@ -92,7 +92,7 @@ process{
   withLabel: 'sparcc' {
     module = 'anaconda'
     conda = "/opt/modules/pkgs/anaconda/3.6/envs/sparcc"
-    maxForks = 20
+    maxForks = 100
   }
 }
 */
