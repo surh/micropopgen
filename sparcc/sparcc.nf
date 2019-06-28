@@ -89,7 +89,7 @@ process sparcc_perm_cor{
 
   """
   export PATH="/home/sur/software/sparcc/yonatanf-sparcc-3aff6141c3f1/:\$PATH"
-  SparCC.py $perm -i ${params.iter} --cor_file=perm_cor.txt
+  SparCC.py $perm -i ${params.perms} --cor_file=perm_cor.txt
   """
 }
 
@@ -111,6 +111,7 @@ process sparcc_pval{
   """
 }
 
+// Example nexflow.config
 /*
 process{
   executor = 'slurm'
