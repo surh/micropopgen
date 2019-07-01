@@ -63,7 +63,7 @@ process sparcc_perm_cor{
   file "perm_cor.txt" into PERMCORS
 
   """
-  python ${workflow.projectDir}/SparCC.py $perm -i ${params.perms} --cor_file=perm_cor.txt
+  python ${workflow.projectDir}/SparCC.py $perm -i ${params.iter} --cor_file=perm_cor.txt
   """
 }
 
