@@ -89,11 +89,14 @@ process sparcc_pval{
 /*
 process{
   executor = 'slurm'
-  queueSize = 500
   withLabel: 'sparcc' {
     module = 'anaconda'
     conda = "/opt/modules/pkgs/anaconda/3.6/envs/sparcc"
     maxForks = 100
   }
+}
+executor{
+  name = 'slurm'
+  queueSize = 500
 }
 */
