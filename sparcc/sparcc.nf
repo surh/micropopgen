@@ -24,6 +24,7 @@ input = file(params.input)
 
 process sparcc_cor{
   label 'sparcc'
+  label 'highmem'
   publishDir "${params.outdir}/cor", mode: 'rellink'
 
   input:
@@ -40,6 +41,7 @@ process sparcc_cor{
 
 process sparcc_bootstraps{
   label 'sparcc'
+  label 'standard'
   publishDir "${params.outdir}", mode: 'rellink'
 
   input:
@@ -55,6 +57,7 @@ process sparcc_bootstraps{
 
 process sparcc_perm_cor{
   label 'sparcc'
+  label 'highmem'
 
   input:
   file perm from PERMS.flatten()
@@ -69,6 +72,7 @@ process sparcc_perm_cor{
 
 process sparcc_pval{
   label 'sparcc'
+  label 'highmem'
   publishDir "${params.outdir}/pvals", mode: 'rellink'
 
   input:
@@ -88,11 +92,18 @@ process sparcc_pval{
 // Example nexflow.config
 /*
 process{
-  executor = 'slurm'
   withLabel: 'sparcc' {
     module = 'anaconda'
     conda = "/opt/modules/pkgs/anaconda/3.6/envs/sparcc"
-    maxForks = 100
+    maxForks = 300
+  }
+  withLabel: 'highmem'{
+    memory = '20G'
+    time = '2d'
+  }
+  withLabel: 'standard'{
+    memory = '1G'
+    time = '1d'
   }
 }
 executor{
