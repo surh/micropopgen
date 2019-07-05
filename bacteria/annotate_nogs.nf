@@ -23,7 +23,7 @@ FILES = Channel.fromPath("${params.indir}/*")
 
 process annotatate_nogs{
   label 'py3'
-  publishDir params.outdir, saveAs: "$input"
+  publishDir params.outdir, saveAs: {"$input"}
 
   input:
   file input from FILES
