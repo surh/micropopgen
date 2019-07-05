@@ -19,7 +19,7 @@ params.indir = ''
 params.db = ''
 params.outdir = 'output'
 
-FILES = Channe.fromPath("${params.indir}/*")
+FILES = Channel.fromPath("${params.indir}/*")
 
 process annotatate_nogs{
   label 'py3'
