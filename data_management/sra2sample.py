@@ -242,8 +242,9 @@ if __name__ == "__main__":
                           type=str, required=True)
 
     # Optional arguments
-    parser.add_argument("--sample_col", help = "Column where the sample name is located in map", type = int,
-                        default = 1)
+    parser.add_argument("--sample_col",
+                        help="Column where the sample name is located in map", type = int,
+                        default=1)
     parser.add_argument("--run_col", help = "Column where the run accession is located in map. Run names must match names of sra files", type = int,
                         default = 2)
     parser.add_argument("--keep_intermediate", help = "Flag indicating whether to keep the intermediate fastq files.", action = "store_true")
