@@ -215,7 +215,8 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
     os.chmod(submission_file, 0o744)
 
     # submit qsub
-    sutilspy.io.qsub_submissions([submission_file],logdir)
+    sutilspy.io.qsub_submissions([submission_file], logdir)
+
 
 if __name__ == "__main__":
     import argparse
