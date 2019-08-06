@@ -171,8 +171,8 @@ def write_table(outfile, rows, header=None,
 
 def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir,keep):
     # Create mappting ffile
-    #map = [['Sample','Run']]
-    #map.extend(zip(itertools.repeat(sample),runs))
+    # map = [['Sample','Run']]
+    # map.extend(zip(itertools.repeat(sample),runs))
     mapfile = "map." + sample + ".txt"
     sutilspy.io.write_table(outfile = mapfile,
                             rows = zip(itertools.repeat(sample),runs),
