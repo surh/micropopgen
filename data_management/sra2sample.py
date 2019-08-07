@@ -47,7 +47,7 @@ def check_set_of_runs(runs, dir):
     return(check)
 
 
-def fastq_dump_runs(runs,indir,outdir,keep):
+def fastq_dump_runs(runs, indir, outdir, keep):
     if not os.path.isdir(indir):
         raise FileNotFoundError("Input directory {} does not exist".format(indir))
     if not os.path.isdir(outdir):
@@ -117,7 +117,7 @@ def process_sample(sample, runs, indir,
                    keep=False):
     # Validate files
     try:
-        check_set_of_runs(runs,indir)
+        check_set_of_runs(runs, indir)
     except IntegrityError as error:
         print("\tWARNING: Run(s) in sample {} did not pass integrity check. SKIPPING".format(sample))
         raise ProcessError("\tSample didn't pass check")
@@ -127,7 +127,7 @@ def process_sample(sample, runs, indir,
 
     # Proceed to fastq-dump
     try:
-        run_fastq = fastq_dump_runs(runs,indir,fastqdir,keep)
+        run_fastq = fastq_dump_runs(runs, indir, fastqdir, keep)
     except FileNotFoundError as error:
         print("\tERROR: Input directory {} does not exist. TERMINATING".format(indir))
         raise FileNotFoundError("Input directory {} does not exist".format(indir))
