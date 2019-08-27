@@ -1,6 +1,4 @@
 library(tidyverse)
-library(ggplot2)
-library(lme4)
 library(AMOR)
 
 single_tournament <- function(parents, k = 2){
@@ -13,7 +11,7 @@ single_tournament <- function(parents, k = 2){
 tournament_round <- function(parents, k = 2, N = nrow(pop)){
   1:N %>%
     map_dfr(~single_tournament(parents = parents, k = k))
-  }
+}
 
 tournament_selection <- function(pop, k = 2, G = 1){
   N <- nrow(pop)
@@ -52,19 +50,15 @@ pops_count_table <- function(pops){
 
 ##################################
 set.seed(12345)
-n_oligos <- 100
-mean_barcodes <- 10
-n_significant <- 10
-n_cells <- 1e6
+n_oligos <- opts[1]
+mean_barcodes <- opts[2]
+n_significant <- opts[3]
+n_cells <- opts[3]
 timepoints <- 20
-k <- 20
+k <- opts[5]
+seed <- opts[6]
 
-# n_oligos <- 100
-# mean_barcodes <- 3
-# n_significant <- 10
-# n_cells <- 1e3
-# timepoints <- c(0, 4, 8 , 12, 16, 20)
-# k <- 20
+set.seed(seed)
 
 # Number of barcodes per oligo, add overdispersion?
 n_barcodes <- rpois(n_oligos, lambda = mean_barcodes)
@@ -85,43 +79,6 @@ pop <- barcode_ids[ sample(x = 1:nrow(barcode_ids), size = n_cells, replace = TR
 
 # Simulate and save
 evo <- tournament_selection(pop = pop, k = k, G = max(timepoints))
-# save(evo, file = "sim_pops.rdat")
+save(evo, file = "sim_pops.rdat")
 counts <- pops_count_table(evo)
-# save(counts, file = "sim_counts.rdat")
-
-# Create dataset
-# Map <- data.frame(do.call(rbind, 
-#                           row.names(counts) %>%
-#                             map(~str_split(string = ., pattern = "_")[[1]])),
-#                   stringsAsFactors = FALSE)
-# row.names(map) <- row.names(counts)
-Map <- data.frame(ID = colnames(counts),
-                  time = as.numeric(str_replace(colnames(counts),
-                                                pattern = "^gen", replacement = "")),
-                  stringsAsFactors = FALSE)
-row.names(Map) <- colnames(counts)
-Dat <- create_dataset(Tab = counts, Map = Map)
-
-# Plot
-dat <- tibble()
-for(b in intersect(selected_barcodes, taxa(Dat))){
-  dat <- dat %>% bind_rows(plotgg_taxon(Dat, taxon = b, x = "time")$data %>%
-                             bind_cols(barcode = rep(b, length(samples(Dat)))))
-}
-dat$oligo <- dat$barcode %>%
-  str_split(pattern = "_") %>%
-  map_chr(~.[1])
-p1 <- ggplot(dat, aes(x = time, y = Abundance,
-                      group = barcode)) +
-  geom_point() +
-  geom_smooth(method = "loess") +
-  theme_blackbox()
-p1
-p1 <- ggplot(dat, aes(x = time, y = Abundance,
-                      group = barcode)) +
-  facet_wrap(~ oligo) +
-  geom_point() +
-  geom_smooth(method = "loess") +
-  theme_blackbox()
-p1
-
+save(counts, file = "sim_counts.rdat")
