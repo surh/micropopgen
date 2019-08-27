@@ -3,8 +3,8 @@ library(ggplot2)
 library(lme4)
 library(AMOR)
 
-counts_file <- "oligos100_barcodes10_sig20_cells10000_k10_rep1/sim_counts.rdat"
-barcodes_file <- "oligos100_barcodes10_sig20_cells10000_k10_rep1/barcode_ids.rdat"
+counts_file <- "oligos1000_barcodes30_sig10_cells10000_k2_rep1/sim_counts.rdat"
+barcodes_file <- "oligos1000_barcodes30_sig10_cells10000_k2_rep1/barcode_ids.rdat"
 timepoints <- c(0, 4, 6, 12, 20)
 
 load(file = counts_file)
@@ -23,14 +23,14 @@ selected_barcodes <- barcode_ids %>%
   dplyr::filter(s > 1) %>%
   pmap_chr(function(oligo, barcode, ...){ paste0(oligo, "_", barcode)})
 
-barcode_ids %>%
-  dplyr::filter(s > 1)
-barcode_ids %>%
-  dplyr::filter(s > 1) %>%
-  dplyr::select(oligo) %>%
-  table
-colSums(remove_taxons(Dat, setdiff(taxa(Dat), selected_barcodes))$Tab)
+# barcode_ids %>%
+#   dplyr::filter(s > 1)
+# barcode_ids %>%
+#   dplyr::filter(s > 1) %>%
+#   dplyr::select(oligo) %>%
+#   table
 
+colSums(remove_taxons(Dat, setdiff(taxa(Dat), selected_barcodes))$Tab)
 
 # Plot
 dat <- tibble()
@@ -49,8 +49,12 @@ dat$oligo <- dat$barcode %>%
 # p1
 p1 <- ggplot(dat, aes(x = time, y = Abundance,
                       group = barcode)) +
-  facet_wrap(~ oligo) +
+  facet_wrap(~ oligo, scales = "free_y") +
   geom_point() +
   geom_smooth(method = "loess") +
   theme_blackbox()
 p1
+
+
+
+
