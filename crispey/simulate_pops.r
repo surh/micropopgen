@@ -50,13 +50,13 @@ pops_count_table <- function(pops){
 
 ##################################
 set.seed(12345)
-n_oligos <- opts[1]
-mean_barcodes <- opts[2]
-n_significant <- opts[3]
-n_cells <- opts[3]
+n_oligos <- as.numeric(opts[1])
+mean_barcodes <- as.numeric(opts[2])
+n_significant <- as.numeric(opts[3])
+n_cells <- as.numeric(opts[4])
 timepoints <- 20
-k <- opts[5]
-seed <- opts[6]
+k <- as.numeric(opts[5])
+seed <- as.numeric(opts[6])
 
 set.seed(seed)
 cat(seed,"\n")
