@@ -21,7 +21,7 @@ tournament_selection <- function(pop, k = 2, G = 1){
   parents <- pop
   for(i in 1:G){
     cat("Generation: ", i, "\n")
-    parents <- tournament_round(parents = parents, k = 2, N = 100)
+    parents <- tournament_round(parents = parents, k = 2, N = N)
     Evo <- Evo %>%
       bind_cols(!!paste0("gen", i) := parents$id)
   }
@@ -36,6 +36,13 @@ n_significant <- 10
 n_cells <- 1e6
 timepoints <- c(0, 4, 8 , 12, 16, 20)
 k <- 100
+
+n_oligos <- 100
+mean_barcodes <- 3
+n_significant <- 1
+n_cells <- 1e3
+timepoints <- c(0, 4, 8 , 12, 16, 20)
+k <- 10
 
 
 # Number of barcodes per oligo, add overdispersion?
@@ -55,7 +62,7 @@ pop <- barcode_ids[ sample(x = 1:nrow(barcode_ids), size = n_cells, replace = TR
   mutate(id = paste0(oligo, "_", barcode)) %>%
   select(id, s)
 
-evo <- tournament_selection(pop = pop, k = k, N = n_cells, G = max(timepoints))
+evo <- tournament_selection(pop = pop, k = k, G = max(timepoints))
 evo_counts <- evo %>%
   map(function(x){
     tab <- table(x)
