@@ -55,8 +55,8 @@ set.seed(12345)
 n_oligos <- 100
 mean_barcodes <- 10
 n_significant <- 10
-n_cells <- 1e4
-timepoints <- c(0, 4, 8 , 12, 16, 20)
+n_cells <- 1e6
+timepoints <- 20
 k <- 20
 
 # n_oligos <- 100
@@ -85,9 +85,9 @@ pop <- barcode_ids[ sample(x = 1:nrow(barcode_ids), size = n_cells, replace = TR
 
 # Simulate and save
 evo <- tournament_selection(pop = pop, k = k, G = max(timepoints))
-save(evo, file = "sim_data.rdat")
+# save(evo, file = "sim_data.rdat")
 counts <- pops_count_table(evo)
-save(counts, file = "sim_counts.rdat")
+# save(counts, file = "sim_counts.rdat")
 
 # Create dataset
 # Map <- data.frame(do.call(rbind, 
