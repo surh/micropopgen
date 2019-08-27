@@ -59,6 +59,7 @@ k <- opts[5]
 seed <- opts[6]
 
 set.seed(seed)
+cat(seed,"\n")
 
 # Number of barcodes per oligo, add overdispersion?
 n_barcodes <- rpois(n_oligos, lambda = mean_barcodes)
