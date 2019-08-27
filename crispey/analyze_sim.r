@@ -3,19 +3,12 @@ library(ggplot2)
 library(lme4)
 library(AMOR)
 
+counts_file <- "oligos100_barcodes10_sig20_cells10000_k10_rep1/sim_counts.rdat"
+timepoints <- c(0, 4, 6, 12, 20)
 
-# Simulate and save
-evo <- tournament_selection(pop = pop, k = k, G = max(timepoints))
-# save(evo, file = "sim_pops.rdat")
-counts <- pops_count_table(evo)
-# save(counts, file = "sim_counts.rdat")
+load(file = counts_file)
 
-# Create dataset
-# Map <- data.frame(do.call(rbind, 
-#                           row.names(counts) %>%
-#                             map(~str_split(string = ., pattern = "_")[[1]])),
-#                   stringsAsFactors = FALSE)
-# row.names(map) <- row.names(counts)
+# Create Dataset
 Map <- data.frame(ID = colnames(counts),
                   time = as.numeric(str_replace(colnames(counts),
                                                 pattern = "^gen", replacement = "")),

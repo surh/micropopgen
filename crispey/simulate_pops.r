@@ -72,6 +72,7 @@ selected_barcodes <- barcode_ids %>%
   transmute(id = paste0(oligo, "_", barcode)) %>%
   unlist
 barcode_ids$s[ barcode_ids$oligo %in% selected_oligos ] <- barcode_ids$s[ barcode_ids$oligo %in% selected_oligos ] + 1
+save(barcode_ids, file = "barcode_ids.rdat")
 
 # Create starting population
 pop <- barcode_ids[ sample(x = 1:nrow(barcode_ids), size = n_cells, replace = TRUE), ] %>%
