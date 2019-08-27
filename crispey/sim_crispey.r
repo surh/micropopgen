@@ -54,10 +54,10 @@ pops_count_table <- function(pops){
 set.seed(12345)
 n_oligos <- 100
 mean_barcodes <- 10
-n_significant <- 10
-n_cells <- 1e6
+n_significant <- 20
+n_cells <- 1e4
 timepoints <- 20
-k <- 20
+k <- 10
 
 # n_oligos <- 100
 # mean_barcodes <- 3
