@@ -4,7 +4,9 @@ library(lme4)
 
 single_tournament <- function(parents, k = 2){
   ii <- sample(nrow(parents), size = k, replace = FALSE)
-  return((parents[ii, ] %>% arrange(desc(s)))[1,])
+  tournament <- parents[ii, ]
+  ii <- which.max(tournament$s)
+  return(tournament[ii,])
 }
 
 tournament_round <- function(parents, k = 2, N = nrow(pop)){
@@ -12,13 +14,19 @@ tournament_round <- function(parents, k = 2, N = nrow(pop)){
     map_dfr(~single_tournament(parents = parents, k = k))
   }
 
-tournament_selection <- function(pop, k = 2, N = nrow(pop), G = 1){
-  tibble(gen0 = pop$id) %>% 
-    bind_cols(setNames(1:G, paste0("gen", 1:G)) %>%
-                map(~tournament_round(parents = pop, k = k, N = N)) %>%
-                map(~.$id) %>%
-                bind_cols())
+tournament_selection <- function(pop, k = 2, G = 1){
+  N <- nrow(pop)
   
+  Evo <- tibble(gen0 = pop$id)
+  parents <- pop
+  for(i in 1:G){
+    cat("Generation: ", i, "\n")
+    parents <- tournament_round(parents = parents, k = 2, N = 100)
+    Evo <- Evo %>%
+      bind_cols(!!paste0("gen", i) := parents$id)
+  }
+  
+  return(Evo)
 }
 
 set.seed(12345)
