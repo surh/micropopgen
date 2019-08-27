@@ -55,6 +55,25 @@ p1 <- ggplot(dat, aes(x = time, y = Abundance,
   theme_blackbox()
 p1
 
+# Select timepoints
+Dat <- subset(Dat, time %in% timepoints, clean = TRUE)
+# Select oligos with multiple timepoints
+Dat <- remove_taxons(Dat, taxa(Dat)[ rowSums(Dat$Tab > 0) <= 3])
+Dat
 
+dat <- as_tibble(Dat$Tab) %>%
+  bind_cols(barcode = taxa(Dat)) %>%
+  gather(key = generation, value = count, -barcode) %>%
+  left_join(Dat$Map %>%
+              dplyr::select(generation = ID, time),
+            by = "generation") %>%
+  mutate(oligo = str_split(string = barcode, "_") %>% map_chr(~.[1]))
+dat
 
+m1 <- lmer(count ~ time + (1 | barcode) + (1 | oligo), data = dat %>% filter(barcode %in% selected_barcodes))
+m1 <- lmer(count ~ time + (1 | barcode) + (1 | oligo), data = dat)
+m1 <- lmer(count ~ time + (barcode | oligo), data = dat)
+summary(m1)
 
+lattice::dotplot(ranef(m1, which = "oligo"))
+lattice::dotplot(ranef(m1))  
