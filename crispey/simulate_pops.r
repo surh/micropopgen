@@ -4,7 +4,9 @@ library(AMOR)
 single_tournament <- function(parents, k = 2){
   ii <- sample(nrow(parents), size = k, replace = FALSE)
   tournament <- parents[ii, ]
-  ii <- which.max(tournament$s)
+  # ii <- which.max(tournament$s)
+  # Noisy fitness
+  ii <- which.max(tournament$s + rnorm(k, mean = 0, sd = 1))
   return(tournament[ii,])
 }
 
@@ -49,7 +51,6 @@ pops_count_table <- function(pops){
 }
 
 ##################################
-set.seed(12345)
 n_oligos <- as.numeric(opts[1])
 mean_barcodes <- as.numeric(opts[2])
 n_significant <- as.numeric(opts[3])
@@ -71,7 +72,14 @@ selected_barcodes <- barcode_ids %>%
   filter(oligo %in% selected_oligos) %>%
   transmute(id = paste0(oligo, "_", barcode)) %>%
   unlist
-barcode_ids$s[ barcode_ids$oligo %in% selected_oligos ] <- barcode_ids$s[ barcode_ids$oligo %in% selected_oligos ] + 1
+
+for(o in selected_oligos){
+  # d <- runif(1)
+  d <- 0.5
+  # barcode_ids$s[ barcode_ids$oligo %in% selected_oligos ] <- barcode_ids$s[ barcode_ids$oligo %in% selected_oligos ] + runif(sum(barcode_ids$oligo %in% selected_oligos))
+  barcode_ids$s[ barcode_ids$oligo == o ] <- barcode_ids$s[ barcode_ids$oligo == o ] + d
+  
+}
 save(barcode_ids, file = "barcode_ids.rdat")
 
 # Create starting population
