@@ -76,4 +76,10 @@ m1 <- lmer(count ~ time + (barcode | oligo), data = dat)
 summary(m1)
 
 lattice::dotplot(ranef(m1, which = "oligo"))
-lattice::dotplot(ranef(m1))  
+lattice::dotplot(ranef(m1))
+
+o <- unique(dat$oligo)[2]
+m1 <- lmerTest::lmer(count ~ time + (1|barcode) + (1|time), dat %>% filter(oligo == o))
+summary(m1)
+anova(m1)
+lmerTest::ranova(m1)
