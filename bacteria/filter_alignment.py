@@ -30,10 +30,10 @@ def process_arguments():
     required = parser.add_argument_group("Required arguments")
 
     # Define description
-    parser.description = ("Concatenate alns")
+    parser.description = ("Filter alns")
 
     # Define required arguments
-    required.add_argument("--inout", help=("Input file"),
+    required.add_argument("--input", help=("Input file"),
                           required=True, type=str)
 
     # Define other arguments
