@@ -18,7 +18,7 @@
 
 import argparse
 import os
-impor align_markers as am
+import align_markers as am
 from Bio import AlignIO
 
 
