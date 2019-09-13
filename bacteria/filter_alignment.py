@@ -15,8 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import os
-# import align_markers as am
+import numpy as np
 from Bio import AlignIO
 from Bio.Alphabet import single_letter_alphabet
 from Bio.Seq import Seq
@@ -34,7 +33,7 @@ def process_arguments():
     parser.description = ("Concatenate alns")
 
     # Define required arguments
-    required.add_argument("--indir", help=("Input dir"),
+    required.add_argument("--inout", help=("Input file"),
                           required=True, type=str)
 
     # Define other arguments
@@ -51,77 +50,111 @@ def process_arguments():
     return args
 
 
-def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
-    """Take a list of multiple sequence alignments and
-    concatenate them, fill with gaps where missing sequences."""
+def align2array(aln):
+    """Convert multiple sequence alignment object to numpy array.
+    Taken from tutorial."""
 
-    # Get list of species from alignments
-    species = []
-    species_per_aln = []
-    for a in alns:
-        specs = [r.id for r in a]
-        species.extend(specs)
-        species_per_aln.append(specs)
+    a_array = np.array([list(rec) for rec in aln], np.character)
 
-    species = list(set(species))
-
-    # Create empty alignmet
-    new_aln = MultipleSeqAlignment([SeqRecord(Seq('', alphabet),
-                                              id=s) for s in species])
-
-    # Iterate over each species, re-ordering when neccessary
-    for i in range(len(alns)):
-        # print("alginment", i)
-        specs = species_per_aln[i]
-        if specs != species:
-            # print("\treordering")
-            # new_alns.append(reorder_alignment(aln=alns[i],
-            #                                   specs=specs, species=species))
-            new_aln = new_aln + reorder_alignment(aln=alns[i], specs=specs,
-                                                  species=species,
-                                                  alphabet=alphabet,
-                                                  gap=gap)
-        else:
-            # print("matched")
-            new_aln = new_aln + alns[i]
-
-    return new_aln
+    return(a_array)
 
 
-def reorder_alignment(aln, specs, species,
-                      alphabet=single_letter_alphabet, gap='-'):
-    """Take an alignment and reorder it acording to species list.
-    Add records as gapped if missing"""
+def array2align(arr, names, alphabet):
+    """Convert numpy array to multiple sequence alignment.
+    Adapted from documentation"""
 
-    new_aln = []
-    missing_seq = ''.join([gap] * aln.get_alignment_length())
-    for s in species:
-        # Check if species exist in alignment
-        try:
-            i = specs.index(s)
-        except ValueError:
-            i = -1
-        except:
-            raise
+    records = []
 
-        if i >= 0:
-            new_aln.append(aln[i])
-        elif i == -1:
-            new_aln.append(SeqRecord(Seq(missing_seq, alphabet), id=s))
+    # Iterate over array rows (i.e. records)
+    for i in range(arr.shape[0]):
+        seq = ''.join(np.array(arr[i], dtype=str))
+        name = names[i]
 
-    new_aln = MultipleSeqAlignment(new_aln)
+        # Concatenate sequence records
+        records.append(SeqRecord(Seq(seq, alphabet), id=name))
+
+    # Convert to MSA
+    new_aln = MultipleSeqAlignment(records)
 
     return(new_aln)
+
+
+def filter_alignment_file(infile, outfile, gap_prop=0.99,
+                          remove_singletons=True,
+                          alphabet=single_letter_alphabet,
+                          input_format='fasta',
+                          output_format='fasta'):
+    """Take file with a single alignment, filter it and
+    write a new file"""
+
+    print("\treading")
+    aln = AlignIO.read(infile, input_format)
+    print("\tfiltering")
+    filtered = filter_alignment(aln=aln, gap_prop=gap_prop,
+                                remove_singletons=remove_singletons,
+                                alphabet=alphabet)
+    print("\twriting")
+    AlignIO.write(filtered, outfile, output_format)
+
+    return(outfile)
+
+
+def filter_alignment(aln, gap_prop=0.99, remove_singletons=True,
+                     alphabet=single_letter_alphabet):
+    """Function to filter a numpy array that represents an alignment,
+    where rows are records and columns are positions. Assumes gaps are
+    given by '-'"""
+
+    # Get sequence records
+    nseqs = len(aln)
+    rec_names = [r.id for r in aln]
+
+    # Convert to numpu array
+    a_array = align2array(aln)
+
+    # Prepare index. Positions to be removed will be changed
+    index = np.ones(a_array.shape[1], dtype=int)
+
+    # Iterate over columns
+    # print("Iterating")
+    for i in range(a_array.shape[1]):
+        c = a_array[:, i]
+        # print("\t", c)
+        counts = np.unique(c, return_counts=True)
+
+        # Remove constant columns
+        if counts[0].shape == (1,):
+            index[i] = 0
+            continue
+
+        # Count gaps
+        ngaps = counts[1][b'-' == counts[0]]
+        if ngaps.shape[0] == 0:
+            # print("hello")
+            ngaps = np.zeros(1, dtype=int)
+
+        if ngaps / nseqs > gap_prop:
+            index[i] = 0
+            continue
+
+        if remove_singletons:
+            if counts[1].size == 2 and counts[1].min() == 1:
+                index[i] = 0
+                continue
+
+    # Use index to slice array
+    index = np.array(index, dtype=bool)
+    # print(index.sum())
+    filtered = a_array[:, index]
+
+    # Convert back to alignent
+    new_aln = array2align(arr=filtered, names=rec_names, alphabet=alphabet)
+
+    return new_aln
 
 
 if __name__ == "__main__":
     args = process_arguments()
 
-    aln_files = os.listdir(args.indir)
-    Alns = []
-    for f in aln_files:
-        a = AlignIO.read(os.path.join(args.indir, f), 'fasta')
-        Alns.append(a)
-
-    aln = concatenate_alignments(alns=Alns)
-    AlignIO.write(aln, args.output, 'fasta')
+    filter_alignment_file(args.input, args.output,
+                          gap_prop=1, remove_singletons=True)
