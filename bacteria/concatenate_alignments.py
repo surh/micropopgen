@@ -29,7 +29,7 @@ def process_arguments():
     required = parser.add_argument_group("Required arguments")
 
     # Define description
-    parser.description = ("Concatenate alns)
+    parser.description = ("Concatenate alns")
 
     # Define required arguments
     required.add_argument("--indir", help=("Input dir"),
