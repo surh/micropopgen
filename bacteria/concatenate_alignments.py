@@ -18,8 +18,12 @@
 
 import argparse
 import os
-import align_markers as am
+# import align_markers as am
 from Bio import AlignIO
+from Bio.Alphabet import single_letter_alphabet
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Align import MultipleSeqAlignment
 
 
 def process_arguments():
@@ -49,6 +53,69 @@ def process_arguments():
     return args
 
 
+def concatenate_alignments(alns, alphabet=single_letter_alphabet, gap='-'):
+    """Take a list of multiple sequence alignments and
+    concatenate them, fill with gaps where missing sequences."""
+
+    # Get list of species from alignments
+    species = []
+    species_per_aln = []
+    for a in alns:
+        specs = [r.id for r in a]
+        species.extend(specs)
+        species_per_aln.append(specs)
+
+    species = list(set(species))
+
+    # Create empty alignmet
+    new_aln = MultipleSeqAlignment([SeqRecord(Seq('', alphabet),
+                                              id=s) for s in species])
+
+    # Iterate over each species, re-ordering when neccessary
+    for i in range(len(alns)):
+        # print("alginment", i)
+        specs = species_per_aln[i]
+        if specs != species:
+            # print("\treordering")
+            # new_alns.append(reorder_alignment(aln=alns[i],
+            #                                   specs=specs, species=species))
+            new_aln = new_aln + reorder_alignment(aln=alns[i], specs=specs,
+                                                  species=species,
+                                                  alphabet=alphabet,
+                                                  gap=gap)
+        else:
+            # print("matched")
+            new_aln = new_aln + alns[i]
+
+    return new_aln
+
+
+def reorder_alignment(aln, specs, species,
+                      alphabet=single_letter_alphabet, gap='-'):
+    """Take an alignment and reorder it acording to species list.
+    Add records as gapped if missing"""
+
+    new_aln = []
+    missing_seq = ''.join([gap] * aln.get_alignment_length())
+    for s in species:
+        # Check if species exist in alignment
+        try:
+            i = specs.index(s)
+        except ValueError:
+            i = -1
+        except:
+            raise
+
+        if i >= 0:
+            new_aln.append(aln[i])
+        elif i == -1:
+            new_aln.append(SeqRecord(Seq(missing_seq, alphabet), id=s))
+
+    new_aln = MultipleSeqAlignment(new_aln)
+
+    return(new_aln)
+
+
 if __name__ == "__main__":
     args = process_arguments()
 
@@ -58,5 +125,5 @@ if __name__ == "__main__":
         a = AlignIO.read(os.path.join(args.indir, f), 'fasta')
         Alns.append(a)
 
-    aln = am.concatenate_alignments(alns=Alns)
+    aln = concatenate_alignments(alns=Alns)
     AlignIO.write(aln, args.output, 'fasta')
