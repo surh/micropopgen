@@ -162,7 +162,8 @@ def baseml_all_genes(cov_file, aln_dir, tre_file, outdir="./output/",
 
     # Read coverage information
     covs = pd.read_csv(cov_file, sep="\t", dtype={'gene': np.character})
-    covs = covs.set_index('gene').head()
+    # covs = covs.set_index('gene').head()
+    covs = covs.set_index('gene')
 
     # Run baseml on every gene
     for g, c in covs.iterrows():
