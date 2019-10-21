@@ -98,12 +98,12 @@ def subset_aln(infile, outfile, to_keep={},
     return len(new_aln)
 
 
-def run_baseml(aln_file, tre_file, outdir = "output/",
-               model = 7,
-               clock = 0,
-               tree_format = 'newick',
-               aln_format = 'fasta',
-               baseml_bin = 'baseml'):
+def run_baseml(aln_file, tre_file, outdir="output/",
+               model=7,
+               clock=0,
+               tree_format='newick',
+               aln_format='fasta',
+               baseml_bin='baseml'):
     """Estimate rates from dna alignment and phylogenetic tree
     using PAML's baseml program."""
 
@@ -138,7 +138,6 @@ def run_baseml(aln_file, tre_file, outdir = "output/",
             oh.write(line)
     oh.close()
 
-
     # run basml
     bml = baseml.Baseml(alignment=new_aln_file, tree=new_tre_file,
                         out_file=os.path.join(outdir, "baseml.out"),
@@ -150,9 +149,10 @@ def run_baseml(aln_file, tre_file, outdir = "output/",
     return(res)
 
 
-def baseml_all_genes(cov_file, aln_dir, tre_file, outdir = "./output/",
-                     cov_thres = 0.8, n_threshold = 5, baseml_bin = "baseml"):
-    """Run baseml on all genes with only samples above certain coverage threshold."""
+def baseml_all_genes(cov_file, aln_dir, tre_file, outdir="./output/",
+                     cov_thres=0.8, n_threshold=5, baseml_bin="baseml"):
+    """Run baseml on all genes with only samples above
+    certain coverage threshold."""
 
     # Prepare output directory structure
     os.mkdir(outdir)
@@ -161,9 +161,8 @@ def baseml_all_genes(cov_file, aln_dir, tre_file, outdir = "./output/",
     os.mkdir(os.path.join(outdir, "gene_trees"))
 
     # Read coverage information
-    covs = pd.read_csv(cov_file, sep = "\t", dtype = {'gene' : np.character})
+    covs = pd.read_csv(cov_file, sep="\t", dtype={'gene': np.character})
     covs = covs.set_index('gene').head()
-    # covs.head()
 
     # Run baseml on every gene
     for g, c in covs.iterrows():
@@ -174,10 +173,11 @@ def baseml_all_genes(cov_file, aln_dir, tre_file, outdir = "./output/",
             continue
 
         # Find samples to keep
-        to_keep = set(c.index[ c >= cov_thres ])
+        to_keep = set(c.index[c >= cov_thres])
         # print(g, len(to_keep))
         subset_aln_file = os.path.join(outdir, "gene_alns", g + '.aln.fasta')
-        n_samples = subset_aln(infile=aln_file, outfile=subset_aln_file, to_keep=to_keep)
+        n_samples = subset_aln(infile=aln_file, outfile=subset_aln_file,
+                               to_keep=to_keep)
 
         if n_samples < n_threshold:
             continue
@@ -185,8 +185,22 @@ def baseml_all_genes(cov_file, aln_dir, tre_file, outdir = "./output/",
         baseml_dir = os.path.join(outdir, "baseml", g)
         os.mkdir(baseml_dir)
         res = run_baseml(aln_file=subset_aln_file, tre_file=tre_file,
-                         outdir = baseml_dir,
-                         baseml_bin = baseml_bin)
+                         outdir=baseml_dir,
+                         baseml_bin=baseml_bin)
 
         tre = TreeNode.read(io.StringIO(res.get('tree')))
-        TreeNode.write(tre, file = os.path.join(outdir, "gene_trees", g + ".baseml.tre"))
+        TreeNode.write(tre, file=os.path.join(outdir,
+                                              "gene_trees",
+                                              g + ".baseml.tre"))
+
+
+if __name__ == "__main__":
+    args = process_arguments()
+
+    baseml_all_genes(cov_file=args.cov_file,
+                     aln_dir=args.aln_dir,
+                     tre_file=args.tre_file,
+                     outdir=args.outdir,
+                     baseml_bin=args.baseml,
+                     cov_thres=args.cov_threshold,
+                     n_threshold=args.n_threshold)
