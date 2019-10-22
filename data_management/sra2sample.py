@@ -47,7 +47,7 @@ def check_set_of_runs(runs, dir):
     return(check)
 
 
-def fastq_dump_runs(runs,indir,outdir,keep):
+def fastq_dump_runs(runs, indir, outdir, keep):
     if not os.path.isdir(indir):
         raise FileNotFoundError("Input directory {} does not exist".format(indir))
     if not os.path.isdir(outdir):
@@ -117,7 +117,7 @@ def process_sample(sample, runs, indir,
                    keep=False):
     # Validate files
     try:
-        check_set_of_runs(runs,indir)
+        check_set_of_runs(runs, indir)
     except IntegrityError as error:
         print("\tWARNING: Run(s) in sample {} did not pass integrity check. SKIPPING".format(sample))
         raise ProcessError("\tSample didn't pass check")
@@ -127,7 +127,7 @@ def process_sample(sample, runs, indir,
 
     # Proceed to fastq-dump
     try:
-        run_fastq = fastq_dump_runs(runs,indir,fastqdir,keep)
+        run_fastq = fastq_dump_runs(runs, indir, fastqdir, keep)
     except FileNotFoundError as error:
         print("\tERROR: Input directory {} does not exist. TERMINATING".format(indir))
         raise FileNotFoundError("Input directory {} does not exist".format(indir))
@@ -171,8 +171,8 @@ def write_table(outfile, rows, header=None,
 
 def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir,keep):
     # Create mappting ffile
-    #map = [['Sample','Run']]
-    #map.extend(zip(itertools.repeat(sample),runs))
+    # map = [['Sample','Run']]
+    # map.extend(zip(itertools.repeat(sample),runs))
     mapfile = "map." + sample + ".txt"
     sutilspy.io.write_table(outfile = mapfile,
                             rows = zip(itertools.repeat(sample),runs),
@@ -215,7 +215,8 @@ def qsub_sample(sample,runs,indir,fastqdir,outdir,logdir,submissionsdir,failedir
     os.chmod(submission_file, 0o744)
 
     # submit qsub
-    sutilspy.io.qsub_submissions([submission_file],logdir)
+    sutilspy.io.qsub_submissions([submission_file], logdir)
+
 
 if __name__ == "__main__":
     import argparse
@@ -224,18 +225,26 @@ if __name__ == "__main__":
 
     # Required arguments
     required = parser.add_argument_group("Required arguments")
-    required.add_argument("--indir","-i", help = "Directory containing .sra files from all the runs to be processed",
-                          type = str, required = True)
-    required.add_argument("--fastq_dir","-f", help = "Directory where to place the fastq files that are produced from sra files",
-                          type = str, required = True)
-    required.add_argument("--outdir","-o", help = "Directory where to place the final fastq files, one per sample",
-                          type = str, required = True)
-    required.add_argument("--map","-m", help = "Input tab delimited file that maps runs (SRR) and samples (SRS)",
-                        type = str, required = True)
+    required.add_argument("--indir", "-i",
+                          help=("Directory containing .sra "
+                                "files from all the runs to "
+                                "be processed"),
+                          type=str, required=True)
+    required.add_argument("--fastq_dir", "-f",
+                          help=("Directory where to place the fastq files "
+                                "that are produced from sra files"),
+                          type=str, required=True)
+    required.add_argument("--outdir", "-o",
+                          help="Directory where to place the final fastq files, one per sample",
+                          type=str, required=True)
+    required.add_argument("--map", "-m",
+                          help="Input tab delimited file that maps runs (SRR) and samples (SRS)",
+                          type=str, required=True)
 
     # Optional arguments
-    parser.add_argument("--sample_col", help = "Column where the sample name is located in map", type = int,
-                        default = 1)
+    parser.add_argument("--sample_col",
+                        help="Column where the sample name is located in map", type = int,
+                        default=1)
     parser.add_argument("--run_col", help = "Column where the run accession is located in map. Run names must match names of sra files", type = int,
                         default = 2)
     parser.add_argument("--keep_intermediate", help = "Flag indicating whether to keep the intermediate fastq files.", action = "store_true")
