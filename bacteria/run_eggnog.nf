@@ -18,28 +18,21 @@
 // Combines results in single table
 
 // Params
-params.genomes = 'genomes.txt'
+params.indir = "FAA/"
 params.outdir = 'annots'
-params.njobs = 20
 
-genomes = file(params.genomes)
-reader = genomes.newReader()
-GENOMES = []
-CDS = []
-while(str = reader.readLine()){
-  GENOMES = GENOMES + [str]
-  cds = file("/godot/users/sur/data/genomes/midas_db_v1.2/FAA/${str}.CDS.faa")
-  CDS = CDS + [cds]
-}
+CDS = Channel.fromPath("${params.indir}/*.faa")
+  .map{gbk_file -> tuple(gbk_file.name.replaceAll(/\.faa/, ""),
+  file(gbk_file))}
+
 
 process eggnog{
   label 'eggnog'
-  publishDir params.outdir
-  maxForks params.njobs
+  tag "$genome"
+  publishDir params.outdir, mode: 'rellink'
 
   input:
-  val genome from GENOMES
-  file faa from CDS
+  tuple genome, faa_file from CDS
 
   output:
   file "${genome}.emapper.annotations"
@@ -52,21 +45,29 @@ process eggnog{
   emapper.py --database bact \
     --data_dir /opt/pkgs/eggnog/1.0.3/data/ \
     --output_dir ./ \
-    -i ${faa} \
+    -i ${faa_file} \
     --cpu 1 \
     --output ${genome}
   """
 }
 
-
 // Example nextflow.config
 /*
-process {
-  executor = 'slurm'
-  withLabel: eggnog{
+process{
+  queue = 'hbfraser,hns'
+  maxForks = 40
+  errorStrategy = 'finish'
+  stageInMode = 'rellink'
+  time = '48h'
+  memory = '1G'
+  withLabel: 'eggnog'{
     module = 'eggnog'
-    time = '24h'
-    memory = '2G'
   }
+}
+
+executor{
+  name = 'slurm'
+  queueSize = 500
+  submitRateLitmit = '1 sec'
 }
 */
