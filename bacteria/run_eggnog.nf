@@ -32,7 +32,7 @@ process eggnog{
   publishDir params.outdir, mode: 'rellink'
 
   input:
-  tuple genome, faa_file from CDS
+  tuple genome, file(faa_file) from CDS
 
   output:
   file "${genome}.emapper.annotations"
@@ -58,7 +58,8 @@ process{
   time = '48h'
   memory = '1G'
   withLabel: 'eggnog'{
-    module = 'eggnog'
+    module = 'eggnog:anaconda'
+    conda = "/opt/modules/pkgs/anaconda/3.6/envs/python2"
   }
 }
 
