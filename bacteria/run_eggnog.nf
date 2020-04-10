@@ -37,9 +37,6 @@ process eggnog{
   output:
   file "${genome}.emapper.annotations"
 
-  exec:
-  println genome
-
   script:
   """
   emapper.py --database bact \
