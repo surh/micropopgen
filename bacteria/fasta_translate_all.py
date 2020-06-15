@@ -26,7 +26,7 @@ def process_arguments():
     required = parser.add_argument_group("Required arguments")
 
     # Define description
-    parser.description = ("Uses EMBOSS' transeq to translate all fasta "
+    parser.description = ("OUTDATED. Uses EMBOSS' transeq to translate all fasta "
                           "sequences in all fasta files in a directory.\n"
                           "Currently only handles standard genetic code.")
 
