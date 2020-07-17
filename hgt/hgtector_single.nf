@@ -29,7 +29,7 @@ process read_genome_ids{
   file genome_taxids
 
   output:
-  tuple x into OUT
+  val x into OUT
 
   exec:
 
@@ -41,6 +41,14 @@ process read_genome_ids{
   x = ['hola', 'mundo', 'feliz']
 }
 
-println "================"
-OUT.subscribe{ println it }
-println "================"
+// println "================"
+// OUT.subscribe{ println it }
+// println "================"
+
+process out{
+  input:
+  val x from OUT
+
+  exec:
+  println x
+}
