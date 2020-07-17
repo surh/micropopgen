@@ -20,11 +20,13 @@ params.indir = ''
 params.close_tax = ''
 params.genome_taxids = ''
 
+genome_taxids = file(params.genome_taxids)
+
 process read_genome_ids{
   label 'py3'
 
   input:
-  file genome_taxids from params.genome_taxids
+  file genome_taxids
 
   output:
   val x into OUT
