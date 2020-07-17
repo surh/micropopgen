@@ -41,4 +41,6 @@ process read_genome_ids{
   x = 1
 }
 
+println "================"
 OUT.subscribe{ println it }
+println "================"s
