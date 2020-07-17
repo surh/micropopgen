@@ -39,6 +39,7 @@ process read_genome_ids{
       println line
   }
   x = ['hola', 'mundo', 'feliz']
+  x
 }
 
 // println "================"
@@ -50,5 +51,6 @@ process out{
   val x from OUT
 
   exec:
+  println "============="
   println x
 }
