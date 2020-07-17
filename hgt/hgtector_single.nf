@@ -33,7 +33,7 @@ process read_genome_ids{
 
   myFile = file(genome_taxids)
   allLines  = myFile.readLines()
-  for( line : allLines ) {
+  for( line in allLines ) {
       println line
   }
 }
