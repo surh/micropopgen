@@ -38,6 +38,7 @@ process read_genome_ids{
   for( line in allLines ) {
       println line
   }
+  x = 1
 }
 
 OUT.subscribe{ println it }
