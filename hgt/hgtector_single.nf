@@ -38,7 +38,7 @@ process read_genome_ids{
   for( line in allLines ) {
       println line
   }
-  x = 1
+  x = ['hola', 'mundo', 'feliz']
 }
 
 println "================"
