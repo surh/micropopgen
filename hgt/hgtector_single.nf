@@ -29,7 +29,7 @@ process read_genome_ids{
   file genome_taxids
 
   output:
-  val x into OUT
+  tuple x into OUT
 
   exec:
 
