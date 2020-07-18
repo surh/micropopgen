@@ -42,15 +42,15 @@ process read_genome_ids{
 
 }
 
-// println "================"
-// OUT.subscribe{ println it }
-// println "================"
+println "================"
+OUT.subscribe{ println it }
+println "================"
 
-process out{
-  input:
-  val x from OUT
-
-  exec:
-  println "============="
-  println x
-}
+// process out{
+//   input:
+//   val x from OUT
+//
+//   exec:
+//   println "============="
+//   println x
+// }
