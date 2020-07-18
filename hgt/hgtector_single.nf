@@ -38,7 +38,7 @@ process read_genome_ids{
   for( line in allLines ) {
       println line
   }
-  x = line
+  x = 1
 
 }
 
