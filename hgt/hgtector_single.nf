@@ -31,8 +31,7 @@ process read_genome_ids{
   output:
   val x into OUT
 
-  exec:
-
+  script:
   myFile = file(genome_taxids)
   allLines  = myFile.readLines()
   line = ''
