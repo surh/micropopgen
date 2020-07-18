@@ -34,7 +34,6 @@ process read_genome_ids{
   script:
   myFile = file(genome_taxids)
   allLines  = myFile.readLines()
-  line = ''
   for( line in allLines ) {
       println line
   }
