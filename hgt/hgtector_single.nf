@@ -35,10 +35,12 @@ process read_genome_ids{
 
   myFile = file(genome_taxids)
   allLines  = myFile.readLines()
+  line = ''
   for( line in allLines ) {
       println line
   }
   x = line
+
 }
 
 // println "================"
