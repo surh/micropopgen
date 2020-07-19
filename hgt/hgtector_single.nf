@@ -19,13 +19,16 @@
 params.search_dir = ''
 params.close_tax = ''
 params.genome_taxids = ''
+params.taxdump_dir = ''
 
 // Read tax ids from CSV
 genome_taxids = file(params.genome_taxids)
 TAXIDS = Channel
   .fromPath(genome_taxids)
   .splitCsv(header:true, sep:"\t")
-  .map{ row -> tuple(row.spec, row.tax_id) }
+  .map{ row -> tuple(row.spec,
+    row.tax_id,
+    (params.close_tax == '') ? row.tax_id : params.close_tax) }
 
 // Get list of input files
 search_dir = file(params.search_dir)
@@ -33,14 +36,48 @@ SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
   .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
     file(search_file))}
 
+// Stage db dir
+taxdump_dir = file(params.taxdump_dir)
 
 process hgtector_analyse{
   label 'hgtector'
+  tag "$spec"
 
   input:
-  tuple spec, file(search_file), taxid from SEARCHFILES.join(TAXIDS)
+  tuple spec, file(search_file), taxid, close_tax from SEARCHFILES.join(TAXIDS)
+  file taxdump_dir
 
-  exec:
-  println "$spec\t$taxid\t$search_file"
+  """
+  hgtector analyze \
+    --input $search_file \
+    --output $spec \
+    --taxdump $taxdump_dir \
+    --input-tax $spec:$taxid \
+    --self-tax $taxid \
+    --close-tax $close_tax
+  """
 
 }
+
+
+// Example nextflow.config
+/*
+process{
+  queue = 'hbfraser,hns'
+  maxForks = 100
+  errorStrategy = 'finish'
+  stageInMode = 'rellink'
+  time = '48h'
+  memory = '1G'
+  withLabel: 'hgtector'{
+    module = 'anaconda'
+    conda = "/opt/modules/pkgs/anaconda/4.8/envs/hgtector"
+  }
+}
+
+executor{
+  name = 'slurm'
+  queueSize = 500
+  submitRateLitmit = '1 sec'
+}
+*/
