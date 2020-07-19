@@ -57,7 +57,6 @@ process hgtector_analyse{
     --input $search_file \
     --output $spec \
     --taxdump $taxdump_dir \
-    --input-tax $spec:$taxid \
     --self-tax $taxid \
     --close-tax $close_tax
   """
