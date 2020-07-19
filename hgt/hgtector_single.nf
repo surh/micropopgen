@@ -27,7 +27,7 @@ TAXIDS = Channel
   .splitCsv(header:true, sep:"\t")
   .map{ row -> tuple(row.spec, row.tax_id) }
 
-Get list of input files
+// Get list of input files
 search_dir = file(params.search_dir)
 SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
   .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
