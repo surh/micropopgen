@@ -20,6 +20,7 @@ params.search_dir = ''
 params.close_tax = ''
 params.genome_taxids = ''
 params.taxdump_dir = ''
+params.outdir = "output/"
 
 // Read tax ids from CSV
 genome_taxids = file(params.genome_taxids)
@@ -42,10 +43,14 @@ taxdump_dir = file(params.taxdump_dir)
 process hgtector_analyse{
   label 'hgtector'
   tag "$spec"
+  publishDir params.outdir, mode: 'rellink'
 
   input:
   tuple spec, file(search_file), taxid, close_tax from SEARCHFILES.join(TAXIDS)
   file taxdump_dir
+
+  output:
+  tuple spec, file("$spec/")
 
   """
   hgtector analyze \
