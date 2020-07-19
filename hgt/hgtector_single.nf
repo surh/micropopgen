@@ -29,40 +29,39 @@ TAXIDS = Channel
   .splitCsv(header:true, sep:"\t")
   .map{ row -> tuple(row.spec,
     row.tax_id,
-    (params.close_tax == -1) ? row.tax_id : params.close_tax) }.
-    subscribe{ println it }
+    (params.close_tax == -1) ? row.tax_id : params.close_tax) }
 
 // Get list of input files
-// search_dir = file(params.search_dir)
-// SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
-//   .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
-//     file(search_file))}
-//
-// // Stage db dir
-// taxdump_dir = file(params.taxdump_dir)
-//
-// process hgtector_analyse{
-//   label 'hgtector'
-//   tag "$spec"
-//   publishDir params.outdir, mode: 'rellink'
-//
-//   input:
-//   tuple spec, file(search_file), taxid, close_tax from SEARCHFILES.join(TAXIDS)
-//   file taxdump_dir
-//
-//   output:
-//   tuple spec, file("$spec/")
-//
-//   """
-//   hgtector analyze \
-//     --input $search_file \
-//     --output $spec \
-//     --taxdump $taxdump_dir \
-//     --self-tax $taxid \
-//     --close-tax $close_tax
-//   """
-//
-// }
+search_dir = file(params.search_dir)
+SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
+  .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
+    file(search_file))}
+
+// Stage db dir
+taxdump_dir = file(params.taxdump_dir)
+
+process hgtector_analyse{
+  label 'hgtector'
+  tag "$spec"
+  publishDir params.outdir, mode: 'rellink'
+
+  input:
+  tuple spec, file(search_file), taxid, close_tax from SEARCHFILES.join(TAXIDS)
+  file taxdump_dir
+
+  output:
+  tuple spec, file("$spec/")
+
+  """
+  hgtector analyze \
+    --input $search_file \
+    --output $spec \
+    --taxdump $taxdump_dir \
+    --self-tax $taxid \
+    --close-tax $close_tax
+  """
+
+}
 
 
 // Example nextflow.config
