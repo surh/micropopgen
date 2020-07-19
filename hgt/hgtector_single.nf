@@ -17,7 +17,7 @@
 // Pipeline to run hgtector on a number of genomes individually
 
 params.search_dir = ''
-params.close_tax = ''
+params.close_tax = -1
 params.genome_taxids = ''
 params.taxdump_dir = ''
 params.outdir = "output/"
@@ -29,7 +29,7 @@ TAXIDS = Channel
   .splitCsv(header:true, sep:"\t")
   .map{ row -> tuple(row.spec,
     row.tax_id,
-    (params.close_tax == '') ? row.tax_id : params.close_tax) }
+    (params.close_tax == -1) ? row.tax_id : params.close_tax) }
 
 // Get list of input files
 search_dir = file(params.search_dir)
