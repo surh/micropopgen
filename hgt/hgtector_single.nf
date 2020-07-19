@@ -16,40 +16,31 @@
 
 // Pipeline to run hgtector on a number of genomes individually
 
-params.indir = ''
+params.search_dir = ''
 params.close_tax = ''
 params.genome_taxids = ''
 
+// Read tax ids from CSV
 genome_taxids = file(params.genome_taxids)
+TAXIDS = Channel
+    .fromPath(genome_taxids)
+    .splitCsv(header:true)
+    .map{ row -> tuple(row.spec, row.tax_id) }
 
-process read_genome_ids{
-  label 'py3'
+// Get list of input files
+search_dir = file(params.search_dir)
+SEARCHFILES = Channel.fromPath("$search_dir/*.tsv").
+  .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
+    file(search_file))}
+
+
+process hgtector_analyse{
+  label 'hgtector'
 
   input:
-  file genome_taxids
+  tuple spec, file(search_file), taxid from SEARCHFILES.join(TAXIDS)
 
-  output:
-  val x into OUT
-
-  script:
-  myFile = file(genome_taxids)
-  allLines  = myFile.readLines()
-  for( line in allLines ) {
-      println line
-  }
-  x = 1
+  exec:
+  println "$spec\t$taxid\t$search_file"
 
 }
-
-println "================"
-OUT.subscribe{ println it }
-println "================"
-
-// process out{
-//   input:
-//   val x from OUT
-//
-//   exec:
-//   println "============="
-//   println x
-// }
