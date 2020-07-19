@@ -24,16 +24,16 @@ params.genome_taxids = ''
 genome_taxids = file(params.genome_taxids)
 TAXIDS = Channel
   .fromPath(genome_taxids)
-  .splitCsv(header:true)
+  .splitCsv(header:true, sep:"\t")
   .map{ row -> tuple(row.spec, row.tax_id) }.
   subscribe{println it}
 
 // Get list of input files
-search_dir = file(params.search_dir)
-SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
-  .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
-    file(search_file))}.
-    subscribe{println it}
+// search_dir = file(params.search_dir)
+// SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
+//   .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
+//     file(search_file))}.
+//     subscribe{println it}
 
 
 // process hgtector_analyse{
