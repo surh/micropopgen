@@ -23,13 +23,13 @@ params.genome_taxids = ''
 // Read tax ids from CSV
 genome_taxids = file(params.genome_taxids)
 TAXIDS = Channel
-    .fromPath(genome_taxids)
-    .splitCsv(header:true)
-    .map{ row -> tuple(row.spec, row.tax_id) }
+  .fromPath(genome_taxids)
+  .splitCsv(header:true)
+  .map{ row -> tuple(row.spec, row.tax_id) }
 
 // Get list of input files
 search_dir = file(params.search_dir)
-SEARCHFILES = Channel.fromPath("$search_dir/*.tsv").
+SEARCHFILES = Channel.fromPath("$search_dir/*.tsv")
   .map{ search_file -> tuple(search_file.name.replaceAll(/\.tsv/, ""),
     file(search_file))}
 
