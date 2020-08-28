@@ -93,7 +93,7 @@ process preprocess_patric_gff{
 process run_roary{
   label 'roary'
   cpus params.threads
-  publishDir params.outdir, mode: 'move'
+  publishDir params.outdir, mode: 'copy'
 
   input:
   file '*.gff' from GFFS.collect()
