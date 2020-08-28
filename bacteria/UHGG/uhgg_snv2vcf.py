@@ -192,7 +192,7 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
             # If genomes are going to be included
             if include_genomes:
                 extra_cols = ['GT']
-                extra_cols.expand(vcf_genotypes)
+                extra_cols.extend(vcf_genotypes)
                 vcf_line.extend(extra_cols)
 
             # write vcf record
