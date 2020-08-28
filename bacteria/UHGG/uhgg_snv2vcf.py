@@ -80,7 +80,7 @@ def contig_lengths(fasta_file):
     """
 
     Ctgs = dict()
-    for record in SeqIO.parse(assembly_fasta_file, 'fasta'):
+    for record in SeqIO.parse(fasta_file, 'fasta'):
         Ctgs[record.id] = len(record.seq)
 
     return Ctgs
