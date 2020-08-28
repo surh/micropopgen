@@ -52,6 +52,13 @@ def process_arguments():
                               "Otherwise these columns are excluded."),
                         action="store_true",
                         default=False)
+    parser.add_argument("--write_diploid",
+                        help = ("This Flag will make the output VCF "
+                                "have a diploid genotype format. It just "
+                                "copies the haploid genotype as it "
+                                "is convenient for some software."),
+                        action="store_true",
+                        default=False)
 
     # Read arguments
     print("Reading arguments")
@@ -115,7 +122,8 @@ def contig_field_format_vcf(fasta_file):
     return Ctg_strs, ref_id
 
 
-def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
+def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False,
+            write_diploid=False):
     """Convert TSV file from UHGG SNV catalogue into a VCF file.
     Assumes conventions from v1.0 of the catalogue
 
@@ -128,6 +136,9 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
     :param include_genomes: Should genomes (i.e. VCF samples) be included
     in the output file, defaults to False.
     :type include_genomes: bool, optional
+    :param write_diploid: Forces VCF output file to have a diploid genotype
+    field. Just copies the same genotype twice, defaults to False.
+    :type write_diploid: bool, optional
 
     :return: Number of SNVs written to outfile.
     :rtype: int
@@ -183,7 +194,6 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
 
             # Prepare vcf record
             info = ';'.join(['NG=' + str(n_present), 'AF=' + str(maf)])
-            vcf_genotypes = ['.' if g == '255' else g for g in genotypes]
             vcf_line = [Line[0], Line[1],
                        '.', Line[2], Line[3],
                        '.', 'PASS',
@@ -191,6 +201,12 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
 
             # If genomes are going to be included
             if include_genomes:
+
+                if write_diploid:
+                    vcf_genotypes = ['.' if g == '255' else g + '|' + g for g in genotypes]
+                else:
+                    vcf_genotypes = ['.' if g == '255' else g for g in genotypes]
+
                 extra_cols = ['GT']
                 extra_cols.extend(vcf_genotypes)
                 vcf_line.extend(extra_cols)
