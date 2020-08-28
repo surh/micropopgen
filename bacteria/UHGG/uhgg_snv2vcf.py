@@ -193,6 +193,6 @@ if __name__ == "__main__":
 
     n = tsv2vcf(snv_file=args.input,
                 genome_fasta=args.genome_fasta,
-                outfile=args.outfile,
+                outfile=args.output,
                 include_genomes=args.include_genomes)
     print("Finished writing {} SNVs".format(str(n)))
