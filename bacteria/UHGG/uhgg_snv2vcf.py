@@ -138,7 +138,11 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
         oh.write('##fileformat=VCFv4.3' + "\n")
         oh.write('##INFO=<ID=NG,Number=1,Type=Integer,Description="Number of genomes with position">' + "\n")
         oh.write('##INFO=<ID=AF,Number=A,Type=Float,Description="Minor allele frequency">' + "\n")
-        oh.write('##FORMAT=<ID=GT,Number=1,Type=Integer,Description="Genotype">' + "\n")
+
+        # If genomes are going to be included, then a format string is needed
+        if include_genomes:
+            oh.write('##FORMAT=<ID=GT,Number=1,Type=Integer,Description="Genotype">' + "\n")
+
         # Contig definitions
         ctg_strs, ref_id = contig_field_format_vcf(genome_fasta)
         for ctg_str in ctg_strs:
@@ -153,8 +157,15 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
         # Create VCF header
         vcf_header = ['#CHROM', 'POS',
                   'ID', 'REF', 'ALT',
-                  'QUAL', 'FILTER', 'INFO',
-                 'FORMAT'] + genome_names
+                  'QUAL', 'FILTER', 'INFO']
+
+        # Add format and genome names to headers if included
+        if include_genomes:
+            extra_header = ['FORMAT']
+            extra_header.extend(genome_names)
+            vcf_header.extend(extra_header)
+
+        # Write header
         oh.write("\t".join(vcf_header) + "\n")
 
         # Line by line VCF record creation
@@ -176,8 +187,13 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False):
             vcf_line = [Line[0], Line[1],
                        '.', Line[2], Line[3],
                        '.', 'PASS',
-                       info, 'GT']
-            vcf_line.extend(vcf_genotypes)
+                       info]
+
+            # If genomes are going to be included
+            if include_genomes:
+                extra_cols = ['GT']
+                extra_cols.expand(vcf_genotypes)
+                vcf_line.extend(extra_cols)
 
             # write vcf record
             oh.write("\t".join(vcf_line) + "\n")
