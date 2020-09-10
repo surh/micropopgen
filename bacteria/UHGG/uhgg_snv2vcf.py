@@ -203,11 +203,11 @@ def tsv2vcf(snv_file, genome_fasta, outfile='snvs.vcf', include_genomes=False,
             if include_genomes:
 
                 if write_diploid:
-                    vcf_genotypes = ['.:1' if g == '255' else g + '/' + g + ':1' for g in genotypes]
+                    vcf_genotypes = ['.' if g == '255' else g for g in genotypes]
                 else:
-                    vcf_genotypes = ['./.:1' if g == '255' else g + ':1' for g in genotypes]
+                    vcf_genotypes = ['.' if g == '255' else g for g in genotypes]
 
-                extra_cols = ['GT:DP']
+                extra_cols = ['GT']
                 extra_cols.extend(vcf_genotypes)
                 vcf_line.extend(extra_cols)
 
