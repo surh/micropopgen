@@ -16,11 +16,16 @@
 
 // Params
 params.indir = "genomes/"
+params.snv_dir = "snv_catalogue/"
 
 
 indir = file(params.indir)
+snv_dir = file(params.snv_dir)
 
-SPECDIR = Channel.fromPath("$indir/*/*", type: 'dir')
+UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
   .map{specdir -> tuple(specdir.name, file(specdir))}
+  .map(spec, specdir <- tuple(spec,
+    file("$specdir/genome/${spec}.fna"),
+    file("$snv_dir/${spec}_snvs.tsv")))
 
-SPECDIR.subscribe{ println it }
+UHGG2VCF.subscribe{ println it }
