@@ -50,7 +50,7 @@ process snvs2vcf{
   ${workflow.projectDir}/uhgg_snvs2vcf.py \
     --input $snvs \
     --genome_fasta $genome_fna \
-    --output ${spec}.vcf
+    --output ${spec}.vcf \
     --include_genomes
   """
 }
