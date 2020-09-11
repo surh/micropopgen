@@ -20,7 +20,7 @@ params.indir = "genomes/"
 
 indir = file(params.indir)
 
-SPECDIR = Channel.fromPath("$indir/*", type: 'dir',
+SPECDIR = Channel.fromPath("$indir/**", type: 'dir',
   maxDepth: 2)
 
 SPECDIR.subscribe{ println it }
