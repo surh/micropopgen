@@ -97,7 +97,6 @@ SPLITFNAS.
     for(ctg in ctgs){
       tuple(spec, ctg)
       }}
-  // .transpose()
   .view()
 
 
