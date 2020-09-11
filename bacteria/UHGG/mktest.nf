@@ -93,7 +93,6 @@ process split_fnas{
 }
 
 SPLITFNAS
-  .map{files -> transpose(files)}
   .view()
 
 
