@@ -97,7 +97,7 @@ SPLITFNAS
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""),
     file(ctg_file))}
-  .subscribe(println it)
+  .subscribe{println it}
 
 
 
