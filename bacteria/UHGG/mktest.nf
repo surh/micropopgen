@@ -74,6 +74,28 @@ process tabix_vcf{
   """
 }
 
+process split_fnas{
+  label 'py3'
+  tag "$spec"
+  publishDir "$params.outdir/split_fnas", mode: 'rellink'
+
+  input:
+  tuple spec, file(genome_fna) from UHGGFNA
+
+  output:
+  tuple spec, file(spec) into SPLITFNAS
+
+  """
+  ${workflow.projectDir}/extract_contigs.py \
+    --input $genome_fna \
+    --output $spec
+  """
+}
+
+SPLITFNAS
+  .transpose()
+  .view()
+
 
 // Example nextflow.config
 /*
