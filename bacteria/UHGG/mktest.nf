@@ -25,10 +25,71 @@ snv_dir = file(params.snv_dir)
 UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
   .map{specdir -> tuple(specdir.name, file(specdir))}
   .map{spec, specdir ->
-    // spec = it[0];
-    // specdir = it[1];
     tuple(spec,
       file("$specdir/genome/${spec}.fna"),
       file("$snv_dir/${spec}_snvs.tsv"))}
 
-UHGG2VCF.subscribe{ println it }
+// UHGG2VCF.subscribe{ println it }
+
+process snvs2vcf{
+  label 'py3'
+  tag "$spec"
+
+  input:
+  tuple spec, file(genome_fna), file(snvs) from UHGG2VCF
+
+  output:
+  tuple spec, file("${spec}.vcf") into UNSORTEDVCF
+
+  """
+  ${workflow.projectDir}/uhgg_snvs2vcf.py \
+    --input $snvs \
+    --genome_fasta $genome_fna \
+    --output ${spec}.vcf
+    --include_genomes
+  """
+}
+
+process tabix_vcf{
+  label 'htslib'
+  tag "$spec"
+
+  input:
+  tuple spec, file(vcf) from UNSORTEDVCF
+
+  output:
+  tuple spec, file("${spec}.vcf.gz"), file("${spec}.vcf.gz.tbi")
+
+  """
+  (grep ^"#" $vcf; grep -v ^"#" $vcf | sort -k1,1V -k2,2n) | \
+    bgzip > ${spec}.vcf.gz
+
+  tabix -p vcf ${spec}.vcf.gz
+  """
+}
+
+
+// Example nextflow.config
+/*
+process{
+  queue = 'hbfraser,hns'
+  maxForks = 40
+  errorStrategy = 'finish'
+  stageInMode = 'rellink'
+  time = '5h'
+  memory = '1G'
+  withLabel: 'py3'{
+    module = 'anaconda'
+    conda = "/opt/modules/pkgs/anaconda/4.8/envs/fraserconda"
+  }
+  withLabel: 'htslib'{
+    module = 'htslib'
+  }
+}
+
+executor{
+  name = 'slurm'
+  queueSize = 500
+  submitRateLitmit = '1 sec'
+}
+*/
