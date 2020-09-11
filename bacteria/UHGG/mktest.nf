@@ -94,7 +94,7 @@ process split_fnas{
 
 SPLITFNAS.
   map{spec, ctgs ->
-    for(ctg:ctgs){
+    for(ctg in ctgs){
       tuple(spec, ctg)
       }}
   // .transpose()
