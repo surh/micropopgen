@@ -24,7 +24,10 @@ snv_dir = file(params.snv_dir)
 
 UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
   .map{specdir -> tuple(specdir.name, file(specdir))}
-  .map(spec, specdir <- tuple(spec,
+  .map(it <-
+    spec = it[0]
+    specdir = it[1]
+    tuple(spec,
     file("$specdir/genome/${spec}.fna"),
     file("$snv_dir/${spec}_snvs.tsv")))
 
