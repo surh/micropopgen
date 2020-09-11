@@ -92,8 +92,12 @@ process split_fnas{
   """
 }
 
-SPLITFNAS
-  .transpose()
+SPLITFNAS.
+  map{spec, ctgs ->
+    for(ctg:ctgs){
+      tuple(spec, ctg)
+      }}
+  // .transpose()
   .view()
 
 
