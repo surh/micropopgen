@@ -47,7 +47,7 @@ process snvs2vcf{
   tuple spec, file("${spec}.vcf") into UNSORTEDVCF
 
   """
-  ${workflow.projectDir}/uhgg_snvs2vcf.py \
+  ${workflow.projectDir}/uhgg_snv2vcf.py \
     --input $snvs \
     --genome_fasta $genome_fna \
     --output ${spec}.vcf \
