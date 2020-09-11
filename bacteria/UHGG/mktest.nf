@@ -88,7 +88,7 @@ process split_fnas{
   """
   ${workflow.projectDir}/extract_contigs.py \
     --input $genome_fna \
-    --output $spec
+    --outdir $spec
   """
 }
 
