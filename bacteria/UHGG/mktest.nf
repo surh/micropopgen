@@ -17,7 +17,7 @@
 // Params
 params.indir = "genomes/"
 params.snv_dir = "snv_catalogue/"
-
+params.outdir = "output/"
 
 indir = file(params.indir)
 snv_dir = file(params.snv_dir)
@@ -28,8 +28,13 @@ UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
     tuple(spec,
       file("$specdir/genome/${spec}.fna"),
       file("$snv_dir/${spec}_snvs.tsv"))}
-
 // UHGG2VCF.subscribe{ println it }
+UHGGFNA = Channel.fromPath("$indir/*/*", type: 'dir')
+  .map{specdir -> tuple(specdir.name, file(specdir))}
+  .map{spec, specdir ->
+    tuple(spec,
+      file("$specdir/genome/${spec}.fna"))}
+
 
 process snvs2vcf{
   label 'py3'
@@ -53,6 +58,7 @@ process snvs2vcf{
 process tabix_vcf{
   label 'htslib'
   tag "$spec"
+  publishDir "$params.outdir/tabix", mode: 'rellink'
 
   input:
   tuple spec, file(vcf) from UNSORTEDVCF
