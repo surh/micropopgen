@@ -93,7 +93,9 @@ process split_fnas{
 }
 
 SPLITFNAS
-  .view()
+  .subscribe{println it}
+  // .transpose()
+  // .view()
 
 
 // Example nextflow.config
