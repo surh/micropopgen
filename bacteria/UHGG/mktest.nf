@@ -83,7 +83,7 @@ process split_fnas{
   tuple spec, file(genome_fna) from UHGGFNA
 
   output:
-  tuple spec, file(spec) into SPLITFNAS
+  tuple spec, file("$spec/*.fasta") into SPLITFNAS
 
   """
   ${workflow.projectDir}/extract_contigs.py \
