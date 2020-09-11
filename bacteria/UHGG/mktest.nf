@@ -21,5 +21,6 @@ params.indir = "genomes/"
 indir = file(params.indir)
 
 SPECDIR = Channel.fromPath("$indir/*/*", type: 'dir')
+  .map{specdir -> tuple(specdir.name, file(specdir))}
 
 SPECDIR.subscribe{ println it }
