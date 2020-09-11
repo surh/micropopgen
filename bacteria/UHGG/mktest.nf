@@ -92,11 +92,7 @@ process split_fnas{
   """
 }
 
-SPLITFNAS.
-  map{spec, ctgs ->
-    for(ctg in ctgs){
-      return(tuple(spec, file(ctg)))
-      }}
+SPLITFNAS
   .view()
 
 
