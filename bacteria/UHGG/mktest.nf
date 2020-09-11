@@ -95,7 +95,7 @@ process split_fnas{
 SPLITFNAS.
   map{spec, ctgs ->
     for(ctg in ctgs){
-      tuple(spec, ctg)
+      return(tuple(spec, file(ctg)))
       }}
   .view()
 
