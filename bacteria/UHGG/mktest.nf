@@ -93,6 +93,7 @@ process split_fnas{
 }
 
 SPLITFNAS
+  .transpose()
   .subscribe{println it}
   // .transpose()
   // .view()
