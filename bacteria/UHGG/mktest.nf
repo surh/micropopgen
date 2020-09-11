@@ -53,7 +53,7 @@ UHGGFNA = Channel.fromPath("$indir/*/*", type: 'dir')
 //     --output ${spec}.vcf \
 //     --include_genomes
 //   """
-}
+// }
 
 // process tabix_vcf{
 //   label 'htslib'
