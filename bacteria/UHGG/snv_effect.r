@@ -16,7 +16,7 @@
 # along with .  If not, see <http://www.gnu.org/licenses/>.
 
 # setwd("/cashew/users/sur/exp/fraserv/2020/today")
-# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/7c/01c0f6afbcf343b6ca6941768caddc")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/32/4368aa035e2bd23275e40d5f45670d")
 # library(tidyverse)
 library(magrittr)
 library(PopGenome)
@@ -38,8 +38,8 @@ output <- opts[4]
 
 # vcf_dir <- "vcf/"
 # gff_dir <- "gff/"
-# contig_fna <- "GUT_GENOME000001_106.fasta"
-# output <- "GUT_GENOME000001_106.tsv"
+# contig_fna <- "GUT_GENOME000004_57.vcf"
+# output <- paste0(basename(contig_fna) %>% stringr::str_remove("[.]vcf$"), ".tsv")
 
 cat("========== params ==========\n")
 cat(vcf_dir, "\n")
@@ -48,12 +48,24 @@ cat(contig_fna, "\n")
 cat(output, "\n")
 cat("========== params ==========\n")
 
-vars <- readData(vcf_dir, format="VCF",
-                 gffpath = gff_dir,
-                 include.unknown = TRUE)
+feats <- readr::read_tsv(list.files(gff_dir,full.names = T)[1])
+if(nrow(feats) > 0){
+  vars <- readData(vcf_dir, format="VCF",
+                   gffpath = gff_dir,
+                   include.unknown = TRUE)
+}else{
+  vars <- readData(vcf_dir, format="VCF",
+                   include.unknown = TRUE)
+}
 
 if(vars@n.biallelic.sites > 0){
-  vars <- set.synnonsyn(vars, ref.chr = contig_fna)
+  
+  if(nrow(feats) > 0){
+    vars <- set.synnonsyn(vars, ref.chr = contig_fna)
+  }else{
+    vars@region.data@CodingSNPS[[1]] <- FALSE
+  }
+
   ctg <- vars@region.names %>% stringr::str_remove("[.]vcf$")
   
   snvs <- tibble::tibble(ref_id = ctg,
