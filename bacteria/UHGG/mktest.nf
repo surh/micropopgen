@@ -35,6 +35,11 @@ UHGGFNA = Channel.fromPath("$indir/*/*", type: 'dir')
     tuple(spec,
       file("$specdir/genome/${spec}.fna"))}
 
+UHGGGFF = Channel.fromPath("$indir/*/*", type: 'dir')
+  .map{specdir -> tuple(specdir.name, file(specdir))}
+  .map{spec, specdir ->
+    tuple(spec,
+      file("$specdir/genome/${spec}.gff"))}
 
 process snvs2vcf{
   label 'py3'
@@ -105,7 +110,7 @@ SPLITFNAS
 TABIXED_FNAS = TABIXED.cross(SPLITFNAS1
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""))})
-  .map{vec1, vec2 -> tuple(vec2[0], vec2[1], vec1[1], vec1[2])}
+  .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec1[1]), file(vec1[2]))}
 
 process split_vcfs{
   label 'htslib'
@@ -116,7 +121,7 @@ process split_vcfs{
   tuple spec, ctg, file(vcf), file(tbi) from TABIXED_FNAS
 
   output:
-  tuple spec, ctg, file("${ctg}.vcf")
+  tuple spec, ctg, file("${ctg}.vcf") into CTGVCF
 
   """
   zcat $vcf | grep -P '^#' > header.txt
@@ -125,6 +130,20 @@ process split_vcfs{
   cat header.txt snvs.vcf > ${ctg}.vcf
   """
 }
+
+// VCF_GFFS = UHGGGFF
+//   .cross(CTGVCF)
+//   .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec2[2], file(vec1[1])))}
+//   .subscribe{println it}
+
+
+SPLITFNAFILES = SPLITFNAS2
+  .map{spec, ctg_file -> tuple(spec,
+    ctg_file.name.replaceAll(/\.fasta/, ""),
+    file(ctg_file))}
+  .subscribe{println it}
+
+// awk '($1 == "GUT_GENOME000004_1")' ../../gff/snvs_genomes.gff > snvs.gff
 
 
 // Example nextflow.config
@@ -142,6 +161,9 @@ process{
   }
   withLabel: 'htslib'{
     module = 'htslib'
+  }
+  withLabel: 'r'{
+    module = 'R/4.0.2'
   }
 }
 
