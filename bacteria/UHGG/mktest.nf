@@ -135,13 +135,13 @@ process split_vcfs{
 VCF_GFFS = UHGGGFF
   .cross(CTGVCF)
   .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec2[2]), file(vec1[1]))}
-  .subscribe{println it}
+  // .subscribe{println it}
 // [MGYG-HGUT-00001, GUT_GENOME000001_90, /cashew/users/sur/exp/fraserv/2020/today/work/ca/dfeb29e0cab79ef333cccee8001fa5/GUT_GENOME000001_90.vcf, /cashew/users/sur/exp/fraserv/2020/today/genomes/MGYG-HGUT-000/MGYG-HGUT-00001/genome/MGYG-HGUT-00001.gff]
 SPLITFNAFILES = SPLITFNAS2
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""),
     file(ctg_file))}
-  .subscribe{println it}
+  // .subscribe{println it}
 // [MGYG-HGUT-00001, GUT_GENOME000001_96, /cashew/users/sur/exp/fraserv/2020/today/work/64/485951511c4158aadba8bb1c0f12ba/MGYG-HGUT-00001/GUT_GENOME000001_96.fasta]
 SNVEFFIN = VCF_GFFS.join(SPLITFNAFILES, by: [0,1])
 
