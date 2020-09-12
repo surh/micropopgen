@@ -18,6 +18,8 @@
 params.indir = "genomes/"
 params.snv_dir = "snv_catalogue/"
 params.outdir = "output/"
+params.genome_metadata = "metadata.txt"
+params.min_size = 5
 
 indir = file(params.indir)
 snv_dir = file(params.snv_dir)
@@ -86,6 +88,8 @@ process tabix_vcf{
   """
 }
 
+TABIXED.into{TABIXED1; TABIXED2}
+
 process split_fnas{
   label 'py3'
   tag "$spec"
@@ -114,7 +118,7 @@ SPLITFNAS
 //     file(ctg_file))}
 //
 
-TABIXED_FNAS = TABIXED.cross(SPLITFNAS1
+TABIXED_FNAS = TABIXED1.cross(SPLITFNAS1
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""))})
   .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec1[1]), file(vec1[2]))}
@@ -187,7 +191,7 @@ process cat_snvs{
   tuple spec, file("*.tsv") from SNVEFFS.groupTuple()
 
   output:
-  tuple spec, file("${spec}.tsv")
+  tuple spec, file("${spec}.tsv") into SPECSNVEFFS
 
   """
   Rscript ${workflow.projectDir}/cat_tables.r \
@@ -229,6 +233,33 @@ process snvs2feats{
   """
 }
 
+MKIN = TABIXED2
+  .map{spec, vcf, tbi -> tuple(spec, file(vcf))}
+  .join(SNV2FEATS)
+  .join(SPECSNVEFFS)
+
+process mktest{
+  label 'r'
+  label 'bigmem'
+  label 'long'
+  tag "$spec"
+  publishDir "$params.outdir/mktest", mode: 'rellink'
+
+  input:
+  tuple spec, file(vcf), file(snv_feats), file(snv_effs) from MKIN
+  file genome_metadata from params.genome_metadata
+  val min_size from params.min_size
+
+  output:
+  tuple spec, file("${spec}_mktest.tsv") into MKTEST
+
+  """
+  Rscript ${workflow.projectDir}/mktest.r \
+
+
+  """
+}
+
 // Example nextflow.config
 /*
 process{
@@ -247,6 +278,12 @@ process{
   }
   withLabel: 'r'{
     module = 'R/3.6.1'
+  }
+  withLabel: 'long'{
+    time = '24h'
+  }
+  withLabel: 'bigmem'{
+    memory = '5G'
   }
 }
 
