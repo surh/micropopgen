@@ -108,6 +108,7 @@ SPLITFNAS
 TABIXED.cross(SPLITFNAS1
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""))})
+  .map{vec1, vec2 -> tuple(vec2[0], vec2[1], vec1[1], vec1[2])}
   .subscribe{println it}
 
   // process split_vcfs{
