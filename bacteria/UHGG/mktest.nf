@@ -192,7 +192,7 @@ process{
     module = 'htslib'
   }
   withLabel: 'r'{
-    module = 'R/4.0.2'
+    module = 'R/3.6.1'
   }
 }
 
