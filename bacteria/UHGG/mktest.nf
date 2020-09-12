@@ -82,7 +82,7 @@ process tabix_vcf{
 process split_fnas{
   label 'py3'
   tag "$spec"
-  publishDir "$params.outdir/split_fnas", mode: 'rellink'
+  // publishDir "$params.outdir/split_fnas", mode: 'rellink'
 
   input:
   tuple spec, file(genome_fna) from UHGGFNA
@@ -115,7 +115,7 @@ TABIXED_FNAS = TABIXED.cross(SPLITFNAS1
 process split_vcfs{
   label 'htslib'
   tag "${spec}.${ctg}"
-  publishDir "$params.outdir/ctg_vcfs", mode: 'rellink'
+  // publishDir "$params.outdir/ctg_vcfs", mode: 'rellink'
 
   input:
   tuple spec, ctg, file(vcf), file(tbi) from TABIXED_FNAS
@@ -148,7 +148,7 @@ SNVEFFIN = VCF_GFFS.join(SPLITFNAFILES, by: [0,1])
 process snv_effect{
   label 'r'
   tag "${spec}.${ctg}"
-  publishDir "$params.outdir/snv_effect", mode: 'rellink'
+  // publishDir "$params.outdir/snv_effect", mode: 'rellink'
 
   input:
   tuple spec, ctg, file(vcf), file(gff), file(fasta) from SNVEFFIN
