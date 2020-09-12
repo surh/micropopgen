@@ -20,7 +20,6 @@
 library(magrittr)
 library(PopGenome)
 
-
 opts <- commandArgs(trailingOnly = TRUE)
 
 vcf_dir <- opts[1]
@@ -38,25 +37,29 @@ ouptut <- opts[4]
 
 vars <- readData(vcf_dir, format="VCF",
                  gffpath = gff_dir,
-                 include.unknown = TRUE) 
-vars <- set.synnonsyn(vars, ref.chr = contig_fna)
-ctg <- vars@region.names %>% stringr::str_remove("[.]vcf$")
+                 include.unknown = TRUE)
 
-snvs <- tibble::tibble(ref_id = ctg,
-                       position = vars@region.data@biallelic.sites[[1]],
-                       synonymous = vars@region.data@synonymous[[1]],
-                       transitions = vars@region.data@transitions[[1]],
-                       coding = vars@region.data@CodingSNPS[[1]]) %>%
-  dplyr::mutate(snp_effect = replace(synonymous, synonymous == 1, "synonymous")) %>%
-  dplyr::mutate(snp_effect = replace(snp_effect, synonymous == 0, "non-synonymous")) %>%
-  dplyr::mutate(snp_effect = replace(snp_effect, is.na(synonymous), NA)) %>%
-  dplyr::mutate(substitution = replace(transitions, transitions == 1, "transition")) %>%
-  dplyr::mutate(substitution = replace(substitution, transitions == 0, "transversion")) %>%
-  dplyr::mutate(substitution = replace(substitution,
-                                       substitution != "transition" & substitution != "transversion",
-                                       NA)) %>%
-  dplyr::mutate(coding = 1*coding) %>%
-  dplyr::select(ref_id, ref_pos = position, coding, snp_effect, substitution) 
-# snvs
+if(vars@n.biallelic.sites > 0){
+  vars <- set.synnonsyn(vars, ref.chr = contig_fna)
+  ctg <- vars@region.names %>% stringr::str_remove("[.]vcf$")
+  
+  snvs <- tibble::tibble(ref_id = ctg,
+                         position = vars@region.data@biallelic.sites[[1]],
+                         synonymous = vars@region.data@synonymous[[1]],
+                         transitions = vars@region.data@transitions[[1]],
+                         coding = vars@region.data@CodingSNPS[[1]]) %>%
+    dplyr::mutate(snp_effect = replace(synonymous, synonymous == 1, "synonymous")) %>%
+    dplyr::mutate(snp_effect = replace(snp_effect, synonymous == 0, "non-synonymous")) %>%
+    dplyr::mutate(snp_effect = replace(snp_effect, is.na(synonymous), NA)) %>%
+    dplyr::mutate(substitution = replace(transitions, transitions == 1, "transition")) %>%
+    dplyr::mutate(substitution = replace(substitution, transitions == 0, "transversion")) %>%
+    dplyr::mutate(substitution = replace(substitution,
+                                         substitution != "transition" & substitution != "transversion",
+                                         NA)) %>%
+    dplyr::mutate(coding = 1*coding) %>%
+    dplyr::select(ref_id, ref_pos = position, coding, snp_effect, substitution) 
+  # snvs
+  
+  readr::write_tsv(snvs, path = output)
+}
 
-readr::write_tsv(snvs, path = output)
