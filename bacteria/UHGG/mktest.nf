@@ -101,11 +101,15 @@ SPLITFNAS
 //     ctg_file.name.replaceAll(/\.fasta/, ""),
 //     file(ctg_file))}
 
-TABIXED_FNAS = SPLITFNAS1
-  .map{spec, ctg_file -> tuple(spec,
-    ctg_file.name.replaceAll(/\.fasta/, ""))}
-    .cross(TABIXED).
+TABIXED_FNAS =
+    .cross().
     subscribe{println it}
+
+TABIXED
+  .cross(SPLITFNAS1
+    .map{spec, ctg_file -> tuple(spec,
+      ctg_file.name.replaceAll(/\.fasta/, ""))})
+      .subscribe{println it}
 
   // process split_vcfs{
   //   label 'htslib'
