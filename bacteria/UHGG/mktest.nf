@@ -270,7 +270,7 @@ process mktest{
 /*
 process{
   queue = 'hbfraser,hns'
-  maxForks = 40
+  maxForks = 100
   errorStrategy = 'finish'
   stageInMode = 'rellink'
   time = '5h'
