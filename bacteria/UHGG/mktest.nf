@@ -104,7 +104,7 @@ SPLITFNAS
 TABIXED_FNAS = SPLITFNAS1
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""))}
-    .corss(TABIXED).
+    .cross(TABIXED).
     subscribe{println it}
 
   // process split_vcfs{
