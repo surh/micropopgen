@@ -36,43 +36,43 @@ UHGGFNA = Channel.fromPath("$indir/*/*", type: 'dir')
       file("$specdir/genome/${spec}.fna"))}
 
 
-// process snvs2vcf{
-//   label 'py3'
-//   tag "$spec"
-//
-//   input:
-//   tuple spec, file(genome_fna), file(snvs) from UHGG2VCF
-//
-//   output:
-//   tuple spec, file("${spec}.vcf") into UNSORTEDVCF
-//
-//   """
-//   ${workflow.projectDir}/uhgg_snv2vcf.py \
-//     --input $snvs \
-//     --genome_fasta $genome_fna \
-//     --output ${spec}.vcf \
-//     --include_genomes
-//   """
-// }
+process snvs2vcf{
+  label 'py3'
+  tag "$spec"
 
-// process tabix_vcf{
-//   label 'htslib'
-//   tag "$spec"
-//   publishDir "$params.outdir/tabix", mode: 'rellink'
-//
-//   input:
-//   tuple spec, file(vcf) from UNSORTEDVCF
-//
-//   output:
-//   tuple spec, file("${spec}.vcf.gz"), file("${spec}.vcf.gz.tbi")
-//
-//   """
-//   (grep ^"#" $vcf; grep -v ^"#" $vcf | sort -k1,1V -k2,2n) | \
-//     bgzip > ${spec}.vcf.gz
-//
-//   tabix -p vcf ${spec}.vcf.gz
-//   """
-// }
+  input:
+  tuple spec, file(genome_fna), file(snvs) from UHGG2VCF
+
+  output:
+  tuple spec, file("${spec}.vcf") into UNSORTEDVCF
+
+  """
+  ${workflow.projectDir}/uhgg_snv2vcf.py \
+    --input $snvs \
+    --genome_fasta $genome_fna \
+    --output ${spec}.vcf \
+    --include_genomes
+  """
+}
+
+process tabix_vcf{
+  label 'htslib'
+  tag "$spec"
+  publishDir "$params.outdir/tabix", mode: 'rellink'
+
+  input:
+  tuple spec, file(vcf) from UNSORTEDVCF
+
+  output:
+  tuple spec, file("${spec}.vcf.gz"), file("${spec}.vcf.gz.tbi") into TABIXED
+
+  """
+  (grep ^"#" $vcf; grep -v ^"#" $vcf | sort -k1,1V -k2,2n) | \
+    bgzip > ${spec}.vcf.gz
+
+  tabix -p vcf ${spec}.vcf.gz
+  """
+}
 
 process split_fnas{
   label 'py3'
@@ -94,11 +94,36 @@ process split_fnas{
 
 SPLITFNAS
   .transpose()
-  .map{spec, ctg_file -> tuple(spec,
-    ctg_file.name.replaceAll(/\.fasta/, ""),
-    file(ctg_file))}
-  .subscribe{println it}
+  into{SPLITFNAS1; SPLITFNAS2}
 
+// SPLITFNAS1
+//   .map{spec, ctg_file -> tuple(spec,
+//     ctg_file.name.replaceAll(/\.fasta/, ""),
+//     file(ctg_file))}
+
+TABIXED_FNAS = SPLITFNAS1
+  .map{spec, ctg_file -> tuple(spec,
+    ctg_file.name.replaceAll(/\.fasta/, ""))}
+    .join(TABIXED)
+
+  process split_vcfs{
+    label 'htslib'
+    tag "${spec}.${ctg}"
+    publishDir "$params.outdir/ctg_vcfs", mode: 'rellink'
+
+    input:
+    tuple spec, ctg, file(vcf), file(tbi) from TABIXED_FNAS
+
+    output:
+    tuple spec, ctg, file("${ctg}.vcf")
+
+    """
+    grep -P '^#' $vcf > header.txt
+    tabix $vcf $ctg > snvs.vcf
+
+    cat header.txt snvs.vcf > ${ctg}.vcf
+    """
+  }
 
 
 // Example nextflow.config
