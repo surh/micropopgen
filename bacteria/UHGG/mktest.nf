@@ -41,6 +41,13 @@ UHGGGFF = Channel.fromPath("$indir/*/*", type: 'dir')
     tuple(spec,
       file("$specdir/genome/${spec}.gff"))}
 
+SNVGFF = Channel.fromPath("$indir/*/*", type: 'dir')
+  .map{specdir -> tuple(specdir.name, file(specdir))}
+  .map{spec, specdir ->
+    tuple(spec,
+      file("$snv_dir/${spec}_snvs.tsv"),
+      file("$specdir/genome/${spec}.gff"))}
+
 process snvs2vcf{
   label 'py3'
   tag "$spec"
@@ -186,6 +193,39 @@ process cat_snvs{
   Rscript ${workflow.projectDir}/cat_tables.r \
     ${spec}.tsv \
     *.tsv
+  """
+}
+
+process snvs2feats{
+  label 'py3'
+  tag "$spec"
+  publishDir "$params.outdir/snv_feats", mode: 'rellink'
+
+  input:
+  tuple spec, file(snvs), file(gff) from SNVGFF
+
+  output:
+  tuple spec, file("${spec}.tsv") into SNV2FEATS
+
+  """
+  cut -f 1,2 $snvs | \
+    grep -vP '^Contig' | \
+    awk '{print \$1 "\t" \$2 - 1 "\t" \$2}' > snvs.bed
+
+  cat $gff | \
+    cut -f 1,3,4,5,9 | \
+    sed 's/\;/\t/' | \
+    cut -f 1-5 | \
+    sed 's/ID=//' | \
+    awk '{print \$1 "\t" \$3 - 1 "\t" \$4 "\t" \$2 ";" \$5}' > genes.bed
+
+  bedtools intersect \
+    -wb \
+    -a snvs.bed \
+    -b genes.bed | \
+    sort -k1V -k3n | \
+    cut -f 1,3,7 | \
+    sed 's/;/\t/' > ${spec}.tsv
   """
 }
 
