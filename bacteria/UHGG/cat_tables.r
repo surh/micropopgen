@@ -21,6 +21,9 @@ opts <- commandArgs(trailingOnly = TRUE)
 output <- opts[1]
 files <- opts[-1]
 
+# files <- list.files("/cashew/users/sur/exp/fraserv/2020/today/output/snv_effect/", full.names = TRUE)[1:10]
+
+
 res <- files %>%
   map_dfr(~read_tsv(.x,
                     col_types = cols(ref_id = col_character(),
