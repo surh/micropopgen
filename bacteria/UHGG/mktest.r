@@ -58,18 +58,101 @@ read_vcf_data <- function(vcf_file){
     mutate(N = str_remove(N, "NG=") %>% as.numeric,
            AF = str_remove(AF, "AF=") %>% as.numeric)
 }
+
+#' Title
+#'
+#' @param allele 
+#' @param group 
+#' @param min_size 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+mkdist <- function(allele, group, min_size = 5){
+  counts <- table(group)
+  if(length(counts) != 2 || any(counts < 5)){
+    return(NA)
+  }
+  
+  tab <- table(allele, group)
+  if(diag(tab) == 0 || sum(diag(tab)) == length(allele)){
+    return("D")
+  }else{
+    return("P")
+  }
+}
+
+#' Title
+#'
+#' @param dat 
+#' @param genomes 
+#' @param meta 
+#' @param min_size 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+test_mk <- function(dat, genomes, meta, min_size = 5){
+  dat %>%
+    head(1000) %>%
+    filter(feat_type == "CDS") %>%
+    split(.$feat_id) %>%
+    map_dfr(function(d, meta, genomes, min_size = 5){
+      res <- d %>%
+        select(ref_id, ref_pos, snp_effect, genomes) %>%
+        pivot_longer(cols = c(-ref_id, -ref_pos, -snp_effect),
+                     names_to = "Genome", values_to = "allele") %>%
+        filter(!is.na(allele)) %>%
+        left_join(meta,
+                  by = "Genome") %>%
+        group_by(ref_pos) %>%
+        summarise(snp_dist = mkdist(allele, group, min_size = min_size),
+                  # ref_id = ref_id[1],
+                  snp_effect = snp_effect[1],
+                  .groups = 'drop')
+      
+      res <- table(factor(res$snp_dist, levels = c("D", "P")),
+                   factor(res$snp_effect, levels = c("synonymous", "non-synonymous")))
+      
+      # res.test <- fisher.test(res)
+      res <- as.vector(res)
+      res.test <- fisher.test(matrix(c(res[3], res[1], res[4], res[2]), ncol = 2))
+      
+      tibble(Ps = res[2],
+             Pn = res[4],
+             Ds = res[1],
+             Dn = res[3],
+             OR = res.test$estimate,
+             p.value = res.test$p.value)
+    }, meta = meta,
+    genomes = genomes,
+    min_size = min_size, .id = "feat_id")
+}
+
 #################################
 
 opts <- commandArgs(trailingOnly = TRUE)
 args <- list(snv_effects = opts[1],
              vcf = opts[2],
              snv_feats = opts[3],
-             meta_file = opts[4])
+             meta_file = opts[4],
+             output = opts[5],
+             min_size = 5)
 
 args <- list(snv_effects = "output/snvs/MGYG-HGUT-00001.tsv",
              vcf = "output/tabix/MGYG-HGUT-00001.vcf.gz",
              snv_feats = "output/snv_feats/MGYG-HGUT-00001.tsv",
-             meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv")
+             meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
+             output = "mktest.txt",
+             min_size = 5)
+
+args <- list(snv_effects = "output/snvs/MGYG-HGUT-00002.tsv",
+             vcf = "output/tabix/MGYG-HGUT-00002.vcf.gz",
+             snv_feats = "output/snv_feats/MGYG-HGUT-00002.tsv",
+             meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
+             min_size = 5)
 
 
 dat <-  read_snv_data(eff_file = args$snv_effects, feat_file = args$snv_feats)
@@ -86,54 +169,83 @@ meta <- read_tsv(args$meta_file,
                  col_types = cols(CMseq = col_character())) %>%
   filter(Genome %in% genomes) %>%
   select(Genome, Genome_type, Country, Continent)
-meta
+# meta
+continents <- unique(meta$Continent)
+# continents
+# table(meta$Continent)
 
-
-mkdist <- function(allele, group){
-  tab <- table(allele, group)
-  if(diag(tab) == 0 || sum(diag(tab)) == length(allele)){
-    return("D")
-  }else{
-    return("P")
+# mktest <- tibble()
+if(length(continents) == 1){
+  cat("Not enough continents\n")
+}else if(length(continents == 2)){
+  if(all(table(meta$Continent) >= args$min_size)){
+    mktest <- test_mk(dat = dat, genomes = genomes,
+                      meta = meta %>% select(Genome, group = Continent),
+                      min_size = args$min_size) %>%
+      mutate(group1 = continents[1], group2 = continents[2])
+    # mktest
+    mktest %>%
+      filter(Ps + Pn + Dn + Ds > 0) %>%
+      write_tsv(args$output)
   }
+}else if(length(continents) > 2){
+  mktest <- bind_rows(continents %>%
+                        map_dfr(function(continent, dat, meta, genomes, min_size = 5){
+                          if(sum(meta$Continent == continent) < min_size){
+                            return(NULL)
+                          }
+                          if(sum(meta$Continent != continent) < min_size){
+                            return(NULL)
+                          }
+                          cat("Testing", continent, "vs other\n")
+                          mktest <- test_mk(dat = dat, genomes = genomes,
+                                            meta = meta %>%
+                                              select(Genome, group = Continent) %>%
+                                              mutate(group = replace(group, group != continent, "other")),
+                                            min_size = args$min_size) %>%
+                            mutate(group1 = continent, group2 = "other")
+                        }, dat = dat,
+                        meta = meta,
+                        genomes = genomes,
+                        min_size = args$min_size),
+                      which(table(meta$Continent) > args$min_size) %>% names %>%
+                        combn(2) %>%
+                        t %>%
+                        as_tibble %>%
+                        pmap_dfr(function(V1, V2, dat, meta, genomes, min_size = 5){
+                          cat("Testing", V1, "vs", V2, "\n")
+                          test_mk(dat = dat,
+                                  genomes = meta %>%
+                                    filter(Continent %in% c(V1, V2)) %>%
+                                    select(Genome) %>% unlist,
+                                  meta = meta %>%
+                                    select(Genome, group = Continent) %>%
+                                    filter(group %in% c(V1, V2)),
+                                  min_size = min_size) %>%
+                            mutate(group1 = V1, group2 = V2)
+                        }, dat = dat,
+                        meta = meta,
+                        genomes = genomes,
+                        min_size = args$min_size))
+  
+  mktest %>%
+    filter(Ps + Pn + Dn + Ds > 0) %>%
+    write_tsv(args$output)
 }
-
-
-mktest <- dat %>%
-  filter(feat_type == "CDS") %>%
-  split(.$feat_id) %>%
-  map_dfr(function(d, meta, genomes){
-    res <- d %>%
-      select(ref_id, ref_pos, snp_effect, genomes) %>%
-      pivot_longer(cols = c(-ref_id, -ref_pos, -snp_effect),
-                   names_to = "Genome", values_to = "allele") %>%
-      filter(!is.na(allele)) %>%
-      left_join(meta %>%
-                  select(Genome, group = Continent),
-                by = "Genome") %>%
-      group_by(ref_pos) %>%
-      summarise(snp_dist = mkdist(allele, group),
-                # ref_id = ref_id[1],
-                snp_effect = snp_effect[1],
-                .groups = 'drop')
-
-    res <- table(factor(res$snp_dist, levels = c("D", "P")),
-                 factor(res$snp_effect, levels = c("synonymous", "non-synonymous")))
-    
-    # res.test <- fisher.test(res)
-    res <- as.vector(res)
-    res.test <- fisher.test(matrix(c(res[3], res[1], res[4], res[2]), ncol = 2))
-
-    tibble(Ps = res[2],
-           Pn = res[4],
-           Ds = res[1],
-           Dn = res[3],
-           OR = res.test$estimate,
-           p.value = res.test$p.value)
-  }, meta = meta, genomes = genomes, .id = "feat_id")
-mktest
-mktest %>%
-  arrange(p.value) %>%
-  print(n = 50)
-
-
+# # mktest
+# 
+# if(nrow(mktest) > 0){
+# 
+# }
+# 
+# 
+# mktest %>%
+#   filter(Ps + Pn + Dn + Ds > 0) %>%
+#   arrange(p.value) %>%
+#   ggplot(aes(x = p.value)) +
+#   geom_histogram(bins = 20)
+# 
+# mktest %>%
+#   filter(Ps + Pn + Dn + Ds > 0) %>%
+#   arrange(p.value) %>%
+#   print(n = 30)
