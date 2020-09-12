@@ -246,7 +246,9 @@ process mktest{
   publishDir "$params.outdir/mktest", mode: 'rellink'
 
   input:
-  tuple spec, file(vcf), file(snv_feats), file(snv_effs) from MKIN
+  tuple spec, file(vcf),
+    file("${spec}_snvfeats.tsv"),
+    file("${spec}_snveffs.tsv") from MKIN
   file genome_metadata from params.genome_metadata
   val min_size from params.min_size
 
@@ -255,8 +257,12 @@ process mktest{
 
   """
   Rscript ${workflow.projectDir}/mktest.r \
-
-
+    ${spec}_snveffs.tsv \
+    $vcf \
+    ${spec}_snvfeats.tsv \
+    $genome_metadata \
+    ${spec}_mktest.tsv \
+    $min_size
   """
 }
 
