@@ -131,13 +131,14 @@ process split_vcfs{
   """
 }
 
-// VCF_GFFS = UHGGGFF
+// VCF_GFFS =
+// UHGGGFF
 //   .cross(CTGVCF)
 //   .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec2[2], file(vec1[1])))}
 //   .subscribe{println it}
 
-
-SPLITFNAFILES = SPLITFNAS2
+// SPLITFNAFILES =
+SPLITFNAS2
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""),
     file(ctg_file))}
