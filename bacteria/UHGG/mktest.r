@@ -156,7 +156,7 @@ args <- list(snv_effects = opts[1],
              snv_feats = opts[3],
              meta_file = opts[4],
              output = opts[5],
-             min_size = 5)
+             min_size = as.numeric(opts[6]))
 
 # args <- list(snv_effects = "output/snvs/MGYG-HGUT-00001.tsv",
 #              vcf = "output/tabix/MGYG-HGUT-00001.vcf.gz",
