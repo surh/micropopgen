@@ -104,26 +104,27 @@ SPLITFNAS
 TABIXED_FNAS = SPLITFNAS1
   .map{spec, ctg_file -> tuple(spec,
     ctg_file.name.replaceAll(/\.fasta/, ""))}
-    .join(TABIXED)
+    .corss(TABIXED).
+    subscribe{println it}
 
-  process split_vcfs{
-    label 'htslib'
-    tag "${spec}.${ctg}"
-    publishDir "$params.outdir/ctg_vcfs", mode: 'rellink'
-
-    input:
-    tuple spec, ctg, file(vcf), file(tbi) from TABIXED_FNAS
-
-    output:
-    tuple spec, ctg, file("${ctg}.vcf")
-
-    """
-    zcat $vcf | grep -P '^#' > header.txt
-    tabix $vcf $ctg > snvs.vcf
-
-    cat header.txt snvs.vcf > ${ctg}.vcf
-    """
-  }
+  // process split_vcfs{
+  //   label 'htslib'
+  //   tag "${spec}.${ctg}"
+  //   publishDir "$params.outdir/ctg_vcfs", mode: 'rellink'
+  //
+  //   input:
+  //   tuple spec, ctg, file(vcf), file(tbi) from TABIXED_FNAS
+  //
+  //   output:
+  //   tuple spec, ctg, file("${ctg}.vcf")
+  //
+  //   """
+  //   zcat $vcf | grep -P '^#' > header.txt
+  //   tabix $vcf $ctg > snvs.vcf
+  //
+  //   cat header.txt snvs.vcf > ${ctg}.vcf
+  //   """
+  // }
 
 
 // Example nextflow.config
