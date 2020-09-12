@@ -25,7 +25,7 @@ opts <- commandArgs(trailingOnly = TRUE)
 vcf_dir <- opts[1]
 gff_dir <- opts[2]
 contig_fna <- opts[3]
-ouptut <- opts[4]
+output <- opts[4]
 
 # vcf_dir <- "test/nosnvs/vcf/"
 # gff_dir <- "test/nosnvs/gff/"
