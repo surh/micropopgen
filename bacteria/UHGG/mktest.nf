@@ -118,7 +118,7 @@ TABIXED_FNAS = SPLITFNAS1
     tuple spec, ctg, file("${ctg}.vcf")
 
     """
-    grep -P '^#' $vcf > header.txt
+    zcat $vcf | grep -P '^#' > header.txt
     tabix $vcf $ctg > snvs.vcf
 
     cat header.txt snvs.vcf > ${ctg}.vcf
