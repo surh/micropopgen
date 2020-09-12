@@ -23,6 +23,8 @@ params.min_size = 5
 
 indir = file(params.indir)
 snv_dir = file(params.snv_dir)
+genome_metadata = file(params.genome_metadata)
+
 
 UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
   .map{specdir -> tuple(specdir.name, file(specdir))}
@@ -249,7 +251,7 @@ process mktest{
   tuple spec, file(vcf),
     file("${spec}_snvfeats.tsv"),
     file("${spec}_snveffs.tsv") from MKIN
-  file genome_metadata from params.genome_metadata
+  file genome_metadata
   val min_size from params.min_size
 
   output:
