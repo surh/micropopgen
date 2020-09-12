@@ -154,7 +154,7 @@ process snv_effect{
   tuple spec, ctg, file(vcf), file(gff), file(fasta) from SNVEFFIN
 
   output:
-  tuple spec, ctg, file("${ctg}.tsv") optional true into SNVEFFS
+  tuple spec, file("${ctg}.tsv") optional true into SNVEFFS
 
   """
   mkdir vcf gff
@@ -171,9 +171,23 @@ process snv_effect{
   """
 }
 
+process cat_snvs{
+  label 'r'
+  tag "$spec"
+  publishDir "$params.outdir/snvs", mode: 'rellink'
 
-// awk '($1 == "GUT_GENOME000004_1")' ../../gff/snvs_genomes.gff > snvs.gff
+  input:
+  tuple spec, file("*.tsv") from SNVEFFS.groupTuple()
 
+  output:
+  tuple spec, file("${spec}.tsv")
+
+  """
+  Rscript ${workflow.projectDir}/cat_tables.r \
+    ${spec}.tsv \
+    *.tsv
+  """
+}
 
 // Example nextflow.config
 /*
