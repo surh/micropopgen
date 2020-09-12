@@ -214,7 +214,7 @@ process snvs2feats{
 
   cat $gff | \
     cut -f 1,3,4,5,9 | \
-    sed 's/\;/\t/' | \
+    sed 's/;/\t/' | \
     cut -f 1-5 | \
     sed 's/ID=//' | \
     awk '{print \$1 "\t" \$3 - 1 "\t" \$4 "\t" \$2 ";" \$5}' > genes.bed
