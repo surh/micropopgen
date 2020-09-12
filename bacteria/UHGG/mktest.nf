@@ -94,7 +94,7 @@ process split_fnas{
 
 SPLITFNAS
   .transpose()
-  into{SPLITFNAS1; SPLITFNAS2}
+  .into{SPLITFNAS1; SPLITFNAS2}
 
 // SPLITFNAS1
 //   .map{spec, ctg_file -> tuple(spec,
