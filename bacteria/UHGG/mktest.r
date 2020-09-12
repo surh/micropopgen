@@ -1,4 +1,21 @@
-setwd("/cashew/users/sur/exp/fraserv/2020/today")
+# (C) Copyright 2020 Sur Herrera Paredes
+# 
+# This file is part of micropopgen.
+# 
+# micropopgen is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# micropopgen is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with micropopgen.  If not, see <http://www.gnu.org/licenses/>.
+
+# setwd("/cashew/users/sur/exp/fraserv/2020/today")
 library(tidyverse)
 
 #' Title
@@ -141,18 +158,18 @@ args <- list(snv_effects = opts[1],
              output = opts[5],
              min_size = 5)
 
-args <- list(snv_effects = "output/snvs/MGYG-HGUT-00001.tsv",
-             vcf = "output/tabix/MGYG-HGUT-00001.vcf.gz",
-             snv_feats = "output/snv_feats/MGYG-HGUT-00001.tsv",
-             meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
-             output = "mktest.txt",
-             min_size = 5)
-
-args <- list(snv_effects = "output/snvs/MGYG-HGUT-00002.tsv",
-             vcf = "output/tabix/MGYG-HGUT-00002.vcf.gz",
-             snv_feats = "output/snv_feats/MGYG-HGUT-00002.tsv",
-             meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
-             min_size = 5)
+# args <- list(snv_effects = "output/snvs/MGYG-HGUT-00001.tsv",
+#              vcf = "output/tabix/MGYG-HGUT-00001.vcf.gz",
+#              snv_feats = "output/snv_feats/MGYG-HGUT-00001.tsv",
+#              meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
+#              output = "mktest.txt",
+#              min_size = 5)
+# 
+# args <- list(snv_effects = "output/snvs/MGYG-HGUT-00002.tsv",
+#              vcf = "output/tabix/MGYG-HGUT-00002.vcf.gz",
+#              snv_feats = "output/snv_feats/MGYG-HGUT-00002.tsv",
+#              meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
+#              min_size = 5)
 
 
 dat <-  read_snv_data(eff_file = args$snv_effects, feat_file = args$snv_feats)
