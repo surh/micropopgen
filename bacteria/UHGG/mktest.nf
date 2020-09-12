@@ -134,7 +134,7 @@ process split_vcfs{
 // VCF_GFFS =
 UHGGGFF
   .cross(CTGVCF)
-  .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec2[2], file(vec1[1])))}
+  .map{vec1, vec2 -> tuple(vec2[0], vec2[1], file(vec2[2]), file(vec1[1]))}
   .subscribe{println it}
 
 // SPLITFNAFILES = SPLITFNAS2
