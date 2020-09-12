@@ -255,7 +255,7 @@ process mktest{
   val min_size from params.min_size
 
   output:
-  tuple spec, file("${spec}_mktest.tsv") into MKTEST
+  tuple spec, file("${spec}_mktest.tsv") optional true into MKTEST
 
   """
   Rscript ${workflow.projectDir}/mktest.r \
