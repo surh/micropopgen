@@ -113,7 +113,7 @@ mkdist <- function(allele, group, min_size = 5){
 #' @examples
 test_mk <- function(dat, genomes, meta, min_size = 5){
   dat %>%
-    head(1000) %>%
+    # head(1000) %>%
     filter(feat_type == "CDS") %>%
     split(.$feat_id) %>%
     map_dfr(function(d, meta, genomes, min_size = 5){
@@ -170,6 +170,8 @@ args <- list(snv_effects = opts[1],
 #              snv_feats = "output/snv_feats/MGYG-HGUT-00002.tsv",
 #              meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
 #              min_size = 5)
+
+args
 
 
 dat <-  read_snv_data(eff_file = args$snv_effects, feat_file = args$snv_feats)
