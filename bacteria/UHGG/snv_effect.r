@@ -16,6 +16,7 @@
 # along with .  If not, see <http://www.gnu.org/licenses/>.
 
 # setwd("/cashew/users/sur/exp/fraserv/2020/today")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/7c/01c0f6afbcf343b6ca6941768caddc")
 # library(tidyverse)
 library(magrittr)
 library(PopGenome)
@@ -34,6 +35,18 @@ output <- opts[4]
 # vcf_dir <- "test/snvs/vcf/"
 # gff_dir <- "test/snvs/gff/"
 # contig_fna <- "test/snvs/fna/GUT_GENOME000001_1.fasta"
+
+# vcf_dir <- "vcf/"
+# gff_dir <- "gff/"
+# contig_fna <- "GUT_GENOME000001_106.fasta"
+# output <- "GUT_GENOME000001_106.tsv"
+
+cat("========== params ==========\n")
+cat(vcf_dir, "\n")
+cat(gff_dir, "\n")
+cat(contig_fna, "\n")
+cat(output, "\n")
+cat("========== params ==========\n")
 
 vars <- readData(vcf_dir, format="VCF",
                  gffpath = gff_dir,
