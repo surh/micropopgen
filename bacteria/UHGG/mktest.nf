@@ -158,7 +158,9 @@ process snv_effect{
 
   """
   mkdir vcf gff
-  ln -s $vcf vcf/
+  cd vcf
+  ln -s ../$vcf ./
+  cd ../
   awk '(\$1 == "$ctg")' $gff > gff/${ctg}.gff
 
   Rscript ${workflow.projectDir}/snv_effect.r \
