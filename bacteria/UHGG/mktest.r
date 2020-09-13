@@ -16,6 +16,8 @@
 # along with micropopgen.  If not, see <http://www.gnu.org/licenses/>.
 
 # setwd("/cashew/users/sur/exp/fraserv/2020/today")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/02/557830fcd6edd8f20f4947532d8cb9/")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/79/82933e8d81a8cf29aab6ccf4b19f81")
 library(tidyverse)
 
 #' Title
@@ -118,7 +120,7 @@ test_mk <- function(dat, genomes, meta, min_size = 5){
     split(.$feat_id) %>%
     map_dfr(function(d, meta, genomes, min_size = 5){
       res <- d %>%
-        select(ref_id, ref_pos, snp_effect, genomes) %>%
+        select(ref_id, ref_pos, snp_effect, all_of(genomes)) %>%
         pivot_longer(cols = c(-ref_id, -ref_pos, -snp_effect),
                      names_to = "Genome", values_to = "allele") %>%
         filter(!is.na(allele)) %>%
@@ -158,13 +160,13 @@ args <- list(snv_effects = opts[1],
              output = opts[5],
              min_size = as.numeric(opts[6]))
 
-# args <- list(snv_effects = "output/snvs/MGYG-HGUT-00001.tsv",
-#              vcf = "output/tabix/MGYG-HGUT-00001.vcf.gz",
-#              snv_feats = "output/snv_feats/MGYG-HGUT-00001.tsv",
-#              meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
-#              output = "mktest.txt",
+# args <- list(snv_effects = "MGYG-HGUT-00002_snveffs.tsv",
+#              vcf = "MGYG-HGUT-00002.vcf.gz",
+#              snv_feats = "MGYG-HGUT-00002_snvfeats.tsv",
+#              meta_file = "metadata.txt",
+#              output = "MGYG-HGUT-00002_mktest.tsv",
 #              min_size = 5)
-# 
+
 # args <- list(snv_effects = "output/snvs/MGYG-HGUT-00002.tsv",
 #              vcf = "output/tabix/MGYG-HGUT-00002.vcf.gz",
 #              snv_feats = "output/snv_feats/MGYG-HGUT-00002.tsv",
@@ -187,16 +189,19 @@ dat <- dat %>%
 meta <- read_tsv(args$meta_file,
                  col_types = cols(CMseq = col_character())) %>%
   filter(Genome %in% genomes) %>%
-  select(Genome, Genome_type, Country, Continent)
+  select(Genome, Genome_type, Country, Continent) %>%
+  filter(!is.na(Continent))
+genomes <- meta$Genome
 # meta
 continents <- unique(meta$Continent)
 # continents
-# table(meta$Continent)
+table(meta$Continent, useNA = "always")
 
 # mktest <- tibble()
 if(length(continents) == 1){
   cat("Not enough continents\n")
-}else if(length(continents == 2)){
+}else if(length(continents) == 2){
+  cat("Two continents..\n")
   if(all(table(meta$Continent) >= args$min_size)){
     mktest <- test_mk(dat = dat, genomes = genomes,
                       meta = meta %>% select(Genome, group = Continent),
@@ -208,6 +213,7 @@ if(length(continents) == 1){
       write_tsv(args$output)
   }
 }else if(length(continents) > 2){
+  cat("More than two continents...\n")
   mktest <- bind_rows(continents %>%
                         map_dfr(function(continent, dat, meta, genomes, min_size = 5){
                           if(sum(meta$Continent == continent) < min_size){
@@ -217,7 +223,7 @@ if(length(continents) == 1){
                             return(NULL)
                           }
                           cat("Testing", continent, "vs other\n")
-                          mktest <- test_mk(dat = dat, genomes = genomes,
+                          test_mk(dat = dat, genomes = genomes,
                                             meta = meta %>%
                                               select(Genome, group = Continent) %>%
                                               mutate(group = replace(group, group != continent, "other")),
@@ -230,13 +236,13 @@ if(length(continents) == 1){
                       which(table(meta$Continent) > args$min_size) %>% names %>%
                         combn(2) %>%
                         t %>%
-                        as_tibble %>%
+                        as_tibble(.name_repair = "minimal") %>%
                         pmap_dfr(function(V1, V2, dat, meta, genomes, min_size = 5){
                           cat("Testing", V1, "vs", V2, "\n")
                           test_mk(dat = dat,
                                   genomes = meta %>%
                                     filter(Continent %in% c(V1, V2)) %>%
-                                    select(Genome) %>% unlist,
+                                    select(Genome) %>% unlist %>% as.character(),
                                   meta = meta %>%
                                     select(Genome, group = Continent) %>%
                                     filter(group %in% c(V1, V2)),
