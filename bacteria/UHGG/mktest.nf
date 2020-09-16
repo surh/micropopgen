@@ -25,7 +25,12 @@ indir = file(params.indir)
 snv_dir = file(params.snv_dir)
 genome_metadata = file(params.genome_metadata)
 
+// Species names that have SNVs in the catalogue
+SPECSWITHSNVS = Channel.fromPath("$snv_dir/*_snvs.tsv")
+  .map{snv_file -> snv_file.name.replaceAll(/_snvs\.tsv/, '')}
 
+// Species to convert from tsv to vcf. The fasta file is
+// needed to annotate contig sizes in the VCF header.
 UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
   .map{specdir -> tuple(specdir.name, file(specdir))}
   .map{spec, specdir ->
