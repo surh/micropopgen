@@ -17,6 +17,7 @@
 
 # setwd("/cashew/users/sur/exp/fraserv/2020/today")
 # setwd("/cashew/users/sur/exp/fraserv/2020/today/work/32/4368aa035e2bd23275e40d5f45670d")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today2/work/67/7be1f027cc5704d8db615323e4b128")
 # library(tidyverse)
 library(magrittr)
 library(PopGenome)
@@ -28,18 +29,10 @@ gff_dir <- opts[2]
 contig_fna <- opts[3]
 output <- opts[4]
 
-# vcf_dir <- "test/nosnvs/vcf/"
-# gff_dir <- "test/nosnvs/gff/"
-# contig_fna <- "test/nosnvs/fna/GUT_GENOME000001_100.fasta"
-
-# vcf_dir <- "test/snvs/vcf/"
-# gff_dir <- "test/snvs/gff/"
-# contig_fna <- "test/snvs/fna/GUT_GENOME000001_1.fasta"
-
-# vcf_dir <- "vcf/"
-# gff_dir <- "gff/"
-# contig_fna <- "GUT_GENOME000004_57.vcf"
-# output <- paste0(basename(contig_fna) %>% stringr::str_remove("[.]vcf$"), ".tsv")
+vcf_dir <- "vcf/"
+gff_dir <- "gff/"
+contig_fna <- "GUT_GENOME000147_71.fasta"
+output <- paste0(basename(contig_fna) %>% stringr::str_remove("[.]vcf$"), ".tsv")
 
 cat("========== params ==========\n")
 cat(vcf_dir, "\n")
@@ -48,7 +41,8 @@ cat(contig_fna, "\n")
 cat(output, "\n")
 cat("========== params ==========\n")
 
-feats <- readr::read_tsv(list.files(gff_dir,full.names = T)[1])
+feats <- readr::read_tsv(list.files(gff_dir,full.names = T)[1],
+                         col_names = FALSE)
 if(nrow(feats) > 0){
   vars <- readData(vcf_dir, format="VCF",
                    gffpath = gff_dir,
