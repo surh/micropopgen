@@ -29,10 +29,10 @@ gff_dir <- opts[2]
 contig_fna <- opts[3]
 output <- opts[4]
 
-vcf_dir <- "vcf/"
-gff_dir <- "gff/"
-contig_fna <- "GUT_GENOME000147_71.fasta"
-output <- paste0(basename(contig_fna) %>% stringr::str_remove("[.]vcf$"), ".tsv")
+# vcf_dir <- "vcf/"
+# gff_dir <- "gff/"
+# contig_fna <- "GUT_GENOME000147_71.fasta"
+# output <- paste0(basename(contig_fna) %>% stringr::str_remove("[.]vcf$"), ".tsv")
 
 cat("========== params ==========\n")
 cat(vcf_dir, "\n")
