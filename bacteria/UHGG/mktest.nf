@@ -33,7 +33,7 @@ SPECSWITHSNVS = Channel.fromPath("$snv_dir/*_snvs.tsv")
 
 // Species that have a genome dir in the UHGG catalogue.
 SPECSWITHGENOME = Channel.fromPath("$indir/*/*", type: 'dir')
-  .map{specdir -> tuple(specdir.name, file(specdir))}}
+  .map{specdir -> tuple(specdir.name, file(specdir))}
   // .into{SPECSWITHGENOME1; SPECSWITHGENOME2; SPECSWITHGENOME3; SPECSWITHGENOME4}
 
 SPECSWITHSNVS.join(SPECSWITHGENOME)
