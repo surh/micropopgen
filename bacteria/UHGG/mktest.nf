@@ -27,35 +27,62 @@ genome_metadata = file(params.genome_metadata)
 
 // Species names that have SNVs in the catalogue
 SPECSWITHSNVS = Channel.fromPath("$snv_dir/*_snvs.tsv")
-  .map{snv_file -> snv_file.name.replaceAll(/_snvs\.tsv/, '')}
+  .map{snv_file -> tuple(snv_file.name.replaceAll(/_snvs\.tsv/, ''),
+    file(snv_file))}
+  .into{SPECSWITHSNVS1; SPECSWITHSNVS2; SPECSWITHSNVS3; SPECSWITHSNVS4}
+
+// Species that have a genome dir in the UHGG catalogue.
+SPECSWITHGENOME = Channel.fromPath("$indir/*/*", type: 'dir')
+  .map{specdir -> tuple(specdir.name, file(specdir))}}
+  .into{SPECSWITHGENOME1; SPECSWITHGENOME2; SPECSWITHGENOME3; SPECSWITHGENOME4}
 
 // Species to convert from tsv to vcf. The fasta file is
 // needed to annotate contig sizes in the VCF header.
-UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
-  .map{specdir -> tuple(specdir.name, file(specdir))}
-  .map{spec, specdir ->
-    tuple(spec,
-      file("$specdir/genome/${spec}.fna"),
-      file("$snv_dir/${spec}_snvs.tsv"))}
+// UHGG2VCF = Channel.fromPath("$indir/*/*", type: 'dir')
+//   .map{specdir -> tuple(specdir.name, file(specdir))}
+//   .map{spec, specdir ->
+//     tuple(spec,
+//       file("$specdir/genome/${spec}.fna"),
+//       file("$snv_dir/${spec}_snvs.tsv"))}
+UHGG2VCF = SPECSWITHSNVS1.join(SPECSWITHGENOME1)
+  .map{spec, snv_file, genome_dir ->
+    tuple(spec, file("$genome_dir/genome/${spec}.fna"), file(snv_file))}
 // UHGG2VCF.subscribe{ println it }
-UHGGFNA = Channel.fromPath("$indir/*/*", type: 'dir')
-  .map{specdir -> tuple(specdir.name, file(specdir))}
-  .map{spec, specdir ->
-    tuple(spec,
-      file("$specdir/genome/${spec}.fna"))}
 
-UHGGGFF = Channel.fromPath("$indir/*/*", type: 'dir')
-  .map{specdir -> tuple(specdir.name, file(specdir))}
-  .map{spec, specdir ->
-    tuple(spec,
-      file("$specdir/genome/${spec}.gff"))}
+// FNA FILES to be split. Only the ones that have SNVs
+// UHGGFNA = Channel.fromPath("$indir/*/*", type: 'dir')
+//   .map{specdir -> tuple(specdir.name, file(specdir))}
+//   .map{spec, specdir ->
+//     tuple(spec,
+//       file("$specdir/genome/${spec}.fna"))}
+UHGGFNA = SPECSWITHSNVS2.join(SPECSWITHGENOME2)
+  .map{spec, snv_file, genome_dir ->
+    tuple(spec, file("$genome_dir/genome/${spec}.fna"))}
 
-SNVGFF = Channel.fromPath("$indir/*/*", type: 'dir')
-  .map{specdir -> tuple(specdir.name, file(specdir))}
-  .map{spec, specdir ->
+// GFF files for genomes that have SNVs. It is used to
+// determine synonymous and non synonymous
+// UHGGGFF = Channel.fromPath("$indir/*/*", type: 'dir')
+//   .map{specdir -> tuple(specdir.name, file(specdir))}
+//   .map{spec, specdir ->
+//     tuple(spec,
+//       file("$specdir/genome/${spec}.gff"))}
+UHGGGFF = SPECSWITHSNVS3.join(SPECSWITHGENOME3)
+  .map{spec, snv_file, genome_dir ->
+    tuple(spec, file("$genome_dir/genome/${spec}.gff"))}
+
+// SNV and GFF files to map SNVs to features. Only for genomes
+// with SNVs
+// SNVGFF = Channel.fromPath("$indir/*/*", type: 'dir')
+//   .map{specdir -> tuple(specdir.name, file(specdir))}
+//   .map{spec, specdir ->
+//     tuple(spec,
+//       file("$snv_dir/${spec}_snvs.tsv"),
+//       file("$specdir/genome/${spec}.gff"))}
+SNVGFF = SPECSWITHSNVS4.join(SPECSWITHGENOME4)
+  .map{spec, snv_file, genome_dir ->
     tuple(spec,
-      file("$snv_dir/${spec}_snvs.tsv"),
-      file("$specdir/genome/${spec}.gff"))}
+      file(snv_file),
+      file("$genome_dir/genome/${spec}.gff"))}
 
 process snvs2vcf{
   label 'py3'
