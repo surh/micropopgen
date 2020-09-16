@@ -29,12 +29,15 @@ genome_metadata = file(params.genome_metadata)
 SPECSWITHSNVS = Channel.fromPath("$snv_dir/*_snvs.tsv")
   .map{snv_file -> tuple(snv_file.name.replaceAll(/_snvs\.tsv/, ''),
     file(snv_file))}
-  .into{SPECSWITHSNVS1; SPECSWITHSNVS2; SPECSWITHSNVS3; SPECSWITHSNVS4}
+  // .into{SPECSWITHSNVS1; SPECSWITHSNVS2; SPECSWITHSNVS3; SPECSWITHSNVS4}
 
 // Species that have a genome dir in the UHGG catalogue.
 SPECSWITHGENOME = Channel.fromPath("$indir/*/*", type: 'dir')
   .map{specdir -> tuple(specdir.name, file(specdir))}}
-  .into{SPECSWITHGENOME1; SPECSWITHGENOME2; SPECSWITHGENOME3; SPECSWITHGENOME4}
+  // .into{SPECSWITHGENOME1; SPECSWITHGENOME2; SPECSWITHGENOME3; SPECSWITHGENOME4}
+
+SPECSWITHSNVS.join(SPECSWITHGENOME)
+  .into{INSPECS1; INSPECS2; INSPECS3; INSPECS4}
 
 // Species to convert from tsv to vcf. The fasta file is
 // needed to annotate contig sizes in the VCF header.
@@ -44,7 +47,7 @@ SPECSWITHGENOME = Channel.fromPath("$indir/*/*", type: 'dir')
 //     tuple(spec,
 //       file("$specdir/genome/${spec}.fna"),
 //       file("$snv_dir/${spec}_snvs.tsv"))}
-UHGG2VCF = SPECSWITHSNVS1.join(SPECSWITHGENOME1)
+UHGG2VCF = INSPECS1
   .map{spec, snv_file, genome_dir ->
     tuple(spec, file("$genome_dir/genome/${spec}.fna"), file(snv_file))}
 // UHGG2VCF.subscribe{ println it }
@@ -55,7 +58,7 @@ UHGG2VCF = SPECSWITHSNVS1.join(SPECSWITHGENOME1)
 //   .map{spec, specdir ->
 //     tuple(spec,
 //       file("$specdir/genome/${spec}.fna"))}
-UHGGFNA = SPECSWITHSNVS2.join(SPECSWITHGENOME2)
+UHGGFNA = INSPECS2
   .map{spec, snv_file, genome_dir ->
     tuple(spec, file("$genome_dir/genome/${spec}.fna"))}
 
@@ -66,7 +69,7 @@ UHGGFNA = SPECSWITHSNVS2.join(SPECSWITHGENOME2)
 //   .map{spec, specdir ->
 //     tuple(spec,
 //       file("$specdir/genome/${spec}.gff"))}
-UHGGGFF = SPECSWITHSNVS3.join(SPECSWITHGENOME3)
+UHGGGFF = INSPECS3
   .map{spec, snv_file, genome_dir ->
     tuple(spec, file("$genome_dir/genome/${spec}.gff"))}
 
@@ -78,7 +81,7 @@ UHGGGFF = SPECSWITHSNVS3.join(SPECSWITHGENOME3)
 //     tuple(spec,
 //       file("$snv_dir/${spec}_snvs.tsv"),
 //       file("$specdir/genome/${spec}.gff"))}
-SNVGFF = SPECSWITHSNVS4.join(SPECSWITHGENOME4)
+SNVGFF = INSPECS4
   .map{spec, snv_file, genome_dir ->
     tuple(spec,
       file(snv_file),
