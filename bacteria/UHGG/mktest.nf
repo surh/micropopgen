@@ -226,7 +226,7 @@ process cat_snvs{
   publishDir "$params.outdir/snvs", mode: 'rellink'
 
   input:
-  tuple spec, file("*.tsv") from SNVEFFS.groupTuple()
+  tuple spec, file("snveffs*.tsv") from SNVEFFS.groupTuple()
 
   output:
   tuple spec, file("${spec}.tsv") into SPECSNVEFFS
