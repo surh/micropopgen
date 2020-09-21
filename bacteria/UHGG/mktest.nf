@@ -195,6 +195,7 @@ SNVEFFIN = VCF_GFFS.join(SPLITFNAFILES, by: [0,1])
 
 process snv_effect{
   label 'r'
+  label 'bigmem'
   tag "${spec}.${ctg}"
   // publishDir "$params.outdir/snv_effect", mode: 'rellink'
 
