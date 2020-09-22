@@ -197,8 +197,8 @@ process snv_effect{
   label 'r'
   tag "${spec}.${ctg}"
   memory { 15.GB * task.attempt }
-  maxRetries 3
-  errorStrategy { task.attempt < 3 ? 'retry' : 'finish' }
+  maxRetries 5
+  errorStrategy { task.attempt < 5 ? 'retry' : 'finish' }
   // publishDir "$params.outdir/snv_effect", mode: 'rellink'
 
   input:
