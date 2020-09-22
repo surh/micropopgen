@@ -196,7 +196,7 @@ SNVEFFIN = VCF_GFFS.join(SPLITFNAFILES, by: [0,1])
 process snv_effect{
   label 'r'
   tag "${spec}.${ctg}"
-  memory { 2.GB * (task.attempt * task.attempt * 5.GB) }
+  memory { 15.GB * task.attempt }
   maxRetries 3
   errorStrategy { task.attempt < 3 ? 'retry' : 'finish' }
   // publishDir "$params.outdir/snv_effect", mode: 'rellink'
