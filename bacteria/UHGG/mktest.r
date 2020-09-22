@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with micropopgen.  If not, see <http://www.gnu.org/licenses/>.
 
-# setwd("/cashew/users/sur/exp/fraserv/2020/today")
-# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/02/557830fcd6edd8f20f4947532d8cb9/")
-# setwd("/cashew/users/sur/exp/fraserv/2020/today/work/79/82933e8d81a8cf29aab6ccf4b19f81")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today2/work/e4/e7352f79f8de68f5cf53cd1935a047/")
 library(tidyverse)
 
 #' Title
@@ -150,6 +148,22 @@ test_mk <- function(dat, genomes, meta, min_size = 5){
     min_size = min_size, .id = "feat_id")
 }
 
+#' Title
+#'
+#' @param x 
+#' @param m 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dummy_combn <- function(x, m = 2){
+  if(length(x) >= m){
+    combn(x, m = m)
+  }else{
+    matrix(ncol = 0, nrow = 1)
+  }
+}
 #################################
 
 opts <- commandArgs(trailingOnly = TRUE)
@@ -160,21 +174,13 @@ args <- list(snv_effects = opts[1],
              output = opts[5],
              min_size = as.numeric(opts[6]))
 
-# args <- list(snv_effects = "MGYG-HGUT-00002_snveffs.tsv",
-#              vcf = "MGYG-HGUT-00002.vcf.gz",
-#              snv_feats = "MGYG-HGUT-00002_snvfeats.tsv",
+# args <- list(snv_effects = "MGYG-HGUT-00050_snveffs.tsv",
+#              vcf = "MGYG-HGUT-00050.vcf.gz",
+#              snv_feats = "MGYG-HGUT-00050_snvfeats.tsv",
 #              meta_file = "metadata.txt",
-#              output = "MGYG-HGUT-00002_mktest.tsv",
+#              output = "MGYG-HGUT-00050_mktest.tsv",
 #              min_size = 5)
-
-# args <- list(snv_effects = "output/snvs/MGYG-HGUT-00002.tsv",
-#              vcf = "output/tabix/MGYG-HGUT-00002.vcf.gz",
-#              snv_feats = "output/snv_feats/MGYG-HGUT-00002.tsv",
-#              meta_file = "/cashew/shared_data/mgnify/v1.0/genomes-all_metadata.tsv",
-#              min_size = 5)
-
 args
-
 
 dat <-  read_snv_data(eff_file = args$snv_effects, feat_file = args$snv_feats)
 genomes <- (read_tsv(args$vcf, comment = "##",
@@ -233,8 +239,15 @@ if(length(continents) == 1){
                         meta = meta,
                         genomes = genomes,
                         min_size = args$min_size),
-                      which(table(meta$Continent) > args$min_size) %>% names %>%
-                        combn(2) %>%
+                      table(meta$Continent) %>%
+                        # For some reason as_tibble cannot convert directly the output of table
+                        as.data.frame() %>%
+                        as_tibble() %>%
+                        filter(Freq >= args$min_size) %>%
+                        select(Var1) %>%
+                        unlist  %>%
+                        as.character() %>%
+                        dummy_combn(m = 2) %>%
                         t %>%
                         as_tibble(.name_repair = "minimal") %>%
                         pmap_dfr(function(V1, V2, dat, meta, genomes, min_size = 5){
@@ -253,10 +266,16 @@ if(length(continents) == 1){
                         genomes = genomes,
                         min_size = args$min_size))
   
-  mktest %>%
-    filter(Ps + Pn + Dn + Ds > 0) %>%
-    write_tsv(args$output)
+  # Only write if there is output
+  if(nrow(mktest) > 0){
+    mktest %>%
+      filter(Ps + Pn + Dn + Ds > 0) %>%
+      write_tsv(args$output)
+  }else{
+    cat("\tNo valid comparisons\n")
+  }
 }
+
 # # mktest
 # 
 # if(nrow(mktest) > 0){
