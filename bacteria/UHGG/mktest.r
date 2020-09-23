@@ -16,6 +16,7 @@
 # along with micropopgen.  If not, see <http://www.gnu.org/licenses/>.
 
 # setwd("/cashew/users/sur/exp/fraserv/2020/today2/work/e4/e7352f79f8de68f5cf53cd1935a047/")
+# setwd("/cashew/users/sur/exp/fraserv/2020/today2/work/f2/505baea646b2c3217bc0ae6730f25f/")
 library(tidyverse)
 
 #' Title
@@ -34,6 +35,7 @@ read_snv_data <- function(eff_file, feat_file){
                                         coding = col_number(),
                                         snp_effect = col_character(),
                                         substitution = col_character()))
+  stop_for_problems(snv_effs)
   
   snv_feat <- read_tsv(feat_file,
                        col_names = c("ref_id", "ref_pos", "feat_type", "feat_id"),
@@ -41,11 +43,17 @@ read_snv_data <- function(eff_file, feat_file){
                                         ref_pos = col_number(),
                                         feat_type = col_character(),
                                         feat_id = col_character()))
+  stop_for_problems(snv_feat)
   
-  
-  snv_effs %>%
-    left_join(snv_feat, by = c("ref_id", "ref_pos")) %>%
-    mutate(feat_type = replace(feat_type, is.na(feat_type), "IGR"))
+  if(nrow(snv_feat) > 0){
+    snv_effs %>%
+      left_join(snv_feat, by = c("ref_id", "ref_pos")) %>%
+      mutate(feat_type = replace(feat_type, is.na(feat_type), "IGR"))
+  }else{
+    snv_effs %>%
+      mutate(feat_id = NA,
+             feat_type = "IGR")
+  }
 }
 
 #' Title
@@ -174,11 +182,11 @@ args <- list(snv_effects = opts[1],
              output = opts[5],
              min_size = as.numeric(opts[6]))
 
-# args <- list(snv_effects = "MGYG-HGUT-00050_snveffs.tsv",
-#              vcf = "MGYG-HGUT-00050.vcf.gz",
-#              snv_feats = "MGYG-HGUT-00050_snvfeats.tsv",
+# args <- list(snv_effects = "MGYG-HGUT-00075_snveffs.tsv",
+#              vcf = "MGYG-HGUT-00075.vcf.gz",
+#              snv_feats = "MGYG-HGUT-00075_snvfeats.tsv",
 #              meta_file = "metadata.txt",
-#              output = "MGYG-HGUT-00050_mktest.tsv",
+#              output = "MGYG-HGUT-00075_mktest.tsv",
 #              min_size = 5)
 args
 
@@ -217,6 +225,8 @@ if(length(continents) == 1){
     mktest %>%
       filter(Ps + Pn + Dn + Ds > 0) %>%
       write_tsv(args$output)
+  }else{
+    cat("\tContinents didn't pass threshold...\n")
   }
 }else if(length(continents) > 2){
   cat("More than two continents...\n")
