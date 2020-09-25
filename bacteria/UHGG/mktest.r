@@ -46,6 +46,8 @@ read_snv_data <- function(eff_file, feat_file){
   stop_for_problems(snv_feat)
   
   if(nrow(snv_feat) > 0){
+    # Need to do garbage collect to deal with some weird cons limit issue in R but not Rstudio
+    gc()
     snv_effs %>%
       left_join(snv_feat, by = c("ref_id", "ref_pos")) %>%
       mutate(feat_type = replace(feat_type, is.na(feat_type), "IGR"))
@@ -190,16 +192,20 @@ args <- list(snv_effects = opts[1],
 #              min_size = 5)
 args
 
+cat("Reading snv data...\n")
 dat <-  read_snv_data(eff_file = args$snv_effects, feat_file = args$snv_feats)
+cat("Reading genome ids...\n")
 genomes <- (read_tsv(args$vcf, comment = "##",
                      n_max = 0,
                      col_types = cols(.default = col_character())) %>%
               colnames)[-(1:9)]
+cat("Reading genotypes...\n")
 dat <- dat %>%
   full_join(read_vcf_data(vcf_file = args$vcf),
             by = c("ref_id", "ref_pos"))
 
 # ?HMVAR::midas_mktest
+cat("Reading metadata..\n")
 meta <- read_tsv(args$meta_file,
                  col_types = cols(CMseq = col_character())) %>%
   filter(Genome %in% genomes) %>%
