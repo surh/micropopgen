@@ -281,10 +281,13 @@ MKIN = TABIXED2
 
 process mktest{
   label 'r'
-  label 'bigmem'
+  // label 'bigmem'
   label 'long'
   tag "$spec"
   publishDir "$params.outdir/mktest", mode: 'rellink'
+  memory { task.attempt < 2 ? 15.GB : 60.GB }
+  maxRetries 2
+  errorStrategy { task.attempt < 2 ? 'retry' : 'finish' }
 
   input:
   tuple spec, file(vcf),
