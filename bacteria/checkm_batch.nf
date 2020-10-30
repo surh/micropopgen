@@ -52,6 +52,7 @@ params.indir = 'genomes'
 params.outdir = 'output/'
 params.contamination = 2
 params.completeness = 98
+params.heterogeneity = 0
 
 params.batch_size = 200
 
@@ -161,7 +162,8 @@ process filter_checkm{
   ${workflow.projectDir}/process_checkm_results.r \
     checkm_results.txt \
     --contamination ${params.contamination} \
-    --completeness ${params.completeness}
+    --completeness ${params.completeness} \
+    --heterogeneity ${params.heterogeneity}
   """
 }
 

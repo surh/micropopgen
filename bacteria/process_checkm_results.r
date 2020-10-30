@@ -108,14 +108,15 @@ process_arguments <- function(){
   p <- add_argument(p, "--heterogeneity",
                     help = paste0("Maximim heterogeneity for a genome to pass the threshold"),
                     type = "integer",
-                    default = NA)
+                    default = 0)
   
   
   # Read arguments
   cat("Processing arguments...\n")
-  args <- parse_args(p)
+  args <- parse_args(p) 
   
   # Process arguments
+  #cat("\t", args$heterogeneity, "\n")
   
   return(args)
 }
@@ -130,6 +131,7 @@ args <- process_arguments()
 # print(args)
 
 # Read data and prepater output directory
+cat("Reading data...\n")
 Res <- read_tsv(file = args$file, col_types = 'ccnnnnnnnnnnnn')
 if(dir.exists(args$outdir)){
   stop("ERROR: output directory already exists")
@@ -138,11 +140,13 @@ if(dir.exists(args$outdir)){
 }
 
 # Plot overall distribution
+cat("Plotting results...\n")
 plot_checkm_results(x = Res, completeness = args$completeness,
                     contamination = args$contamination,
                     outdir = args$outdir, prefix = "all_")
 
 # Filter
+cat("Filtering...\n")
 n_genomes <- nrow(Res)
 Res <- Res %>% filter(Completeness >= args$completeness & Contamination <= args$contamination)
 if(!is.na(args$heterogeneity)){
@@ -152,11 +156,13 @@ n_passed <- nrow(Res)
 n_discarded <- n_genomes - n_passed
 
 # Plot final selection
+cat("Plotting final selection...\n")
 plot_checkm_results(x = Res, completeness = args$completeness,
                     contamination = args$contamination,
                     outdir = args$outdir, prefix = "chosen_")
 
 # Write results
+cat("Writing results...\n")
 filename <- paste0(args$outdir, "/chosen_checkm_results.txt")
 write_tsv(Res, filename)
 
