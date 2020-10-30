@@ -53,28 +53,13 @@ params.outdir = 'output/'
 params.contamination = 2
 params.completeness = 98
 
-// params.conda_checkm = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
 params.batch_size = 200
-// params.threads = 8
-// params.memory = '40GB'
-// params.time = '2:00:00'
-// params.queue = 'owners,hbfraser,hns'
-// params.max_forks = 200
-
 
 // Process params
 indir = file(params.indir)
 
 process create_batch_map{
   label 'py3'
-  // module 'fraserconda'
-  cpus 1
-  memory '1GB'
-  time '1:00:00'
-  errorStrategy 'retry'
-  maxRetries 2
-  queue params.queue
-
 
   input:
   file indir
@@ -93,16 +78,8 @@ process create_batch_map{
 
 process run_checkm{
   label 'checkm'
-  // module 'prodigal:hmmer:pplacer:fraserconda'
-  // conda params.conda_checkm
-  // cpus params.threads
-  // memory params.memory
-  // time params.time
   errorStrategy 'retry'
   maxRetries 2
-  // maxForks params.max_forks
-
-  queue params.queue
 
   input:
   file checkm_dir from checkm_dirs.flatten()
@@ -113,7 +90,7 @@ process run_checkm{
 
   """
   checkm lineage_wf \
-    -t ${params.threads} \
+    -t ${process.cpus} \
     -f checkm_results.txt \
     --tab_table \
     ${checkm_dir} \
@@ -125,11 +102,6 @@ process run_checkm{
 
 process collect_results{
   label 'py3'
-  // module 'fraserconda'
-  cpus 1
-  // memory '1GB'
-  // time '00:30:00'
-  // queue params.queue
   publishDir params.outdir
 
   input:
@@ -147,10 +119,6 @@ process collect_results{
 
 process filter_checkm{
   label 'r'
-  cpus 1
-  // memory '2GB'
-  // time '00:30:00'
-  // queue params.queue
   publishDir params.outdir, pattern: "output/all_completeness_histogram.svg",
     saveAs: {"checkm/all_completeness_histogram.svg"}
   publishDir params.outdir, pattern: "output/all_contamination_histogram.svg",
@@ -199,11 +167,6 @@ process filter_checkm{
 
 process clean_genome_dirs{
   label 'py3'
-  cpus 1
-  // memory '2GB'
-  // // If copying, need to increase time
-  // time '00:45:00'
-  // queue params.queue
   publishDir params.outdir,
     pattern: "clean",
     saveAs: {"clean"}
