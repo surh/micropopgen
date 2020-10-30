@@ -90,7 +90,7 @@ process run_checkm{
 
   """
   checkm lineage_wf \
-    -t ${process.cpus} \
+    -t 8 \
     -f checkm_results.txt \
     --tab_table \
     ${checkm_dir} \
