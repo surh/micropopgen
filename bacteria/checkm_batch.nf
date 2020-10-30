@@ -55,11 +55,11 @@ params.completeness = 98
 
 // params.conda_checkm = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
 params.batch_size = 200
-params.threads = 8
-params.memory = '40GB'
-params.time = '2:00:00'
-params.queue = 'owners,hbfraser,hns'
-params.max_forks = 200
+// params.threads = 8
+// params.memory = '40GB'
+// params.time = '2:00:00'
+// params.queue = 'owners,hbfraser,hns'
+// params.max_forks = 200
 
 
 // Process params
@@ -95,12 +95,12 @@ process run_checkm{
   label 'checkm'
   // module 'prodigal:hmmer:pplacer:fraserconda'
   // conda params.conda_checkm
-  cpus params.threads
-  memory params.memory
-  time params.time
+  // cpus params.threads
+  // memory params.memory
+  // time params.time
   errorStrategy 'retry'
   maxRetries 2
-  maxForks params.max_forks
+  // maxForks params.max_forks
 
   queue params.queue
 
@@ -127,9 +127,9 @@ process collect_results{
   label 'py3'
   // module 'fraserconda'
   cpus 1
-  memory '1GB'
-  time '00:30:00'
-  queue params.queue
+  // memory '1GB'
+  // time '00:30:00'
+  // queue params.queue
   publishDir params.outdir
 
   input:
@@ -148,9 +148,9 @@ process collect_results{
 process filter_checkm{
   label 'r'
   cpus 1
-  memory '2GB'
-  time '00:30:00'
-  queue params.queue
+  // memory '2GB'
+  // time '00:30:00'
+  // queue params.queue
   publishDir params.outdir, pattern: "output/all_completeness_histogram.svg",
     saveAs: {"checkm/all_completeness_histogram.svg"}
   publishDir params.outdir, pattern: "output/all_contamination_histogram.svg",
@@ -200,10 +200,10 @@ process filter_checkm{
 process clean_genome_dirs{
   label 'py3'
   cpus 1
-  memory '2GB'
-  // If copying, need to increase time
-  time '00:45:00'
-  queue params.queue
+  // memory '2GB'
+  // // If copying, need to increase time
+  // time '00:45:00'
+  // queue params.queue
   publishDir params.outdir,
     pattern: "clean",
     saveAs: {"clean"}
@@ -228,16 +228,32 @@ process clean_genome_dirs{
 // Example nextflow.config
 /*
 process {
-  executor = 'slurm'
+  queue = 'hbfraser,hns'
+  maxForks = 100
+  errorStrategy = 'finish'
+  stageInMode = 'rellink'
+  time = '2h'
+  memory = '1G'
   withLabel: py3 {
-    module = 'fraserconda'
+    conda = '/opt/modules/pkgs/anaconda/4.8/envs/fraserconda'
   }
   withLabel: checkm {
-    module = 'prodigal:hmmer:pplacer:fraserconda'
-    conda = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
+    // module = 'prodigal:hmmer:pplacer:fraserconda'
+    // conda = '/opt/modules/pkgs/anaconda/3.6/envs/python2'
+    conda = '/opt/modules/pkgs/anaconda/4.8/envs/checkm'
+    cpus = 8
+    memory = '40G'
+    time = '2h'
   }
   withLabel: r {
-    module = 'R/3.5.1server'
+    module = 'R/3.6.1'
   }
 }
+
+executor{
+  name = 'slurm'
+  queueSize = 500
+  submitRateLitmit = '1 sec'
+}
+
 */
