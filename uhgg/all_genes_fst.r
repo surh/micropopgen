@@ -121,7 +121,7 @@ snvs <- snvs %>%
   mutate_at(.vars = vars(-Contig, -Pos, -Ref, -Alt),
             .funs = function(x){ifelse(x == 255, NA, x)})
 
-cat("Preparing data from HMVAR...\n")
+cat("Preparing data for HMVAR...\n")
 # Creating midas dat object
 # freq <- snvs[1:1000,]
 freq <- snvs
