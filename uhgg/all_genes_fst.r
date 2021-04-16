@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with micropopgen.  If not, see <http://www.gnu.org/licenses/>.
 
-library(tidyverse)
-library(HMVAR)
 library(argparser)
 
 process_arguments <- function(){
@@ -36,7 +34,7 @@ process_arguments <- function(){
   p <- add_argument(p, "--gff",
                      help = paste("Gene feature file (GFF3) for the genome"),
                      type = "character",
-                     default = "")
+                     default = NULL)
   p <- add_argument(p, "--pop_col",
                     help = "Column with populations for Fst",
                     type = "character",
@@ -74,6 +72,8 @@ args <- process_arguments()
 #              min_genomes = 5)
 print(args)
 # q()
+library(tidyverse)
+library(HMVAR)
 
 # Read genome metadata and select genomes from specified populations
 Meta <- read_tsv(args$map,
@@ -121,18 +121,6 @@ snvs <- snvs %>%
   mutate_at(.vars = vars(-Contig, -Pos, -Ref, -Alt),
             .funs = function(x){ifelse(x == 255, NA, x)})
 
-# Read GFF
-gff <- read_tsv(args$gff,
-                col_names = c("contig", "source", "feature",
-                              "start", "end", "score",
-                              "strand", "phase", "attributes")) %>%
-  mutate(ID = attributes %>%
-           map_chr(function(att){
-             ((att %>%
-                 str_split(";"))[[1]])[1] %>%
-               str_remove("^ID=")
-           }))  
-
 cat("Preparing data from HMVAR...\n")
 # Creating midas dat object
 # freq <- snvs[1:1000,]
@@ -169,26 +157,41 @@ cat("Writing site-level Fst...\n")
 filename <- file.path(args$outdir, "site_fst.tsv")
 write_tsv(fst$fst, filename)
 
-cat("Calculating feature level fst...\n")
-gff <- gff %>%
-  select(gene_id = ID, contig, start, end, strand, feature) %>%
-  mutate(Fst = NA,
-         n_sites = NA)
-for(f in 1:nrow(gff)){
-  dat <- fst$fst %>%
-    filter(ref_id == gff$contig[f]) %>%
-    filter(ref_pos >= gff$start[f] & ref_pos <= gff$end[f]) %>%
-    filter(!is.na(Fst))
+if(!is.na(args$gff)){
+  # Read GFF
+  gff <- read_tsv(args$gff,
+                  col_names = c("contig", "source", "feature",
+                                "start", "end", "score",
+                                "strand", "phase", "attributes")) %>%
+    mutate(ID = attributes %>%
+             map_chr(function(att){
+               ((att %>%
+                   str_split(";"))[[1]])[1] %>%
+                 str_remove("^ID=")
+             }))  
   
-  if(nrow(dat) > 0){
-    gff$Fst[f] <- max(0, sum(dat$a)/sum(dat$a + dat$b + dat$c))
-    gff$n_sites[f] <- nrow(dat)
-  }else{
-    gff$n_sites[f] <- 0
+  cat("Calculating feature level fst...\n")
+  gff <- gff %>%
+    select(gene_id = ID, contig, start, end, strand, feature) %>%
+    mutate(Fst = NA,
+           n_sites = NA)
+  for(f in 1:nrow(gff)){
+    dat <- fst$fst %>%
+      filter(ref_id == gff$contig[f]) %>%
+      filter(ref_pos >= gff$start[f] & ref_pos <= gff$end[f]) %>%
+      filter(!is.na(Fst))
+    
+    if(nrow(dat) > 0){
+      gff$Fst[f] <- max(0, sum(dat$a)/sum(dat$a + dat$b + dat$c))
+      gff$n_sites[f] <- nrow(dat)
+    }else{
+      gff$n_sites[f] <- 0
+    }
   }
+  cat("Writing feature Fst")
+  filename <- file.path(args$outdir, "feature_fst.tsv")
 }
-cat("Writing feature Fst")
-filename <- file.path(args$outdir, "feature_fst.tsv")
+
 # 
 #   # Read SNVs and select genomes
 #   # snvs <- read_tsv(snv_file)
