@@ -126,6 +126,10 @@ if(!all(n_genomes$n >= args$min_genomes)){
   cat("\tNot enough genomes in all groups. Finishing\n")
   q()
 }
+if(length(n$genomes_n) < 2){
+  cat("\tNot enough groups for Fst calculation. Finishing\n")
+  q()
+}
 
 # Select genomes from the right pops in snvs table and convert missing values
 snvs <- snvs %>%
