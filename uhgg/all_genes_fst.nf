@@ -57,8 +57,9 @@ process fst{
   file map from map
 
   output:
-  file
-
+  file "output/n_genomes.tsv"
+  file "output/site_fst.tsv"
+  file "output/feature_fst.tsv" optional true
 
   """
   Rscript $workflow.projectDir/all_genes_fst.r \
@@ -71,9 +72,25 @@ process fst{
     --outdir output \
     --min_genomes $min_genomes
   """
-
-
-
-
-
 }
+
+// Example nextflow.config
+/*
+process{
+  queue = 'hbfraser,hns'
+  maxForks = 100
+  errorStrategy = 'finish'
+  stageInMode = 'rellink'
+  time = '72h'
+  memory = '10G'
+  withLabel: 'r'{
+    module = 'R/3.6.1'
+  }
+}
+
+executor{
+  name = 'slurm'
+  queueSize = 500
+  submitRateLitmit = '1 sec'
+}
+*/
