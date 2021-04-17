@@ -99,7 +99,7 @@ Meta <- Meta %>%
   filter(Genome %in% genomes)
 genomes <- Meta$Genome
 
-if(lengt(genomes) == 0){
+if(length(genomes) == 0){
   cat("There are no isolate genomes...\n")
   q()
 }
