@@ -36,7 +36,7 @@ SNVS = Channel.fromPath("$snv_dir/*_snvs.tsv")
     file(snvfile)) }
 
 GFFS = Channel.fromPath("$uhgg_catalogue/*/*/genome/*.gff")
-  .map{ gfffile <- tuple(gfffile.name.replaceAll(/\.gff$/, ''),
+  .map{ gfffile -> tuple(gfffile.name.replaceAll(/\.gff$/, ''),
     file(gfffile)) }
 
 
