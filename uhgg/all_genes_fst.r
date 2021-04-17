@@ -190,6 +190,7 @@ if(!is.na(args$gff)){
   }
   cat("Writing feature Fst")
   filename <- file.path(args$outdir, "feature_fst.tsv")
+  write_tsv(gff, filename)
 }
 
 # 
