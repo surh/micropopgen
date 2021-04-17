@@ -84,6 +84,9 @@ process{
   time = '72h'
   memory = '10G'
   withLabel: 'r'{
+    memory { task.attempt * 15.GB }
+    maxRetries 4
+    errorStrategy { task.attempt < 4 ? 'retry' : 'finish' }
     module = 'R/3.6.1'
   }
 }
