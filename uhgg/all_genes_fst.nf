@@ -57,8 +57,8 @@ process fst{
   file map from map
 
   output:
-  file "output/n_genomes.tsv"
-  file "output/site_fst.tsv"
+  file "output/n_genomes.tsv" optional true
+  file "output/site_fst.tsv" optional true
   file "output/feature_fst.tsv" optional true
 
   """
