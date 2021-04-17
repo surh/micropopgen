@@ -80,7 +80,8 @@ cat("Reading genome metadata...\n")
 Meta <- read_tsv(args$map,
                  col_types = cols(CMseq = col_number()))
 Meta <- Meta %>%
-  filter(.data[[args$pop_col]] %in% args$pops )
+  filter(.data[[args$pop_col]] %in% args$pops ) %>%
+  filter(!is.na(.data[[args$pop_col]]))
 if(args$only_isolates){
   cat("Cat selecting isolates...\n")
   Meta <- Meta %>%
